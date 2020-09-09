@@ -7,18 +7,20 @@
 typedef enum
 {
 	MONGA_TK_ID = UCHAR_MAX + 1,
+	MONGA_TK_INTEGER,
+	MONGA_TK_REAL,
 }
 monga_token_t;
 
 /* Token value */
 typedef union
 {
-	struct
-	{
+	struct {
 		char* str;
 		int size;
-	}
-	id;
+	} id;
+	int integer;
+	double real;
 }
 monga_token_value;
 
