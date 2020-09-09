@@ -6,30 +6,39 @@
 #include "monga.h"
 
 static void* memdup(void* mem, int size);
-static void copy_yytext();
 %}
 
 ID [a-zA-Z_][a-zA-Z_0-9]+
 
-INTEGER_DECIMAL [+-]?(0|[1-9][0-9]*)
-INTEGER_HEXADECIMAL "0x"[0-9a-fA-F]+
+HEXADECIMAL_0X "0"[xX]
+HEXADECIMAL [0-9a-fA-F]
 
-REAL_EXPONENT [eE]{INTEGER_DECIMAL}
-REAL_BASE_BEFORE {INTEGER_DECIMAL}
-REAL_BASE_AFTER [0-9]+
-REAL_BASE_11 {REAL_BASE_BEFORE}"."{REAL_BASE_AFTER}
-REAL_BASE_10 {REAL_BASE_BEFORE}(".")?
-REAL_BASE_01 "."{REAL_BASE_AFTER}
-REAL_BASE ({REAL_BASE_01}|{REAL_BASE_11}|{REAL_BASE_10})
-REAL {REAL_BASE}({REAL_EXPONENT})?
+INTEGER_DECIMAL [+-]?(0|[1-9][0-9]*)
+INTEGER_HEXADECIMAL {HEXADECIMAL_0X}{HEXADECIMAL}+
+
+REAL_DECIMAL_EXPONENT [eE]{INTEGER_DECIMAL}
+REAL_DECIMAL_BASE_0 ({INTEGER_DECIMAL})?"."[0-9]+
+REAL_DECIMAL_BASE_1 {INTEGER_DECIMAL}(".")?
+REAL_DECIMAL_BASE ({REAL_DECIMAL_BASE_0}|{REAL_DECIMAL_BASE_1})
+REAL_DECIMAL {REAL_DECIMAL_BASE}({REAL_DECIMAL_EXPONENT})?
+
+REAL_HEXADECIMAL_EXPONENT [pP]{INTEGER_DECIMAL}
+REAL_HEXADECIMAL_BASE_0 {HEXADECIMAL_0X}{HEXADECIMAL}*"."{HEXADECIMAL}+
+REAL_HEXADECIMAL_BASE_1 {HEXADECIMAL_0X}{HEXADECIMAL}+(".")?
+REAL_HEXADECIMAL_BASE ({REAL_HEXADECIMAL_BASE_0}|{REAL_HEXADECIMAL_BASE_1})
+REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}({REAL_HEXADECIMAL_EXPONENT})?
+
+REAL ({REAL_DECIMAL}|{REAL_HEXADECIMAL})
 
 %option noyywrap
 %%
 {ID} {
-	copy_yytext();
+	yylval.id.size = yyleng;
+	yylval.id.str = memdup(yytext, yyleng);
+
 	return MONGA_TK_ID;
 }
-{REAL} {
+{REAL_DECIMAL} {
 	yylval.real = strtod(yytext, NULL);
 	return MONGA_TK_REAL;
 }
@@ -41,14 +50,12 @@ REAL {REAL_BASE}({REAL_EXPONENT})?
 	yylval.integer = strtol(yytext, NULL, 16);
 	return MONGA_TK_INTEGER;
 }
+{REAL_DECIMAL} {
+	yylval.real = strtod(yytext, NULL);
+	return MONGA_TK_REAL;
+}
 [ \n\t] ;
 %%
-
-void copy_yytext()
-{
-	yylval.id.size = yyleng;
-	yylval.id.str = memdup(yytext, yyleng);
-}
 
 void* memdup(void* mem, int size)
 {
