@@ -72,6 +72,8 @@ for file in * ; do
 		printf $LGREEN"PASSED"
 	else
 		printf $LRED"FAILED"
+
+		# Increase the count of failed tests
 		((++failedcnt))
 	fi
 	printf $NOCOLOR"\n"
