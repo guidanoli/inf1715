@@ -20,6 +20,30 @@ int main(int argc, char** argv)
 			case MONGA_TK_REAL:
 				printf("REAL %g\n", yylval.real);
 				break;
+			case MONGA_TK_AS:
+				printf("AS\n");
+				break;
+			case MONGA_TK_ELSE:
+				printf("ELSE\n");
+				break;
+			case MONGA_TK_FUNCTION:
+				printf("FUNCTION\n");
+				break;
+			case MONGA_TK_IF:
+				printf("IF\n");
+				break;
+			case MONGA_TK_NEW:
+				printf("NEW\n");
+				break;
+			case MONGA_TK_RETURN:
+				printf("RETURN\n");
+				break;
+			case MONGA_TK_VAR:
+				printf("VAR\n");
+				break;
+			case MONGA_TK_WHILE:
+				printf("WHILE\n");
+				break;
 			default:
 				printf("UNKNOWN '%c' (%d)\n", tk, tk);
 				break;
