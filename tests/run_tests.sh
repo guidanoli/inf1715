@@ -11,8 +11,8 @@ for file in * ; do
 	if ! [[ $file =~ $re ]] ; then
 		continue # Only match numeric filenames
 	fi
-	printf "Running test #%s... " "$file" ;
-	cat $file | $tester > $tmpdir/$file ;
+	printf "Running test #%s... " "$file"
+	cat $file | $tester > $tmpdir/$file
 	diff $tmpdir/$file ../output/$file > $logdir/$file
 	if [ $? -eq 0 ] ; then
 		printf "\033[1;32mPASSED"

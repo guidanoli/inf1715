@@ -7,6 +7,22 @@ The goal of the project is to build a compiler for it, making use of some common
 [Yacc](http://dinosaur.compilertools.net/yacc/index.html) and
 [LLVM-C](http://llvm.org/doxygen/group__LLVMC.html).
 
+## Dependencies
+
+* A good C99 compliant compiler
+* [Lex](http://dinosaur.compilertools.net/lex/index.html)
+* [Yacc](http://dinosaur.compilertools.net/yacc/index.html)
+* GNU Make
+* Bash
+
+## Building
+
+Run `make` on the repository root.
+
+## Testing
+
+Run `make tests` on the repository root.
+
 ## External links (*in Portuguese*)
 
 * [INF1715 home page](http://www.inf.puc-rio.br/~roberto/comp/)
