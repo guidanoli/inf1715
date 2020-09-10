@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 				printf("REAL %g\n", yylval.real);
 				break;
 			default:
-				printf("UNKNOWN\n");
+				printf("UNKNOWN '%c' (%d)\n", tk, tk);
 				break;
 		}
 	}

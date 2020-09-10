@@ -53,6 +53,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}({REAL_HEXADECIMAL_EXPONENT})?
 	return MONGA_TK_REAL;
 }
 [ \n\t] ;
+. { return *yytext; }
 %%
 
 void* memdup(void* mem, int size)
