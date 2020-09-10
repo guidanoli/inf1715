@@ -15,6 +15,6 @@ generate_output: $(BIN)/mongatest
 	./generate_output.sh $^
 
 $(BIN)/mongatest: t.monga.c $(BIN)/lex.yy.c $(SRC)/monga.h
-	cc -I$(SRC) $^ $(BIN)/lex.yy.c -o $@
+	cc -I$(SRC) t.monga.c $(BIN)/lex.yy.c -o $@
 
 
