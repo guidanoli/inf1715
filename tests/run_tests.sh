@@ -37,10 +37,6 @@ tester=$root/$1
 # outputs
 tmpdir=$(mktemp -d)
 
-# re is the regular expression for the
-# input files (only numbers)
-re="^[0-9]+$"
-
 # failedcnt is the number of tests that
 # have failed
 failedcnt=0
@@ -51,12 +47,9 @@ LRED='\033[1;31m'
 NOCOLOR='\033[0m'
 
 # For every file in cases/input ...
-for file in * ; do
-
-	# Check if its name matches the regex
-	if ! [[ $file =~ $re ]] ; then
-		continue 
-	fi
+file=1
+while [[ -f "$file" ]] ;
+do
 
 	# Notify that test will be run...
 	printf "[ TEST ] Running test #%s... " "$file"
@@ -78,7 +71,9 @@ for file in * ; do
 		# Increase the count of failed tests
 		((++failedcnt))
 	fi
-	printf $NOCOLOR"\n"
+	printf $NOCOLOR"\n";
+
+	((++file))
 done
 
 # Remove the temporary directory
