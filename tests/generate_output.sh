@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Generate output for all the input files
+# that don't have an associated output fil# Generate output for all the input files
+# that don't have an associated output filee
+
 # Usage: generate_output.sh <tester-application>
 #
 # tester-application - path of the tester

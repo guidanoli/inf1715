@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run tests
+
 # Usage: run_tests.sh <tester-application>
 #
 # tester-application - path of the tester
