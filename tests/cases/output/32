@@ -1,0 +1,26 @@
+CHAR '('
+CHAR '('
+ID "x"
+EQ
+INTEGER 0
+CHAR ')'
+OR
+CHAR '!'
+CHAR '('
+CHAR '('
+ID "y"
+CHAR '<'
+INTEGER 10
+CHAR ')'
+AND
+CHAR '('
+ID "z"
+NE
+INTEGER 7
+CHAR ')'
+CHAR ')'
+CHAR ')'
+AND
+ID "w"
+LE
+INTEGER 100

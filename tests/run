@@ -87,7 +87,7 @@ popd > /dev/null
 # Check if any tests failed and print an appropriate
 # message to summarize the test results
 if [ $failedcnt -eq 0 ] ; then
-	printf "[ TEST ] "$LGREEN"All tests passed"
+	printf "[ TEST ] "$LGREEN"All $($sd/count) tests passed"
 else
 	printf "[ TEST ] "$LRED"$failedcnt test(s) failed"
 fi

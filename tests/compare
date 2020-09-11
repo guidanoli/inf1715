@@ -4,9 +4,11 @@
 #
 # Usage: compare [tc1 [tc2 ...] ] (0)
 #        compare {tc1..tcn}       (1)
+#        compare
 #
 # (0) List of test cases
 # (1) Range of test cases
+# (2) Last tast case
 
 # Get script directory
 sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
@@ -28,8 +30,11 @@ failcnt=0
 YELLOW='\033[0;33m'
 NOCOLOR='\033[0m'
 
+# Test cases
+tcs=${@:-$($sd/count)}
+
 # For every test case...
-for i in $@; do
+for i in $tcs; do
 	if [[ -f "output/$i" ]] ; then
 		# Check if there an output...
 		$($sd/func EDIT "\"input/$i\"" "\"output/$i\"")
