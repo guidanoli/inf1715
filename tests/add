@@ -24,7 +24,7 @@ file=$($sd/count)
 while [[ $n -gt 0 ]] ;
 do
 	((++file))
-	$($sd/func EDIT "\"$file\"")
+	$($sd/func edit "\"$file\"")
 	((--n))
 done
 

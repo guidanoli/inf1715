@@ -56,11 +56,7 @@ for file in $($sd/list); do
 	if [[ -f ../output/$file ]] ; then
 		# Compare the expected and obtained outputs and
 		# redirect the diff analysis to the log directory
-		diff $tmpdir/$file ../output/$file > $logdir/$file
-
-		# Check if diff returned 0 (i.e. the files are identical)
-		# or else, the files are different
-		if [ $? -eq 0 ] ; then
+		if  diff $tmpdir/$file ../output/$file > $logdir/$file ; then
 			printf $LGREEN"PASSED"
 		else
 			printf $LRED"FAILED"

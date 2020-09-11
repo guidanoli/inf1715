@@ -21,7 +21,7 @@ for file in $($sd/list); do
 	# If it matches one of them...
 	if [[ $file == $tc ]] ; then
 		# ...open test case or...
-		$($sd/func EDIT "\"$file\"")
+		$($sd/func edit "\"$file\"")
 		exit 0
 	fi
 done 

@@ -3,6 +3,6 @@
 ------------------------------------------------------------------------------
 
 -- Edit multiple files at once
-function EDIT(...)
+edit = function(...)
 	return "vi -O " .. table.concat({...}, " ")
 end

@@ -37,10 +37,10 @@ tcs=${@:-$($sd/count)}
 for i in $tcs; do
 	if [[ -f "output/$i" ]] ; then
 		# Check if there an output...
-		$($sd/func EDIT "\"input/$i\"" "\"output/$i\"")
+		$($sd/func edit "\"input/$i\"" "\"output/$i\"")
 	elif [[ -f "$candidatesdir/$i" ]] ; then
 		# ...or a candidate...
-		$($sd/func EDIT "\"input/$i\"" "\"$candidatesdir/$i\"")
+		$($sd/func edit "\"input/$i\"" "\"$candidatesdir/$i\"")
 		# Ask if candidate should be approved...
 		printf $YELLOW"Should candidate #$i be approved (y/n)? "$NOCOLOR
 		read yn
