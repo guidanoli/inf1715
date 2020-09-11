@@ -1,35 +1,28 @@
 #!/bin/bash
 
 # Run tests
+#
+# Usage: run
 
-# Usage: run_tests.sh <tester-application>
-#
-# tester-application - path of the tester
-# 	application, relative to the
-# 	directory where this script is
-# 	located
-#
-# Should be run in the same directory as
-# the script
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Get repository root
+root=$(realpath $sd/..)
+
+# Tester application path
+tester=$root/bin/mongatest
 
 # Go to input folder so that file names
 # are merely numbers
-pushd cases/input > /dev/null
-
-# root is the directory where this file
-# is located (tests/)
-root=../..
+pushd $sd/cases/input > /dev/null
 
 # logdir is the directory where logs are
-# going to be saved (inside bin/, which
-# is ignored by git)
-logdir=$root/../bin/tests
+# going to be saved
+logdir=$root/bin/tests
 
 # Make logdir if nonexistent
 mkdir -p $logdir
-
-# Tester application path
-tester=$root/$1
 
 # tmpdir is the directory where all the
 # outputs will be written to so that
@@ -42,7 +35,7 @@ tmpdir=$(mktemp -d)
 failedcnt=0
 
 # skippedcnt is the number of tests that
-# were skipped
+# have been skipped
 skippedcnt=0
 
 # colours useful for printing
@@ -85,14 +78,13 @@ do
 		((++skippedcnt))
 	fi
 
-
 	((++file))
 done
 
 # Remove the temporary directory
 rm -rf $tmpdir
 
-# Go back to the root directory
+# pop directory
 popd > /dev/null
 
 # Check if any tests failed and print an appropriate
@@ -108,8 +100,8 @@ printf $NOCOLOR"\n"
 # message to warn the user
 if [ $skippedcnt -ne 0 ] ; then
 	printf "[ TEST ] "$YELLOW"$skippedcnt test(s) skipped"
+	printf $NOCOLOR"\n"
 fi
-printf $NOCOLOR"\n"
 
 # Exit the script with 0 if no tests failed (i.e. success)
 # or else, if at least one failed (i.e. failed)

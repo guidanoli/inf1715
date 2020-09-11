@@ -1,32 +1,25 @@
 #!/bin/bash
 
 # Generate output for all the input files
-# that don't have an associated output fil# Generate output for all the input files
-# that don't have an associated output filee
+# that don't have an associated output file
+#
+# Usage: gen
 
-# Usage: generate_output.sh <tester-application>
-#
-# tester-application - path of the tester
-# 	application, relative to the
-# 	directory where this script is
-# 	located
-#
-# Should be run in the same directory as
-# the script
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Get repository root
+root=$(realpath $sd/..)
+
+# Tester application path
+tester=$root/bin/mongatest
 
 # Go to input folder so that file names
 # are merely numbers
-pushd cases/input > /dev/null
-
-# root is the directory where this file
-# is located (tests/)
-root=../..
-
-# Tester application path
-tester=$root/$1
+pushd $sd/cases/input > /dev/null
 
 # Candidates directory
-candidatesdir=$root/../bin/candidates
+candidatesdir=$root/bin/candidates
 
 mkdir -p $candidatesdir
 
@@ -65,5 +58,5 @@ if [[ $generatedcnt -ne 0 ]] ; then
 	printf "$generatedcnt file(s) generated in %s\n" "$(realpath "$candidatesdir")"
 fi
 
-# Go back to the root directory
+# pop directory
 popd > /dev/null

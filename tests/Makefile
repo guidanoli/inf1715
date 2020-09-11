@@ -2,17 +2,17 @@ ROOT = ..
 BIN = $(ROOT)/bin
 SRC = $(ROOT)/src
 
-.PHONY: tests all generate_outputs
+.PHONY: tests all gen
 
 all: tests
 
 tests: $(BIN)/mongatest
-	chmod +x run_tests.sh
-	./run_tests.sh $^
+	chmod +x run
+	./run
 
-generate_output: $(BIN)/mongatest
-	chmod +x generate_output.sh
-	./generate_output.sh $^
+gen: $(BIN)/mongatest
+	chmod +x gen
+	./gen
 
 $(BIN)/mongatest: t.monga.c $(BIN)/lex.yy.c $(SRC)/monga.h
 	cc -I$(SRC) t.monga.c $(BIN)/lex.yy.c -o $@
