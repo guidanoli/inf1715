@@ -1,0 +1,84 @@
+INTEGER 0
+AS
+ID "int"
+CHAR ';'
+ID "x"
+AS
+ID "int"
+CHAR ';'
+CHAR '('
+INTEGER 0
+CHAR ')'
+AS
+ID "int"
+CHAR ';'
+ID "f"
+CHAR '('
+INTEGER 0
+CHAR ')'
+AS
+ID "int"
+CHAR ';'
+INTEGER 0
+AS
+ID "float"
+AS
+ID "int"
+CHAR ';'
+NEW
+ID "float"
+AS
+ID "int"
+CHAR ';'
+NEW
+ID "float"
+CHAR '['
+INTEGER 10
+CHAR ']'
+AS
+ID "int_array_10"
+CHAR ';'
+CHAR '-'
+ID "x"
+AS
+ID "int"
+CHAR ';'
+INTEGER 0
+CHAR '+'
+INTEGER 0
+AS
+ID "int"
+CHAR ';'
+INTEGER 0
+CHAR '-'
+INTEGER 0
+AS
+ID "int"
+CHAR ';'
+INTEGER 0
+CHAR '*'
+INTEGER 0
+AS
+ID "int"
+CHAR ';'
+INTEGER 22
+CHAR '/'
+INTEGER 7
+AS
+ID "float"
+CHAR ';'
+ID "x"
+CHAR '.'
+ID "flag"
+EQ
+INTEGER 1
+CHAR '?'
+ID "x"
+CHAR '.'
+ID "a"
+CHAR ':'
+ID "x"
+CHAR '.'
+ID "b"
+AS
+ID "int"

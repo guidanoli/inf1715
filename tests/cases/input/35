@@ -1,0 +1,13 @@
+0 as int;
+x as int;
+(0) as int;
+f(0) as int;
+0 as float as int;
+new float as int;
+new float[10] as int_array_10;
+-x as int;
+0 + 0 as int;
+0 - 0 as int;
+0 * 0 as int;
+22 / 7 as float;
+x.flag == 1 ? x.a : x.b as int

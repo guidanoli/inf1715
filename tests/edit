@@ -13,15 +13,21 @@ sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
 # Get test case number
 tc=${1:-$($sd/count)}
 
+# Go to test cases directory
+pushd $sd/cases/input > /dev/null
+
 # Search through list of test cases
 for file in $($sd/list); do
 	# If it matches one of them...
 	if [[ $file == $tc ]] ; then
 		# ...open test case or...
-		$($sd/func EDIT "\"$sd/cases/input/$file\"")
+		$($sd/func EDIT "\"$file\"")
 		exit 0
 	fi
 done 
+
+# Pop directory
+popd
 
 # ...notify that test case don't exist
 echo "Test case $1 doesn't exist"

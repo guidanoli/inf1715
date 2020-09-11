@@ -9,4 +9,4 @@ $(BIN)/lex.yy.c: monga.l monga.h | $(BIN)
 	lex monga.l && mv lex.yy.c $(BIN)
 
 $(BIN):
-	mkdir $@
+	mkdir -p $@

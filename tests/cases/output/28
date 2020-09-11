@@ -24,7 +24,8 @@ ELSE
 CHAR '{'
 ID "x"
 CHAR '='
-INTEGER -1
+CHAR '-'
+INTEGER 1
 CHAR ';'
 CHAR '}'
 CHAR '}'

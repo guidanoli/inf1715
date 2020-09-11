@@ -1,6 +1,10 @@
 REAL 0.1
 REAL 0.1
-REAL -0.1
-REAL -0.1
+CHAR '-'
 REAL 0.1
+CHAR '-'
+REAL 0.1
+CHAR '+'
+REAL 0.1
+CHAR '+'
 REAL 0.1

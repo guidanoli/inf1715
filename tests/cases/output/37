@@ -1,0 +1,7 @@
+NEW
+ID "int"
+NEW
+ID "int"
+CHAR '['
+INTEGER 10
+CHAR ']'
