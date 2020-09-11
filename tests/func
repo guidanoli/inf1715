@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Execute lua function
+#
+# Usage: func [args...]
+#
+# func - function name
+# args... - function arguments
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Function name
+func=$1
+
+# Shift all arguments by one
+shift
+
+# Joining function
+function join { local IFS="$1"; shift; echo "$*"; }
+
+# Call function
+$sd/eval "print($func($(join , "$@")))"

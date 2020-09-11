@@ -26,7 +26,7 @@ Run `make tests` on the repository root.
 ### Adding test cases
 
 0. Figure out what exactly is that you want to test.
-1. Add a new test case by running `tests/add` (opens vi).
+1. Add a new test case by running `tests/add` (opens editor).
 2. Write the new test case and save it (`:x`).
 3. Generate the output by running `tests/generate` (Take note of the test number, #).
 4. Compare the output with the input by running `tests/compare #` (# is the test number).
@@ -34,6 +34,11 @@ Run `make tests` on the repository root.
    * If the output matches the expected, approve it (y).
    * If it doesn't, deny it (n). Try fixing the bug(s), run `make` and go back to step 3.
 6. Run `make tests` one more time to make sure all tests pass.
+
+### Customizing
+
+Some features are customizable, such as the text editor used for editing and comparing.
+For that, you can tinkle the `tests/config.lua` Lua script.
 
 ## External links (*in Portuguese*)
 

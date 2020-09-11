@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Evaluates lua script after importing
+# configuration file
+#
+# Usage: eval script
+#
+# script - lua script
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Push script directory
+pushd $sd > /dev/null
+
+# Import configuration file and run script
+lua -l config -e "$1"
+
+# Pop script directory
+popd > /dev/null

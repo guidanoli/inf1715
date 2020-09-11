@@ -20,11 +20,11 @@ pushd $sd/cases/input > /dev/null
 # Get the last test case
 file=$($sd/count)
 
-# For each new test case, open vi
+# For each new test case, open editor
 while [[ $n -gt 0 ]] ;
 do
 	((++file))
-	vi $file
+	$($sd/func EDIT "\"$file\"")
 	((--n))
 done
 
