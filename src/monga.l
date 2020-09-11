@@ -35,6 +35,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 "if" { return MONGA_TK_IF; }
 "new" { return MONGA_TK_NEW; }
 "return" { return MONGA_TK_RETURN; }
+"type" { return MONGA_TK_TYPE; }
 "var" { return MONGA_TK_VAR; }
 "while" { return MONGA_TK_WHILE; }
 "==" { return MONGA_TK_EQ; }

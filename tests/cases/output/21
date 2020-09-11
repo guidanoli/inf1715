@@ -1,0 +1,10 @@
+VAR
+ID "x"
+CHAR ':'
+ID "int"
+CHAR ';'
+VAR
+ID "y"
+CHAR ':'
+ID "float"
+CHAR ';'

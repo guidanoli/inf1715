@@ -23,6 +23,7 @@ typedef enum
 	MONGA_TK_GE,
 	MONGA_TK_AND,
 	MONGA_TK_OR,
+	MONGA_TK_TYPE,
 }
 monga_token_t;
 

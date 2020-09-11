@@ -1,0 +1,44 @@
+TYPE
+ID "int_array"
+CHAR '='
+CHAR '['
+ID "int"
+CHAR ']'
+CHAR ';'
+TYPE
+ID "int_matrix"
+CHAR '='
+CHAR '['
+ID "int_array"
+CHAR ']'
+CHAR ';'
+TYPE
+ID "float_complex"
+CHAR '='
+CHAR '{'
+ID "real"
+CHAR ':'
+ID "float"
+CHAR ','
+ID "imaginary"
+CHAR ':'
+ID "float"
+CHAR '}'
+CHAR ';'
+TYPE
+ID "complex_clock"
+CHAR '='
+CHAR '{'
+ID "seconds"
+CHAR ':'
+ID "float_complex"
+CHAR ','
+ID "minutes"
+CHAR ':'
+ID "float_complex"
+CHAR ','
+ID "hours"
+CHAR ':'
+ID "float_complex"
+CHAR '}'
+CHAR ';'

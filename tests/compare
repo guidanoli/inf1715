@@ -24,6 +24,10 @@ pushd $sd/cases > /dev/null
 # Initialize fail counter to 0
 failcnt=0
 
+# Colours for printing
+LGREEN='\033[1;32m'
+NOCOLOR='\033[0m'
+
 # For every test case...
 for i in $@; do
 	if [[ -f "output/$i" ]] ; then
@@ -32,6 +36,14 @@ for i in $@; do
 	elif [[ -f "$candidatesdir/$i" ]] ; then
 		# ...or a candidate...
 		vi -O input/$i $candidatesdir/$i
+		# Ask if candidate should be approved...
+		printf $LGREEN"Should candidate #$i be approved (y/n)?"$NOCOLOR
+		read yn
+		case $yn in
+			[Yy]* ) cp $candidatesdir/$i output;;
+			[Nn]* ) exit;;
+			* ) echo "Invalid input. Assumed 'n'."
+		esac
 	else
 		# ...if not, print an error message...
 		echo "Could not find output for test #$i..."
