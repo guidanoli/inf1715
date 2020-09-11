@@ -1,0 +1,6 @@
+TYPE
+ID "empty_type"
+CHAR '='
+CHAR '{'
+CHAR '}'
+CHAR ';'

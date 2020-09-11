@@ -1,0 +1,6 @@
+FUNCTION
+ID "do_nothing"
+CHAR '('
+CHAR ')'
+CHAR '{'
+CHAR '}'

@@ -1,0 +1,20 @@
+FUNCTION
+ID "print_2_plus_4"
+CHAR '('
+CHAR ')'
+CHAR '{'
+VAR
+ID "x"
+CHAR ':'
+ID "int"
+CHAR ';'
+ID "x"
+CHAR '='
+INTEGER 2
+CHAR '+'
+INTEGER 4
+CHAR ';'
+CHAR '@'
+ID "x"
+CHAR ';'
+CHAR '}'

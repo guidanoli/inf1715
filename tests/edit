@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Edits a test case
+#
+# Usage: edit tc
+#
+# tc - test case number
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Search through list of test cases
+for file in $($sd/list); do
+	# If it matches one of them...
+	if [[ $file == $1 ]] ; then
+		# ...open test case or...
+		vi $sd/cases/input/$file
+		exit 0
+	fi
+done 
+
+# ...notify that test case don't exist
+echo "Test case $1 doesn't exist"
+exit 1

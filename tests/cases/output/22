@@ -19,10 +19,11 @@ CHAR '{'
 ID "real"
 CHAR ':'
 ID "float"
-CHAR ','
+CHAR ';'
 ID "imaginary"
 CHAR ':'
 ID "float"
+CHAR ';'
 CHAR '}'
 CHAR ';'
 TYPE
@@ -32,13 +33,14 @@ CHAR '{'
 ID "seconds"
 CHAR ':'
 ID "float_complex"
-CHAR ','
+CHAR ';'
 ID "minutes"
 CHAR ':'
 ID "float_complex"
-CHAR ','
+CHAR ';'
 ID "hours"
 CHAR ':'
 ID "float_complex"
+CHAR ';'
 CHAR '}'
 CHAR ';'

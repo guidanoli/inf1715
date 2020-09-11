@@ -17,19 +17,15 @@ n=${1:-1}
 # are merely numbers
 pushd $sd/cases/input > /dev/null
 
-# Get new test case name
-file=1
-while [[ -f "$file" ]] ;
-do
-	((++file))
-done
+# Get the last test case
+file=$($sd/count)
 
 # For each new test case, open vi
 while [[ $n -gt 0 ]] ;
 do
+	((++file))
 	vi $file
 	((--n))
-	((++file))
 done
 
 # pop directory

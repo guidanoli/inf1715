@@ -1,0 +1,6 @@
+function print_2_plus_4()
+{
+	var x : int;
+	x = 2 + 4;
+	@x;
+}

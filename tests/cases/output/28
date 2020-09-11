@@ -1,0 +1,30 @@
+IF
+ID "x"
+EQ
+INTEGER 0
+CHAR '{'
+ID "x"
+CHAR '='
+INTEGER 1
+CHAR ';'
+CHAR '}'
+ELSE
+CHAR '{'
+IF
+ID "x"
+EQ
+INTEGER 1
+CHAR '{'
+ID "x"
+CHAR '='
+INTEGER 0
+CHAR ';'
+CHAR '}'
+ELSE
+CHAR '{'
+ID "x"
+CHAR '='
+INTEGER -1
+CHAR ';'
+CHAR '}'
+CHAR '}'

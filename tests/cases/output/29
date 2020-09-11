@@ -1,0 +1,15 @@
+WHILE
+ID "x"
+EQ
+INTEGER 0
+CHAR '{'
+ID "x"
+CHAR '='
+ID "x"
+CHAR '/'
+INTEGER 2
+CHAR ';'
+CHAR '@'
+ID "x"
+CHAR ';'
+CHAR '}'

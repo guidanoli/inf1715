@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Count the number of test cases
+#
+# Usage: count
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Get number of lines
+$sd/list | wc -l

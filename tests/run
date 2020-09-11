@@ -45,9 +45,7 @@ YELLOW='\033[0;33m'
 NOCOLOR='\033[0m'
 
 # For every file in cases/input ...
-file=1
-while [[ -f "$file" ]] ;
-do
+for file in $($sd/list); do
 
 	# Notify that test will be run...
 	printf "[ TEST ] Running test #%s... " "$file"
@@ -78,7 +76,6 @@ do
 		((++skippedcnt))
 	fi
 
-	((++file))
 done
 
 # Remove the temporary directory

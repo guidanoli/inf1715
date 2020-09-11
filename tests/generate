@@ -23,20 +23,11 @@ candidatesdir=$root/bin/candidates
 
 mkdir -p $candidatesdir
 
-# re is the regular expression for the
-# input files (only numbers)
-re="^[0-9]+$"
-
+# generatedcount is the number of generated files
 generatedcnt=0
 
-# For every file in cases/input ...
-for file in * ;
-do
-
-	# Check if its name matches the regex
-	if ! [[ $file =~ $re ]] ; then
-		continue
-	fi
+# For every test case ...
+for file in $($sd/list); do
 
 	# Check if the output was not generated yet
 	# for the given input ($file)

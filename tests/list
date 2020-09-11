@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Lists all test cases
+#
+# Usage: list
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Go to input folder so that file names
+# are merely numbers
+pushd $sd/cases/input > /dev/null
+
+# Get new test case name
+file=1
+while [[ -f "$file" ]] ;
+do
+	echo "$file"
+	((++file))
+done
+
+# pop directory
+popd > /dev/null
