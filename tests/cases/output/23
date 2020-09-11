@@ -1,0 +1,20 @@
+FUNCTION
+ID "add"
+CHAR '('
+ID "a"
+CHAR ':'
+ID "int"
+CHAR ','
+ID "b"
+CHAR ':'
+ID "int"
+CHAR ')'
+CHAR ':'
+ID "int"
+CHAR '{'
+RETURN
+ID "a"
+CHAR '+'
+ID "b"
+CHAR ';'
+CHAR '}'
