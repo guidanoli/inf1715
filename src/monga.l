@@ -8,7 +8,7 @@
 static void* memdup(void* mem, int size);
 %}
 
-ID [a-zA-Z_][a-zA-Z_0-9]+
+ID [a-zA-Z_][a-zA-Z_0-9]*
 
 HEXADECIMAL_0X "0"[xX]
 HEXADECIMAL [0-9a-fA-F]

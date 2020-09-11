@@ -5,5 +5,5 @@ all: src
 src:
 	$(MAKE) -C src
 
-tests:
+tests: src
 	$(MAKE) -C tests

@@ -25,12 +25,20 @@ root=../..
 # Tester application path
 tester=$root/$1
 
+# Candidates directory
+candidatesdir=$root/../bin/candidates
+
+mkdir -p $candidatesdir
+
 # re is the regular expression for the
 # input files (only numbers)
 re="^[0-9]+$"
 
+generatedcnt=0
+
 # For every file in cases/input ...
-for file in * ; do
+for file in * ;
+do
 
 	# Check if its name matches the regex
 	if ! [[ $file =~ $re ]] ; then
@@ -44,11 +52,18 @@ for file in * ; do
 	fi
 
 	# Run test, saving the output
-	cat $file | $tester > ../output/$file
+	cat $file | $tester > $candidatesdir/$file
 
 	# Notify that the output has been generated...
 	printf "Generated output for test #%s...\n" "$file"
+
+	# Increment generated count
+	((++generatedcnt))
 done
+
+if [[ $generatedcnt -ne 0 ]] ; then
+	printf "$generatedcnt file(s) generated in %s\n" "$(realpath "$candidatesdir")"
+fi
 
 # Go back to the root directory
 popd > /dev/null
