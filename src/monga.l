@@ -37,6 +37,12 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 "return" { return MONGA_TK_RETURN; }
 "var" { return MONGA_TK_VAR; }
 "while" { return MONGA_TK_WHILE; }
+"==" { return MONGA_TK_EQ; }
+"~=" { return MONGA_TK_NE; }
+"<=" { return MONGA_TK_LE; }
+">=" { return MONGA_TK_GE; }
+"&&" { return MONGA_TK_AND; }
+"||" { return MONGA_TK_OR; }
 {ID} {
 	yylval.id.size = yyleng;
 	yylval.id.str = memdup(yytext, yyleng);

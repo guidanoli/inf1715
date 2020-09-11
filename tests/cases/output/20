@@ -1,0 +1,26 @@
+CHAR ':'
+CHAR ';'
+CHAR '='
+CHAR '['
+CHAR ']'
+CHAR '{'
+CHAR '}'
+CHAR '('
+CHAR ')'
+CHAR '@'
+CHAR '.'
+CHAR '-'
+CHAR '+'
+CHAR '*'
+CHAR '/'
+CHAR '?'
+EQ
+NE
+LE
+GE
+CHAR '<'
+CHAR '>'
+CHAR '!'
+AND
+OR
+CHAR ','

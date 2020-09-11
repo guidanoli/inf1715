@@ -41,9 +41,14 @@ tmpdir=$(mktemp -d)
 # have failed
 failedcnt=0
 
+# skippedcnt is the number of tests that
+# were skipped
+skippedcnt=0
+
 # colours useful for printing
 LGREEN='\033[1;32m'
 LRED='\033[1;31m'
+YELLOW='\033[0;33m'
 NOCOLOR='\033[0m'
 
 # For every file in cases/input ...
@@ -57,21 +62,29 @@ do
 	# Run test, saving the output in the temporary directory
 	cat $file | $tester > $tmpdir/$file
 
-	# Compare the expected and obtained outputs and
-	# redirect the diff analysis to the log directory
-	diff $tmpdir/$file ../output/$file > $logdir/$file
+	if [[ -f ../output/$file ]] ; then
+		# Compare the expected and obtained outputs and
+		# redirect the diff analysis to the log directory
+		diff $tmpdir/$file ../output/$file > $logdir/$file
 
-	# Check if diff returned 0 (i.e. the files are identical)
-	# or else, the files are different
-	if [ $? -eq 0 ] ; then
-		printf $LGREEN"PASSED"
+		# Check if diff returned 0 (i.e. the files are identical)
+		# or else, the files are different
+		if [ $? -eq 0 ] ; then
+			printf $LGREEN"PASSED"
+		else
+			printf $LRED"FAILED"
+
+			# Increase the count of failed tests
+			((++failedcnt))
+		fi
+		printf $NOCOLOR"\n";
 	else
-		printf $LRED"FAILED"
+		# Skip test case because output is missing 
+		printf $YELLOW"SKIPPED"$NOCOLOR" (missing output)\n"
 
-		# Increase the count of failed tests
-		((++failedcnt))
+		((++skippedcnt))
 	fi
-	printf $NOCOLOR"\n";
+
 
 	((++file))
 done
@@ -87,7 +100,14 @@ popd > /dev/null
 if [ $failedcnt -eq 0 ] ; then
 	printf "[ TEST ] "$LGREEN"All tests passed"
 else
-	printf "[ TEST ] "$LRED"$failedcnt tests failed"
+	printf "[ TEST ] "$LRED"$failedcnt test(s) failed"
+fi
+printf $NOCOLOR"\n"
+
+# Check if any tests were skipped and print an appopriate
+# message to warn the user
+if [ $skippedcnt -ne 0 ] ; then
+	printf "[ TEST ] "$YELLOW"$skippedcnt test(s) skipped"
 fi
 printf $NOCOLOR"\n"
 

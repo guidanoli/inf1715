@@ -44,8 +44,30 @@ int main(int argc, char** argv)
 			case MONGA_TK_WHILE:
 				printf("WHILE\n");
 				break;
+			case MONGA_TK_EQ:
+				printf("EQ\n");
+				break;
+			case MONGA_TK_NE:
+				printf("NE\n");
+				break;
+			case MONGA_TK_LE:
+				printf("LE\n");
+				break;
+			case MONGA_TK_GE:
+				printf("GE\n");
+				break;
+			case MONGA_TK_AND:
+				printf("AND\n");
+				break;
+			case MONGA_TK_OR:
+				printf("OR\n");
+				break;
+
 			default:
-				printf("UNKNOWN '%c' (%d)\n", tk, tk);
+				if (tk >= 0 && tk <= UCHAR_MAX)
+					printf("CHAR '%c'\n", tk);
+				else
+					printf("UNKNOWN %d\n", tk);
 				break;
 		}
 	}

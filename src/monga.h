@@ -17,6 +17,12 @@ typedef enum
 	MONGA_TK_RETURN,
 	MONGA_TK_VAR,
 	MONGA_TK_WHILE,
+	MONGA_TK_EQ,
+	MONGA_TK_NE,
+	MONGA_TK_LE,
+	MONGA_TK_GE,
+	MONGA_TK_AND,
+	MONGA_TK_OR,
 }
 monga_token_t;
 
