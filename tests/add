@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Adds a new test case
+#
+# Usage: add [n]
+#
+# n - number of test cases
+#     default: 1
+
+# Get script directory
+sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+
+# Number of new test cases
+n=${1:-1}
+
+# Go to input folder so that file names
+# are merely numbers
+pushd $sd/cases/input > /dev/null
+
+# Get new test case name
+file=1
+while [[ -f "$file" ]] ;
+do
+	((++file))
+done
+
+# For each new test case, open vi
+while [[ $n -gt 0 ]] ;
+do
+	vi $file
+	((--n))
+	((++file))
+done
+
+# pop directory
+popd > /dev/null
