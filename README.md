@@ -1,5 +1,7 @@
 # Monga
 
+![CI](https://github.com/guidanoli/monga/workflows/CI/badge.svg)
+
 Monga (*not to be mistaken with [mango](https://en.wikipedia.org/wiki/Mango), a tropical fruit*)
 is a subset of the [C programming language](https://en.wikipedia.org/wiki/C_(programming_language)).
 The goal of the project is to build a compiler for it, making use of some common tools such as
