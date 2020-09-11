@@ -31,9 +31,9 @@ Run `make tests` on the repository root.
 3. Generate the output by running `tests/generate` (Take note of the test number, #).
 4. Compare the output with the input by running `tests/compare #` (# is the test number).
 5. Check if the obtained output matches the expected output.
-   a. If the output matches the expected, approve it (y).
-   b. If it doesn't, try fix the bugs, run `make` and go back to step 3.
-6. Run `make tests` one more time to check if all tests pass.
+   * If the output matches the expected, approve it (y).
+   * If it doesn't, deny it (n). Try fixing the bug(s), run `make` and go back to step 3.
+6. Run `make tests` one more time to make sure all tests pass.
 
 ## External links (*in Portuguese*)
 
