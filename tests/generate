@@ -3,7 +3,7 @@
 # Generate output for all the input files
 # that don't have an associated output file
 #
-# Usage: gen
+# Usage: generate
 
 # Get script directory
 sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")

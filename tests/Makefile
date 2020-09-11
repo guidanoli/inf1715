@@ -8,7 +8,7 @@ all: tests
 
 tests: $(BIN)/mongatest
 	chmod +x run
-		./run
+	./run
 
 generate: $(BIN)/mongatest
 	chmod +x generate
