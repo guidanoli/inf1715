@@ -3,6 +3,14 @@
 
 #include <limits.h>
 
+/* Program error codes */
+typedef enum
+{
+	MONGA_ERR_OK,
+	MONGA_ERR_MALLOC,
+}
+monga_error_t;
+
 /* Token type */
 typedef enum
 {
