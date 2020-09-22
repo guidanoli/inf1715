@@ -65,9 +65,6 @@ int main(int argc, char** argv)
 			case MONGA_TK_TYPE:
 				printf("TYPE\n");
 				break;
-			case MONGA_TK_CALL:
-				printf("CALL\n");
-				break;
 			default:
 				if (tk >= 0 && tk <= UCHAR_MAX)
 					printf("CHAR '%c'\n", tk);

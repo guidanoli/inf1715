@@ -32,7 +32,6 @@ typedef enum
 	MONGA_TK_AND,
 	MONGA_TK_OR,
 	MONGA_TK_TYPE,
-	MONGA_TK_CALL,
 }
 monga_token_t;
 
