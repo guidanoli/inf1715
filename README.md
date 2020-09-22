@@ -30,8 +30,8 @@ Run `make tests` on the repository root.
 0. Figure out what exactly is that you want to test.
 1. Add a new test case by running `tests/add` (opens editor).
 2. Write the new test case and save it (`:x`).
-3. Generate the output by running `tests/generate` (Take note of the test number, #).
-4. Compare the output with the input by running `tests/compare #` (# is the test number).
+3. Generate the output by running `tests/generate`.
+4. Compare the output with the input by running `tests/compare`.
 5. Check if the obtained output matches the expected output.
    * If the output matches the expected, approve it (y).
    * If it doesn't, deny it (n). Try fixing the bug(s), run `make` and go back to step 3.
