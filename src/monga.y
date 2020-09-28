@@ -84,15 +84,15 @@ var : ID
     | primary_exp '.' ID
     ;
 
-exp : primary_exp
-    | NEW type opt_item_access_list
-    ;
-
 primary_exp : NUMERAL
             | var
             | call
             | '(' conditional_exp ')'
             ;
+
+exp : primary_exp
+    | NEW type opt_item_access_list
+    ;
 
 postfix_exp : primary_exp
             | postfix_exp AS type
@@ -127,17 +127,32 @@ item_access_list : item_access_list item_access
 item_access : '[' primary_exp ']'
             ;
 
-cond :  '(' cond ')'
-     | exp EQ exp
-     | exp NE exp
-     | exp LE exp
-     | exp GE exp
-     | exp '<' exp
-     | exp '>' exp
-     | '!' cond
-     | cond AND cond
-     | cond OR cond
+cond :  '(' logical_or_cond ')'
      ;
+
+negated_cond : cond
+             | '!' negated_cond
+             ;
+
+relational_cond : negated_cond
+                | exp '<' exp
+                | exp '>' exp
+	        | exp LE exp
+	        | exp GE exp
+		;
+
+equality_cond : relational_cond
+	      | exp EQ exp
+	      | exp NE exp
+              ;
+
+logical_and_cond : equality_cond
+                 | logical_and_cond AND equality_cond
+		 ;
+
+logical_or_cond : logical_and_cond
+	        | logical_or_cond OR logical_and_cond
+                ;
 
 call : ID '(' opt_exp_list ')'
      ;
