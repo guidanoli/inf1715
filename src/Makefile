@@ -1,6 +1,6 @@
 ROOT = ..
 BIN = $(ROOT)/bin
-YACC = bison -y
+YACC = bison -y -v
 LEX = flex -l
 
 .PHONY: all

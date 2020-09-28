@@ -76,33 +76,55 @@ opt_else_block : ELSE block
                ;
 
 opt_exp : exp
-        |
-        ;
+	|
+	;
 
 var : ID
-    | exp '[' exp ']'
-    | exp '.' ID
+    | primary_exp '[' exp ']'
+    | primary_exp '.' ID
     ;
 
-exp : NUMERAL
-    | var
-    | '(' exp ')'
-    | call
-    | exp AS type
-    | NEW type item_access_list
-    | '-' exp
-    | exp '+' exp
-    | exp '-' exp
-    | exp '*' exp
-    | exp '/' exp
-    | cond '?' exp ':' exp
+exp : primary_exp
+    | NEW type opt_item_access_list
     ;
+
+primary_exp : NUMERAL
+            | var
+            | call
+            | '(' conditional_exp ')'
+            ;
+
+postfix_exp : primary_exp
+            | postfix_exp AS type
+            ;
+
+unary_exp : postfix_exp
+          | '-' unary_exp
+          ;
+
+multiplicative_exp : unary_exp
+                   | multiplicative_exp '*' unary_exp
+                   | multiplicative_exp '/' unary_exp
+                   ;
+
+additive_exp : multiplicative_exp
+             | additive_exp '+' multiplicative_exp
+             | additive_exp '-' multiplicative_exp
+             ;
+
+conditional_exp : additive_exp
+                | cond '?' additive_exp ':' conditional_exp 
+                ;
+
+opt_item_access_list : item_access_list
+                     |
+		     ;
 
 item_access_list : item_access_list item_access
                  | item_access
                  ;
 
-item_access : '[' exp ']'
+item_access : '[' primary_exp ']'
             ;
 
 cond :  '(' cond ')'
@@ -117,15 +139,15 @@ cond :  '(' cond ')'
      | cond OR cond
      ;
 
-call : ID '(' opt_explist ')'
+call : ID '(' opt_exp_list ')'
      ;
 
-opt_explist : explist
-            |
-            ;
+opt_exp_list : exp_list
+	     |
+	     ;
 
-explist : explist ',' exp
-        | exp
-        ;
+exp_list : exp_list ',' exp
+	 | exp
+	 ;
 
 %%
