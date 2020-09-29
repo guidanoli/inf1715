@@ -76,8 +76,8 @@ opt_else_block : ELSE block
                ;
 
 opt_exp : exp
-	|
-	;
+        |
+        ;
 
 var : ID
     | primary_exp '[' exp ']'
@@ -90,15 +90,15 @@ primary_exp : NUMERAL
             | '(' conditional_exp ')'
             ;
 
-exp : primary_exp
-    | NEW type opt_item_access_list
-    ;
-
 postfix_exp : primary_exp
             | postfix_exp AS type
             ;
 
-unary_exp : postfix_exp
+new_exp : postfix_exp
+        | NEW type opt_item_access
+        ;
+
+unary_exp : new_exp
           | '-' unary_exp
           ;
 
@@ -116,13 +116,12 @@ conditional_exp : additive_exp
                 | cond '?' additive_exp ':' conditional_exp 
                 ;
 
-opt_item_access_list : item_access_list
-                     |
-		     ;
+exp : conditional_exp
+    ;
 
-item_access_list : item_access_list item_access
-                 | item_access
-                 ;
+opt_item_access : item_access
+                |
+                ;
 
 item_access : '[' primary_exp ']'
             ;
@@ -131,38 +130,38 @@ cond :  '(' logical_or_cond ')'
      ;
 
 negated_cond : cond
-             | '!' negated_cond
+             | '!' '(' negated_cond ')'
              ;
 
 relational_cond : negated_cond
-                | exp '<' exp
-                | exp '>' exp
-	        | exp LE exp
-	        | exp GE exp
-		;
+                | additive_exp '<' additive_exp
+                | additive_exp '>' additive_exp
+                | additive_exp LE additive_exp
+                | additive_exp GE additive_exp
+                ;
 
 equality_cond : relational_cond
-	      | exp EQ exp
-	      | exp NE exp
+              | additive_exp EQ additive_exp
+              | additive_exp NE additive_exp
               ;
 
 logical_and_cond : equality_cond
                  | logical_and_cond AND equality_cond
-		 ;
+                 ;
 
 logical_or_cond : logical_and_cond
-	        | logical_or_cond OR logical_and_cond
+                | logical_or_cond OR logical_and_cond
                 ;
 
 call : ID '(' opt_exp_list ')'
      ;
 
 opt_exp_list : exp_list
-	     |
-	     ;
+             |
+             ;
 
 exp_list : exp_list ',' exp
-	 | exp
-	 ;
+         | exp
+         ;
 
 %%
