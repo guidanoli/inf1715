@@ -87,7 +87,7 @@ var : ID
 primary_exp : NUMERAL
             | var
             | call
-            | '(' conditional_exp ')'
+            | '(' exp ')'
             ;
 
 postfix_exp : primary_exp
@@ -113,7 +113,7 @@ additive_exp : multiplicative_exp
              ;
 
 conditional_exp : additive_exp
-                | cond '?' additive_exp ':' conditional_exp 
+                | equality_cond '?' exp ':' conditional_exp 
                 ;
 
 exp : conditional_exp
