@@ -7,5 +7,5 @@ SRC = $(ROOT)/src
 tests: $(BIN)/mongatest
 	./run
 
-$(BIN)/mongatest: t.monga.c $(BIN)/lex.yy.c $(SRC)/monga.h
-	cc -I$(SRC) t.monga.c $(BIN)/lex.yy.c -o $@ $(CFLAGS)
+$(BIN)/mongatest: t.monga.c $(BIN)/monga.l.c $(BIN)/monga.y.h $(SRC)/monga.h
+	cc -I$(SRC) -I$(BIN) t.monga.c $(BIN)/monga.l.c -o $@ $(CFLAGS)

@@ -2,8 +2,10 @@
 #include <stdlib.h>
 
 #include "monga.h"
+#include "monga.y.h"
 
-monga_token_value yylval;
+extern int yylex();
+YYSTYPE yylval;
 
 int main(int argc, char** argv)
 {
