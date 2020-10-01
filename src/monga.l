@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "monga.h"
+#include "monga.y.h"
 
 static void* monga_malloc(size_t size);
 static void* monga_memdup(void* mem, int size);

@@ -1,3 +1,13 @@
+%{
+    #include <stdio.h>
+
+    /* Declare symbols from lex that yacc
+       needs in order to compile */
+    extern int yylex();
+    extern int yyparse();
+    void yyerror(const char* err);
+%}
+
 %token MONGA_TK_ID
 %token MONGA_TK_INTEGER
 %token MONGA_TK_REAL
@@ -193,3 +203,13 @@ exp_list : exp_list ',' exp
          ;
 
 %%
+
+void yyerror(const char* err)
+{
+    fprintf(stderr, "%s\n", err);
+}
+
+int main(int argc, char** argv)
+{
+    return yyparse();
+}

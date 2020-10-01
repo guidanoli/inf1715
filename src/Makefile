@@ -1,17 +1,27 @@
 ROOT = ..
 BIN = $(ROOT)/bin
-YACC = bison -y -v
+
+YACC = bison -y
 LEX = flex -l
 
-.PHONY: all
+YACC_C = $(BIN)/monga.y.c
+LEX_C = $(BIN)/monga.l.c
 
-all: $(BIN)/lex.yy.c $(BIN)/y.tab.c
+.PHONY: all clean
 
-$(BIN)/y.tab.c: monga.y | $(BIN)
-	$(YACC) $< && mv $(notdir $@) $(BIN)
+all: $(BIN)/monga
 
-$(BIN)/lex.yy.c: monga.l monga.h | $(BIN)
-	$(LEX) $< && mv $(notdir $@) $(BIN)
+clean:
+	rm $(YACC_C) $(LEX_C)
+
+$(YACC_C): monga.y | $(BIN)
+	$(YACC) --output=$@ -d $<
+
+$(LEX_C): monga.l | $(BIN)
+	$(LEX) --outfile=$@ $<
+
+$(BIN)/monga: $(LEX_C) $(YACC_C) | $(BIN)
+	$(CC) $^ -I. -o $@
 
 $(BIN):
 	mkdir -p $@

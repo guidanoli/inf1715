@@ -1,4 +1,4 @@
-.PHONY: all src tests
+.PHONY: all src tests clean
 
 all: src
 
@@ -7,3 +7,6 @@ src:
 
 tests: src
 	$(MAKE) -C tests
+
+clean:
+	$(MAKE) -C src clean
