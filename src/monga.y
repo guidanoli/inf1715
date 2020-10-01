@@ -37,20 +37,45 @@
 }
 
 %%
-program : definition_list { printf("definition_list -> program\n"); }
-        ;
+program :
 
-definition_list : definition_list definition { printf("definition_list definition -> definition_list\n"); }
-                | definition { printf("definition -> definition_list\n"); } 
-                ;
+    definition_list
+    {
+        printf("definition_list -> program\n");
+    }
 
-definition : def_variable
-           | def_function
-           | def_type
-           ;
+definition_list :
 
-def_variable : MONGA_TK_VAR MONGA_TK_ID ':' type ';'
-             ;
+    definition_list definition
+    {
+        printf("definition_list definition -> definition_list\n");
+    }
+    | definition 
+    {
+        printf("definition -> definition_list\n");
+    } 
+
+definition :
+
+    def_variable
+    {
+        printf("def_variable -> definition\n");
+    }
+    | def_function
+    {
+        printf("def_function -> definition\n");
+    }
+    | def_type
+    {
+        printf("def_type -> definition\n");
+    }
+
+def_variable :
+
+    MONGA_TK_VAR MONGA_TK_ID ':' type ';'
+    {
+        printf("var \"%.*s\" -> def_variable\n", yylval.id.size, yylval.id.str);
+    }
 
 type : MONGA_TK_ID
      ;

@@ -14,7 +14,7 @@ tester=$1
 shift
 
 # Get test case number
-tc=${1:-$(tests/count)}
+tc=${1:-$(tests/count "$tester")}
 
 # Input directory
 inputdir=tests/cases/$tester/input
