@@ -2,7 +2,11 @@
 
 # Count the number of test cases
 #
-# Usage: count
+# Usage: count tester
+
+# Tester
+tester=$1
+shift
 
 # Get number of lines
-tests/list | wc -l
+tests/list "$tester" | wc -l

@@ -2,22 +2,19 @@
 
 # Lists all test cases
 #
-# Usage: list
+# Usage: list tester
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
+# Tester
+tester=$1
+shift
 
-# Go to input folder so that file names
-# are merely numbers
-pushd $sd/cases/input > /dev/null
+# Input directory
+inputdir=tests/cases/$tester/input
 
 # Get new test case name
 file=1
-while [[ -f "$file" ]] ;
+while [[ -f "$inputdir/$file" ]] ;
 do
 	echo "$file"
 	((++file))
 done
-
-# pop directory
-popd > /dev/null

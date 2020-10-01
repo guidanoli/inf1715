@@ -2,21 +2,28 @@
 
 # Adds a new test case
 #
-# Usage: add [n]
+# Usage: add tester [n]
 #
 # n - number of test cases
 #     default: 1
+
+# Tester
+tester=$1
+shift
 
 # Number of new test cases
 n=${1:-1}
 
 # Get the last test case
-file=$(tests/count)
+file=$(tests/count "$tester")
+
+# Input directory
+inputdir=tests/cases/$tester/input
 
 # For each new test case, open editor
 while [[ $n -gt 0 ]] ;
 do
 	((++file))
-	$(tests/func edit "\"tests/cases/input/$file\"")
+	$(tests/func edit "\"$inputdir/$file\"")
 	((--n))
 done

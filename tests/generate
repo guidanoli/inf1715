@@ -3,24 +3,26 @@
 # Generate output for all the input files
 # that don't have an associated output file
 #
-# Usage: generate
+# Usage: generate tester
 
 # Tester application path
-tester=bin/monga-ldb
+tester=$1
+testerpath=bin/$tester
+shift
 
 # Candidates directory
-candidatesdir=bin/candidates
+candidatesdir=bin/candidates/$tester
 mkdir -p $candidatesdir
 
 # Test cases directories
-inputdir=tests/cases/input
-outputdir=tests/cases/output
+inputdir=tests/cases/$tester/input
+outputdir=tests/cases/$tester/output
 
 # generatedcount is the number of generated files
 generatedcnt=0
 
 # For every test case ...
-for file in $(tests/list); do
+for file in $(tests/list "$tester"); do
 
 	# Check if the output was not generated yet
 	# for the given input ($file)
@@ -29,7 +31,7 @@ for file in $(tests/list); do
 	fi
 
 	# Run test, saving the output
-	cat $inputdir/$file | $tester > $candidatesdir/$file
+	cat $inputdir/$file | $testerpath > $candidatesdir/$file
 
 	# Notify that the output has been generated...
 	printf "Generated output for test #%s...\n" "$file"

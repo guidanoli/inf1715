@@ -2,10 +2,12 @@
 
 # Run tests
 #
-# Usage: run
+# Usage: run tester
 
 # Tester application path
-tester=bin/monga-ldb
+tester=$1
+testerpath=bin/$tester
+shift
 
 # logdir is the directory where logs are
 # going to be saved
@@ -34,17 +36,17 @@ LRED='\033[1;31m'
 YELLOW='\033[0;33m'
 NOCOLOR='\033[0m'
 
-inputdir=tests/cases/input
-outputdir=tests/cases/output
+inputdir=tests/cases/$tester/input
+outputdir=tests/cases/$tester/output
 
 # For every file in cases/input ...
-for file in $(tests/list); do
+for file in $(tests/list "$tester"); do
 
 	# Notify that test will be run...
 	printf "[ TEST ] Running test #%s... " "$file"
 
 	# Run test, saving the output in the temporary directory
-	cat $inputdir/$file | $tester > $tmpdir/$file
+	cat $inputdir/$file | $testerpath > $tmpdir/$file
 
 	if [[ -f $outputdir/$file ]] ; then
 		# Compare the expected and obtained outputs and
@@ -73,7 +75,7 @@ rm -rf $tmpdir
 # Check if any tests failed and print an appropriate
 # message to summarize the test results
 if [ $failedcnt -eq 0 ] ; then
-	printf "[ TEST ] "$LGREEN"All $(tests/count) tests passed"
+	printf "[ TEST ] "$LGREEN"All $(tests/count "$tester") tests passed"
 else
 	printf "[ TEST ] "$LRED"$failedcnt test(s) failed"
 fi

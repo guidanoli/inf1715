@@ -7,11 +7,8 @@
 #
 # script - lua script
 
-# Push tests directory
-pushd tests > /dev/null
+# Export LUA_PATH
+export LUA_PATH=tests/?.lua;
 
 # Import configuration file and run script
 lua -l config -e "$1"
-
-# Pop script directory
-popd > /dev/null

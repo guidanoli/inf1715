@@ -2,19 +2,25 @@
 
 # Edits a test case
 #
-# Usage: edit [tc]
+# Usage: edit tester [tc]
+#
+# tester - tester application
 #
 # tc - test case number
 #      default: last
+
+# Tester
+tester=$1
+shift
 
 # Get test case number
 tc=${1:-$(tests/count)}
 
 # Input directory
-inputdir=tests/cases/input
+inputdir=tests/cases/$tester/input
 
 # Search through list of test cases
-for file in $(tests/list); do
+for file in $(tests/list "$tester"); do
 	# If it matches one of them...
 	if [[ $file == $tc ]] ; then
 		# ...open test case or...
