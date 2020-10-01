@@ -1,4 +1,21 @@
-%token VAR ID TYPE FUNCTION IF ELSE WHILE RETURN NUMERAL NEW AS EQ NE LE GE AND OR
+%token MONGA_TK_ID
+%token MONGA_TK_INTEGER
+%token MONGA_TK_REAL
+%token MONGA_TK_AS
+%token MONGA_TK_ELSE
+%token MONGA_TK_FUNCTION
+%token MONGA_TK_IF
+%token MONGA_TK_NEW
+%token MONGA_TK_RETURN
+%token MONGA_TK_VAR
+%token MONGA_TK_WHILE
+%token MONGA_TK_EQ
+%token MONGA_TK_NE
+%token MONGA_TK_LE
+%token MONGA_TK_GE
+%token MONGA_TK_AND
+%token MONGA_TK_OR
+%token MONGA_TK_TYPE
 %%
 program : definition_list
         ;
@@ -12,16 +29,16 @@ definition : def_variable
            | def_type
            ;
 
-def_variable : VAR ID ':' type ';'
+def_variable : MONGA_TK_VAR MONGA_TK_ID ':' type ';'
              ;
 
-type : ID
+type : MONGA_TK_ID
      ;
 
-def_type : TYPE ID '=' typedesc
+def_type : MONGA_TK_TYPE MONGA_TK_ID '=' typedesc
          ;
 
-typedesc : ID
+typedesc : MONGA_TK_ID
          | '[' typedesc ']'
          | '{' field_list '}'
          ;
@@ -30,10 +47,10 @@ field_list : field_list field
            | field
            ;
 
-field : ID ':' type ';'
+field : MONGA_TK_ID ':' type ';'
       ;
 
-def_function : FUNCTION ID '(' opt_parameter_list ')' opt_def_function_type block
+def_function : MONGA_TK_FUNCTION MONGA_TK_ID '(' opt_parameter_list ')' opt_def_function_type block
              ;
 
 opt_def_function_type : ':' type
@@ -48,7 +65,7 @@ parameter_list : parameter
                | parameter_list ',' parameter
                ;
 
-parameter : ID ':' type
+parameter : MONGA_TK_ID ':' type
           ;
 
 block : '{' def_variable_list statement_list '}'
@@ -62,16 +79,16 @@ statement_list : statement_list statement
                | statement
                ;
 
-statement : IF cond block opt_else_block
-          | WHILE cond block
+statement : MONGA_TK_IF cond block opt_else_block
+          | MONGA_TK_WHILE cond block
           | var '=' exp ';'
-          | RETURN opt_exp ';'
+          | MONGA_TK_RETURN opt_exp ';'
           | call ';'
           | '@' exp ';'
           | block
           ;
 
-opt_else_block : ELSE block
+opt_else_block : MONGA_TK_ELSE block
                |
                ;
 
@@ -79,23 +96,24 @@ opt_exp : exp
         |
         ;
 
-var : ID
+var : MONGA_TK_ID
     | primary_exp '[' exp ']'
-    | primary_exp '.' ID
+    | primary_exp '.' MONGA_TK_ID
     ;
 
-primary_exp : NUMERAL
+primary_exp : MONGA_TK_INTEGER
+            | MONGA_TK_REAL
             | var
             | call
             | '(' exp ')'
             ;
 
 postfix_exp : primary_exp
-            | postfix_exp AS type
+            | postfix_exp MONGA_TK_AS type
             ;
 
 new_exp : postfix_exp
-        | NEW type opt_item_access
+        | MONGA_TK_NEW type opt_item_access
         ;
 
 unary_exp : new_exp
@@ -136,24 +154,24 @@ negated_cond : cond
 relational_cond : negated_cond
                 | additive_exp '<' additive_exp
                 | additive_exp '>' additive_exp
-                | additive_exp LE additive_exp
-                | additive_exp GE additive_exp
+                | additive_exp MONGA_TK_LE additive_exp
+                | additive_exp MONGA_TK_GE additive_exp
                 ;
 
 equality_cond : relational_cond
-              | additive_exp EQ additive_exp
-              | additive_exp NE additive_exp
+              | additive_exp MONGA_TK_EQ additive_exp
+              | additive_exp MONGA_TK_NE additive_exp
               ;
 
 logical_and_cond : equality_cond
-                 | logical_and_cond AND equality_cond
+                 | logical_and_cond MONGA_TK_AND equality_cond
                  ;
 
 logical_or_cond : logical_and_cond
-                | logical_or_cond OR logical_and_cond
+                | logical_or_cond MONGA_TK_OR logical_and_cond
                 ;
 
-call : ID '(' opt_exp_list ')'
+call : MONGA_TK_ID '(' opt_exp_list ')'
      ;
 
 opt_exp_list : exp_list
