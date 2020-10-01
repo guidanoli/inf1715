@@ -7,27 +7,21 @@
 # tc - test case number
 #      default: last
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
 # Get test case number
-tc=${1:-$($sd/count)}
+tc=${1:-$(tests/count)}
 
-# Go to test cases directory
-pushd $sd/cases/input > /dev/null
+# Input directory
+inputdir=tests/cases/input
 
 # Search through list of test cases
-for file in $($sd/list); do
+for file in $(tests/list); do
 	# If it matches one of them...
 	if [[ $file == $tc ]] ; then
 		# ...open test case or...
-		$($sd/func edit "\"$file\"")
+		$(tests/func edit "\"$inputdir/$file\"")
 		exit 0
 	fi
 done 
-
-# Pop directory
-popd
 
 # ...notify that test case don't exist
 echo "Test case $1 doesn't exist"

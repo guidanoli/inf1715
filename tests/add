@@ -7,26 +7,16 @@
 # n - number of test cases
 #     default: 1
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
 # Number of new test cases
 n=${1:-1}
 
-# Go to input folder so that file names
-# are merely numbers
-pushd $sd/cases/input > /dev/null
-
 # Get the last test case
-file=$($sd/count)
+file=$(tests/count)
 
 # For each new test case, open editor
 while [[ $n -gt 0 ]] ;
 do
 	((++file))
-	$($sd/func edit "\"$file\"")
+	$(tests/func edit "\"tests/cases/input/$file\"")
 	((--n))
 done
-
-# pop directory
-popd > /dev/null

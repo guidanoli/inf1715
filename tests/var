@@ -8,8 +8,5 @@
 # default - default variable value
 #           default: empty string
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
 # Print global variable or default value if nil
-$sd/eval "if $1 ~= nil then print($1) else print($2) end"
+tests/eval "if $1 ~= nil then print($1) else print($2) end"

@@ -4,22 +4,12 @@
 #
 # Usage: run
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
-# Get repository root
-root=$(realpath $sd/..)
-
 # Tester application path
-tester=$root/bin/mongatest
-
-# Go to input folder so that file names
-# are merely numbers
-pushd $sd/cases/input > /dev/null
+tester=bin/monga-ldb
 
 # logdir is the directory where logs are
 # going to be saved
-logdir=$root/bin/tests
+logdir=bin/tests
 
 # Make logdir if nonexistent
 mkdir -p $logdir
@@ -44,19 +34,22 @@ LRED='\033[1;31m'
 YELLOW='\033[0;33m'
 NOCOLOR='\033[0m'
 
+inputdir=tests/cases/input
+outputdir=tests/cases/output
+
 # For every file in cases/input ...
-for file in $($sd/list); do
+for file in $(tests/list); do
 
 	# Notify that test will be run...
 	printf "[ TEST ] Running test #%s... " "$file"
 
 	# Run test, saving the output in the temporary directory
-	cat $file | $tester > $tmpdir/$file
+	cat $inputdir/$file | $tester > $tmpdir/$file
 
-	if [[ -f ../output/$file ]] ; then
+	if [[ -f $outputdir/$file ]] ; then
 		# Compare the expected and obtained outputs and
 		# redirect the diff analysis to the log directory
-		if  diff $tmpdir/$file ../output/$file > $logdir/$file ; then
+		if  diff $tmpdir/$file $outputdir/$file > $logdir/$file ; then
 			printf $LGREEN"PASSED"
 		else
 			printf $LRED"FAILED"
@@ -77,13 +70,10 @@ done
 # Remove the temporary directory
 rm -rf $tmpdir
 
-# pop directory
-popd > /dev/null
-
 # Check if any tests failed and print an appropriate
 # message to summarize the test results
 if [ $failedcnt -eq 0 ] ; then
-	printf "[ TEST ] "$LGREEN"All $($sd/count) tests passed"
+	printf "[ TEST ] "$LGREEN"All $(tests/count) tests passed"
 else
 	printf "[ TEST ] "$LRED"$failedcnt test(s) failed"
 fi

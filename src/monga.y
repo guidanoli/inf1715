@@ -37,11 +37,11 @@
 }
 
 %%
-program : definition_list
+program : definition_list { printf("definition_list -> program\n"); }
         ;
 
-definition_list : definition_list definition
-                | definition
+definition_list : definition_list definition { printf("definition_list definition -> definition_list\n"); }
+                | definition { printf("definition -> definition_list\n"); } 
                 ;
 
 definition : def_variable
@@ -55,7 +55,7 @@ def_variable : MONGA_TK_VAR MONGA_TK_ID ':' type ';'
 type : MONGA_TK_ID
      ;
 
-def_type : MONGA_TK_TYPE MONGA_TK_ID '=' typedesc
+def_type : MONGA_TK_TYPE MONGA_TK_ID '=' typedesc ';'
          ;
 
 typedesc : MONGA_TK_ID

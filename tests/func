@@ -7,17 +7,12 @@
 # func - function name
 # args... - function arguments
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
 # Function name
 func=$1
-
-# Shift all arguments by one
 shift
 
 # Joining function
 function join { local IFS="$1"; shift; echo "$*"; }
 
 # Call function
-$sd/eval "print($func($(join , "$@")))"
+tests/eval "print($func($(join , "$@")))"

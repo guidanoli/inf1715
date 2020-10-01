@@ -7,11 +7,8 @@
 #
 # script - lua script
 
-# Get script directory
-sd=$(dirname -- "$(readlink -f -- "$BASH_SOURCE")")
-
-# Push script directory
-pushd $sd > /dev/null
+# Push tests directory
+pushd tests > /dev/null
 
 # Import configuration file and run script
 lua -l config -e "$1"

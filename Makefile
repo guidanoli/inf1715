@@ -6,7 +6,7 @@ src:
 	$(MAKE) -C src
 
 tests: src
-	$(MAKE) -C tests
+	./tests/run
 
 clean:
 	$(MAKE) -C src clean
