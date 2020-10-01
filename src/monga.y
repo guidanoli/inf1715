@@ -16,6 +16,16 @@
 %token MONGA_TK_AND
 %token MONGA_TK_OR
 %token MONGA_TK_TYPE
+
+%union {
+    struct {
+        char* str;
+        int size;
+    } id;
+    int integer;
+    double real;
+}
+
 %%
 program : definition_list
         ;
