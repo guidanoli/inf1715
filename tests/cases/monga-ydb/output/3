@@ -1,0 +1,88 @@
+opt_def_variable_list opt_statement_list -> block
+function "f1" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"a" : type -> parameter
+parameter -> parameter_list
+parameter_list -> opt_parameter_list
+opt_def_variable_list opt_statement_list -> block
+function "f2" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"a" : type -> parameter
+parameter -> parameter_list
+"int" -> type
+"b" : type -> parameter
+parameter_list , parameter -> parameter_list
+parameter_list -> opt_parameter_list
+opt_def_variable_list opt_statement_list -> block
+function "f3" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"a" : type -> parameter
+parameter -> parameter_list
+"int" -> type
+"b" : type -> parameter
+parameter_list , parameter -> parameter_list
+parameter_list -> opt_parameter_list
+return opt_exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "f4" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"a" : type -> parameter
+parameter -> parameter_list
+"int" -> type
+"b" : type -> parameter
+parameter_list , parameter -> parameter_list
+parameter_list -> opt_parameter_list
+"int" -> type
+: type -> opt_def_function_type
+1 -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> opt_exp
+return opt_exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "f5" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"a" : type -> parameter
+parameter -> parameter_list
+"int" -> type
+"b" : type -> parameter
+parameter_list , parameter -> parameter_list
+parameter_list -> opt_parameter_list
+"int" -> type
+: type -> opt_def_function_type
+"int" -> type
+var "c" : type ; -> def_variable
+opt_def_variable_list def_variable -> opt_def_variable_list
+1 -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> opt_exp
+return opt_exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "f6" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+opt_definition_list -> program

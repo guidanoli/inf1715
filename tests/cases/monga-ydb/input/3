@@ -1,0 +1,6 @@
+function f1() {}
+function f2(a : int) {}
+function f3(a : int, b : int) {}
+function f4(a : int, b : int) { return; }
+function f5(a : int, b : int) : int { return 1; }
+function f6(a : int, b : int) : int { var c : int; return 1; }
