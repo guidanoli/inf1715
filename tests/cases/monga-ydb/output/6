@@ -1,0 +1,160 @@
+"int" -> type
+"x" : type -> parameter
+parameter -> parameter_list
+parameter_list -> opt_parameter_list
+"x" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+@ exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "print_int" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"x" : type -> parameter
+parameter -> parameter_list
+parameter_list -> opt_parameter_list
+"int" -> type
+: type -> opt_def_function_type
+"x" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+1 -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+additive_exp - multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> opt_exp
+return opt_exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "dec" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+"int" -> type
+"n" : type -> parameter
+parameter -> parameter_list
+parameter_list -> opt_parameter_list
+"int" -> type
+: type -> opt_def_function_type
+"int" -> type
+var "prod" : type ; -> def_variable
+opt_def_variable_list def_variable -> opt_def_variable_list
+"prod" -> var
+1 -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+var = exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+"n" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+0 -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp > additive_exp -> relational_cond
+relational_cond -> equality_cond
+equality_cond -> logical_and_cond
+logical_and_cond -> logical_or_cond
+logical_or_cond -> cond
+"prod" -> var
+"prod" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+"n" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+multiplicative_exp * unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+var = exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+"prod" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> exp_list
+exp_list -> opt_exp_list
+"print_int" ( opt_exp_list ) -> call
+call ; -> statement
+opt_statement_list statement -> opt_statement_list
+"n" -> var
+"n" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> exp_list
+exp_list -> opt_exp_list
+"dec" ( opt_exp_list ) -> call
+call -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+var = exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+while cond block -> statement
+opt_statement_list statement -> opt_statement_list
+"prod" -> var
+var -> primary_exp
+primary_exp -> postfix_exp
+postfix_exp -> new_exp
+new_exp -> unary_exp
+unary_exp -> multiplicative_exp
+multiplicative_exp -> additive_exp
+additive_exp -> conditional_exp
+conditional_exp -> exp
+exp -> opt_exp
+return opt_exp ; -> statement
+opt_statement_list statement -> opt_statement_list
+opt_def_variable_list opt_statement_list -> block
+function "fac" ( opt_parameter_list ) opt_def_function_type block -> def_function
+def_function -> definition
+opt_definition_list definition -> opt_definition_list
+opt_definition_list -> program

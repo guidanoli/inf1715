@@ -383,22 +383,22 @@ item_access :
         printf("[ primary_exp ] -> item_access\n");
     }
 
-cond :
+primary_cond :
 
-    '(' logical_or_cond ')'
+    '(' cond ')'
     {
-        printf("( logical_or_cond ) -> cond\n");
+        printf("( cond ) -> primary_cond\n");
     }
 
 negated_cond :
 
-    cond
+    primary_cond
     {
-        printf("cond -> negated_cond\n");
+        printf("primary_cond -> negated_cond\n");
     }
-    | '!' '(' negated_cond ')'
+    | '!' negated_cond
     {
-        printf("! ( negated_cond ) -> negated_cond\n");
+        printf("! negated_cond -> negated_cond\n");
     }
 
 relational_cond :
@@ -459,6 +459,13 @@ logical_or_cond :
     | logical_or_cond MONGA_TK_OR logical_and_cond
     {
         printf("logical_or_cond || logical_and_cond -> logical_or_cond\n");
+    }
+
+cond :
+
+    logical_or_cond
+    {
+        printf("logical_or_cond -> cond\n");
     }
 
 call :
