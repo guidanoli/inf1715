@@ -41,7 +41,7 @@ for i in $tcs; do
 		printf $YELLOW"Should candidate #$i be approved (y/n)? "$NOCOLOR
 		read yn
 		case $yn in
-			[Yy]* ) cp $candidatesdir/$i output;;
+			[Yy]* ) mv $candidatesdir/$i $outputdir;;
 			[Nn]* ) exit;;
 			* ) echo "Invalid input. Assumed 'n'."
 		esac

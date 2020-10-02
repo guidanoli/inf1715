@@ -1,3 +1,15 @@
 type a = int;
 type b = [int];
-type c = {
+type c = [[int]];
+type d = [{
+    x:int;
+    y:float;
+}];
+type e = [[{
+    x:int;
+    y:float;
+}]];
+type f = {
+    x : a;
+    y : b;
+};

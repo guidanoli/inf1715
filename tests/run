@@ -39,6 +39,8 @@ NOCOLOR='\033[0m'
 inputdir=tests/cases/$tester/input
 outputdir=tests/cases/$tester/output
 
+printf "[ TEST ] Testing $LGREEN%s$NOCOLOR\n" "$tester"
+
 # For every file in cases/input ...
 for file in $(tests/list "$tester"); do
 

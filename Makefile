@@ -7,6 +7,7 @@ src:
 
 tests: src
 	./tests/run monga-ldb
+	./tests/run monga-ydb
 
 clean:
 	$(MAKE) -C src clean
