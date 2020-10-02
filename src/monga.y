@@ -74,44 +74,105 @@ def_variable :
 
     MONGA_TK_VAR MONGA_TK_ID ':' type ';'
     {
-        printf("var \"%.*s\" -> def_variable\n", yylval.id.size, yylval.id.str);
+        printf("var \"%.*s\" : type ; -> def_variable\n",
+            $<id>2.size, $<id>2.str);
     }
 
-type : MONGA_TK_ID
-     ;
+type :
 
-def_type : MONGA_TK_TYPE MONGA_TK_ID '=' typedesc ';'
-         ;
+    MONGA_TK_ID
+    {
+        printf("\"%.*s\" -> type\n",
+            $<id>1.size, $<id>1.str);
+    }
 
-typedesc : MONGA_TK_ID
-         | '[' typedesc ']'
-         | '{' field_list '}'
-         ;
+def_type :
 
-field_list : field_list field
-           | field
-           ;
+    MONGA_TK_TYPE MONGA_TK_ID '=' typedesc ';'
+    {
+        printf("type \"%.*s\" = typedesc ; -> def_type\n",
+            $<id>2.size, $<id>2.str);
+    }
 
-field : MONGA_TK_ID ':' type ';'
-      ;
+typedesc :
 
-def_function : MONGA_TK_FUNCTION MONGA_TK_ID '(' opt_parameter_list ')' opt_def_function_type block
-             ;
+    MONGA_TK_ID
+    {
+        printf("\"%.*s\" -> typedesc\n",
+            $<id>1.size, $<id>1.str);
+    }
+    | '[' typedesc ']'
+    {
+        printf("[ typedesc ] -> typedesc\n");
+    }
+    | '{' field_list '}'
+    {
+        printf("{ field_list } -> typedesc\n");
+    }
 
-opt_def_function_type : ':' type
-                      |
-                      ;
+field_list :
 
-opt_parameter_list : parameter_list
-                   |
-                   ;
+    field_list field
+    {
+        printf("field_list field -> field_list\n");
+    }
+    | field
+    {
+        printf("field -> field_list\n");
+    }
 
-parameter_list : parameter
-               | parameter_list ',' parameter
-               ;
+field :
 
-parameter : MONGA_TK_ID ':' type
-          ;
+    MONGA_TK_ID ':' type ';'
+    {
+        printf("\"%.*s\" : type ; -> field\n",
+            $<id>1.size, $<id>1.str);
+    }
+
+def_function :
+
+    MONGA_TK_FUNCTION MONGA_TK_ID '(' opt_parameter_list ')' opt_def_function_type block
+    {
+        printf("function \"%.*s\" ( opt_parameter_list ) opt_def_function_type block -> def_function\n",
+            $<id>2.size, $<id>2.str);
+    }
+
+opt_def_function_type :
+
+    ':' type
+    {
+        printf(": type -> opt_def_function_type\n");
+    }
+    | /* empty */
+    ;
+
+opt_parameter_list :
+
+    parameter_list
+    {
+        printf("parameter_list -> opt_parameter_list\n");
+    }
+    | /* empty */
+    ;
+
+parameter_list :
+
+    parameter
+    {
+        printf("parameter -> parameter_list\n");
+    }
+    | parameter_list ',' parameter
+    {
+        printf("parameter_list , parameter\n")
+    }
+
+parameter :
+
+    MONGA_TK_ID ':' type
+    {
+        printf("\"%.*s\" : type -> parameter\n",
+            $<id>1.size, $<id>1.str);
+    }
 
 block : '{' def_variable_list statement_list '}'
       ;
