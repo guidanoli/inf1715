@@ -319,67 +319,175 @@ unary_exp :
         printf("- unary_exp -> unary_exp\n");
     }
 
-multiplicative_exp : unary_exp
-                   | multiplicative_exp '*' unary_exp
-                   | multiplicative_exp '/' unary_exp
-                   ;
+multiplicative_exp :
 
-additive_exp : multiplicative_exp
-             | additive_exp '+' multiplicative_exp
-             | additive_exp '-' multiplicative_exp
-             ;
+    unary_exp
+    {
+        printf("unary_exp -> multiplicative_exp\n");
+    }
+    | multiplicative_exp '*' unary_exp
+    {
+        printf("multiplicative_exp * unary_exp -> multiplicative_exp\n");
+    }
+    | multiplicative_exp '/' unary_exp
+    {
+        printf("multiplicative_exp / unary_exp -> multiplicative_exp\n");
+    }
 
-conditional_exp : additive_exp
-                | equality_cond '?' exp ':' conditional_exp 
-                ;
+additive_exp :
 
-exp : conditional_exp
+    multiplicative_exp
+    {
+        printf("multiplicative_exp -> additive_exp\n");
+    }
+    | additive_exp '+' multiplicative_exp
+    {
+        printf("additive_exp + multiplicative_exp -> additive_exp\n");
+    }
+    | additive_exp '-' multiplicative_exp
+    {
+        printf("additive_exp - multiplicative_exp -> additive_exp\n");
+    }
+
+conditional_exp :
+
+    additive_exp
+    {
+        printf("additive_exp -> conditional_exp\n");
+    }
+    | equality_cond '?' exp ':' conditional_exp 
+    {
+        printf("equality_cond ? exp : conditional_exp -> conditional_exp\n");
+    }
+
+exp :
+
+    conditional_exp
+    {
+        printf("conditional_exp -> exp\n");
+    }
+
+opt_item_access :
+
+    item_access
+    {
+        printf("item_access -> opt_item_access\n");
+    }
+    | /* empty */
     ;
 
-opt_item_access : item_access
-                |
-                ;
+item_access :
 
-item_access : '[' primary_exp ']'
-            ;
+    '[' primary_exp ']'
+    {
+        printf("[ primary_exp ] -> item_access\n");
+    }
 
-cond :  '(' logical_or_cond ')'
-     ;
+cond :
 
-negated_cond : cond
-             | '!' '(' negated_cond ')'
-             ;
+    '(' logical_or_cond ')'
+    {
+        printf("( logical_or_cond ) -> cond\n");
+    }
 
-relational_cond : negated_cond
-                | additive_exp '<' additive_exp
-                | additive_exp '>' additive_exp
-                | additive_exp MONGA_TK_LE additive_exp
-                | additive_exp MONGA_TK_GE additive_exp
-                ;
+negated_cond :
 
-equality_cond : relational_cond
-              | additive_exp MONGA_TK_EQ additive_exp
-              | additive_exp MONGA_TK_NE additive_exp
-              ;
+    cond
+    {
+        printf("cond -> negated_cond\n");
+    }
+    | '!' '(' negated_cond ')'
+    {
+        printf("! ( negated_cond ) -> negated_cond\n");
+    }
 
-logical_and_cond : equality_cond
-                 | logical_and_cond MONGA_TK_AND equality_cond
-                 ;
+relational_cond :
 
-logical_or_cond : logical_and_cond
-                | logical_or_cond MONGA_TK_OR logical_and_cond
-                ;
+    negated_cond
+    {
+        printf("negated_cond -> relational_cond\n");
+    }
+    | additive_exp '<' additive_exp
+    {
+        printf("additive_exp < additive_exp -> relational_cond\n");
+    }
+    | additive_exp '>' additive_exp
+    {
+        printf("additive_exp > additive_exp -> relational_cond\n");
+    }
+    | additive_exp MONGA_TK_LE additive_exp
+    {
+        printf("additive_exp <= additive_exp -> relational_cond\n");
+    }
+    | additive_exp MONGA_TK_GE additive_exp
+    {
+        printf("additive_exp >= additive_exp -> relational_cond\n");
+    }
 
-call : MONGA_TK_ID '(' opt_exp_list ')'
-     ;
+equality_cond :
 
-opt_exp_list : exp_list
-             |
-             ;
+    relational_cond
+    {
+        printf("relational_cond -> equality_cond\n");
+    }
+    | additive_exp MONGA_TK_EQ additive_exp
+    {
+        printf("additive_exp == additive_exp -> equality_cond\n");
+    }
+    | additive_exp MONGA_TK_NE additive_exp
+    {
+        printf("additive_exp ~= additive_exp -> equality_cond\n");
+    }
 
-exp_list : exp_list ',' exp
-         | exp
-         ;
+logical_and_cond :
+
+    equality_cond
+    {
+        printf("equality_cond -> logical_and_cond\n");
+    }
+    | logical_and_cond MONGA_TK_AND equality_cond
+    {
+        printf("logical_and_cond && equality_cond -> logical_and_cond\n");
+    }
+
+logical_or_cond :
+
+    logical_and_cond
+    {
+        printf("logical_and_cond -> logical_or_cond\n");
+    }
+    | logical_or_cond MONGA_TK_OR logical_and_cond
+    {
+        printf("logical_or_cond || logical_and_cond -> logical_or_cond\n");
+    }
+
+call :
+
+    MONGA_TK_ID '(' opt_exp_list ')'
+    {
+        printf("\"%.*s\" ( opt_exp_list ) -> call\n",
+            $<id>1.size, $<id>1.str);
+    }
+
+opt_exp_list :
+
+    exp_list
+    {
+        printf("exp_list -> opt_exp_list\n");
+    }
+    | /* empty */
+    ;
+
+exp_list :
+
+    exp_list ',' exp
+    {
+        printf("exp_list , exp -> exp_list\n");
+    }
+    | exp
+    {
+        printf("exp -> exp_list\n");
+    }
 
 %%
 
