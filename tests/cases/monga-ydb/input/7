@@ -1,0 +1,13 @@
+type inta = [int];
+type ivec = {
+    arr : inta;
+    size : int;
+};
+
+function ivec_new(n : int) : ivec {
+    var v : ivec;
+    v = new ivec;
+    v.size = n;
+    v.arr = new int [n];
+    return v;
+}
