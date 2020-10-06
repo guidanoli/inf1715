@@ -1,7 +1,7 @@
 #ifndef MONGA_H
 #define MONGA_H
 
-#include <limits.h>
+#include <stddef.h>
 
 /* Program error codes */
 typedef enum
@@ -10,5 +10,9 @@ typedef enum
 	MONGA_ERR_MALLOC,
 }
 monga_error_t;
+
+/* Utility functions */
+void* monga_malloc(size_t size);
+void* monga_memdup(void* mem, size_t size);
 
 #endif

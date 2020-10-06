@@ -5,9 +5,6 @@
 
 #include "monga.h"
 #include "monga.y.h"
-
-static void* monga_malloc(size_t size);
-static void* monga_memdup(void* mem, int size);
 %}
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
@@ -70,23 +67,3 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 }
 . { return *yytext; }
 %%
-
-void* monga_memdup(void* mem, int size)
-{
-	void* new_mem = monga_malloc(size);
-	memcpy(new_mem, mem, size);
-	return new_mem;
-}
-
-void* monga_malloc(size_t size)
-{
-	void* mem = NULL;
-#ifndef MONGA_FAIL_MALLOC
-	mem = malloc(size);
-#endif
-	if (!mem) {
-		fprintf(stderr, "Could not allocate memory.\n");
-		exit(MONGA_ERR_MALLOC);
-	}
-	return mem;
-}

@@ -4,7 +4,6 @@
     /* Declare symbols from lex that yacc
        needs in order to compile */
     extern int yylex();
-    extern int yyparse();
     void yyerror(const char* err);
 %}
 
@@ -497,13 +496,3 @@ exp_list :
     }
 
 %%
-
-void yyerror(const char* err)
-{
-    fprintf(stderr, "%s\n", err);
-}
-
-int main(int argc, char** argv)
-{
-    return yyparse();
-}
