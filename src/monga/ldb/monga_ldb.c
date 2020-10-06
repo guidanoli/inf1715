@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "monga.h"
+#include "monga_utils.h"
 #include "monga.y.h"
 
 extern int yylex();

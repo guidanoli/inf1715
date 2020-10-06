@@ -2,11 +2,14 @@
 
 # Run tests
 #
-# Usage: run tester
+# Usage: run tester tester_dir
+
+# Tester application
+tester=$1
+shift
 
 # Tester application path
-tester=$1
-testerpath=bin/$tester
+testerpath=$1/$tester
 shift
 
 # logdir is the directory where logs are

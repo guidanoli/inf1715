@@ -14,16 +14,24 @@ The goal of the project is to build a compiler for it, making use of some common
 * A good C99 compliant compiler
 * [Lex](http://dinosaur.compilertools.net/lex/index.html)
 * [Yacc](http://dinosaur.compilertools.net/yacc/index.html)
-* GNU Make
+* CMake + any supported generator
 * Bash
 
 ## Building
 
-Run `make` on the repository root.
+```sh
+mkdir build
+cd build
+cmake ..
+make
+```
 
 ## Testing
 
-Run `make tests` on the repository root.
+```sh
+tests/run monga_ldb build/src/monga/ldb
+tests/run monga_ydb build/src/monga/ydb
+```
 
 ### Adding test cases
 
@@ -34,8 +42,8 @@ Run `make tests` on the repository root.
 4. Compare the output with the input by running `tests/compare`.
 5. Check if the obtained output matches the expected output.
    * If the output matches the expected, approve it (y).
-   * If it doesn't, deny it (n). Try fixing the bug(s), run `make` and go back to step 3.
-6. Run `make tests` one more time to make sure all tests pass.
+   * If it doesn't, deny it (n). Try fixing the bug(s), compile again and go back to step 3.
+6. Run all the tests one more time just to make sure.
 
 ### Customizing
 

@@ -1,5 +1,5 @@
-#ifndef MONGA_H
-#define MONGA_H
+#ifndef MONGA_UTILS_H
+#define MONGA_UTILS_H
 
 #include <stddef.h>
 

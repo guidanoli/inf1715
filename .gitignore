@@ -1,5 +1,5 @@
-# Yacc output
-src/y.output
+# Build
+build/
 
 # Binaries
 bin/

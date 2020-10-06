@@ -3,11 +3,14 @@
 # Generate output for all the input files
 # that don't have an associated output file
 #
-# Usage: generate tester
+# Usage: generate tester tester_dir
+
+# Tester application name
+tester=$1
+shift
 
 # Tester application path
-tester=$1
-testerpath=bin/$tester
+testerpath=$1/$tester
 shift
 
 # Candidates directory

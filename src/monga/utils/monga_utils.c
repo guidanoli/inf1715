@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "monga.h"
+#include "monga_utils.h"
 
 void* monga_memdup(void* mem, size_t size)
 {
@@ -19,7 +19,7 @@ void* monga_malloc(size_t size)
 #endif
 	if (!mem) {
 		fprintf(stderr, "Could not allocate memory.\n");
-		exit(1);
+		exit(MONGA_ERR_MALLOC);
 	}
 	return mem;
 }
