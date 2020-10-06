@@ -20,13 +20,14 @@ YACC_DB = $(BIN)/monga-ydb
 GEN_C = $(LEX_C) $(YACC_C)
 GEN_H = $(YACC_H)
 GEN_O = $(GEN_C:.c=.o) $(MONGA_O) $(YACC_DB_O) $(LEX_DB_O)
+GEN_BIN = $(LEX_DB) $(YACC_DB)
 
 .PHONY: all clean
 
 all: $(LEX_DB) $(YACC_DB)
 
 clean:
-	rm -f $(GEN_C) $(GEN_H) $(GEN_O)
+	rm -f $(GEN_C) $(GEN_H) $(GEN_O) $(GEN_BIN)
 
 $(MONGA_O): monga-utils.c monga.h | $(BIN)
 	$(CC) -c $< -o $@ -I. -I$(BIN)
