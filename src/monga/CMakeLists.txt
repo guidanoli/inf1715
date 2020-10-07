@@ -40,5 +40,7 @@ add_library(monga_y STATIC
 
 target_link_libraries(monga_y monga_l)
 
+include(AddTester) # add_tester
+
 add_subdirectory(ldb)
 add_subdirectory(ydb)

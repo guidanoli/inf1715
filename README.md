@@ -19,6 +19,8 @@ The goal of the project is to build a compiler for it, making use of some common
 
 ## Building
 
+Simply run, from the project root folder:
+
 ```sh
 mkdir build
 cd build
@@ -28,9 +30,10 @@ make
 
 ## Testing
 
+Having built the binaries, still on the build directory, run:
+
 ```sh
-tests/run monga_ldb build/src/monga/ldb
-tests/run monga_ydb build/src/monga/ydb
+ctest
 ```
 
 ### Adding test cases
