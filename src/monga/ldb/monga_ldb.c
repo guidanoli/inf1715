@@ -14,8 +14,8 @@ int main(int argc, char** argv)
 	while (tk = yylex()) {
 		switch (tk) {
 			case MONGA_TK_ID:
-				printf("ID \"%.*s\"\n", yylval.id.size, yylval.id.str);
-				free(yylval.id.str);
+				printf("ID \"%s\"\n", yylval.id);
+				free(yylval.id);
 				break;
 			case MONGA_TK_INTEGER:
 				printf("INTEGER %d\n", yylval.integer);

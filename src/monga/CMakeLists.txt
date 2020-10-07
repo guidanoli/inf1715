@@ -1,4 +1,5 @@
 add_subdirectory(utils)
+add_subdirectory(ast)
 
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
@@ -38,7 +39,7 @@ add_library(monga_y STATIC
         ${BISON_OUTPUT_C}
         ${BISON_OUTPUT_H})
 
-target_link_libraries(monga_y monga_l)
+target_link_libraries(monga_y monga_l monga_ast)
 
 include(AddTester) # add_tester
 

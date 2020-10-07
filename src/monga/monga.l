@@ -45,8 +45,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 "&&" { return MONGA_TK_AND; }
 "||" { return MONGA_TK_OR; }
 {ID} {
-	yylval.id.size = yyleng;
-	yylval.id.str = monga_memdup(yytext, yyleng);
+	yylval.id = monga_memdup(yytext, yyleng);
 	return MONGA_TK_ID;
 }
 {INTEGER_DECIMAL} {

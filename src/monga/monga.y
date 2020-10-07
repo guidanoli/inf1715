@@ -27,10 +27,7 @@
 %token MONGA_TK_TYPE
 
 %union {
-    struct {
-        char* str;
-        int size;
-    } id;
+    char* id;
     int integer;
     double real;
 }
@@ -71,32 +68,28 @@ def_variable :
 
     MONGA_TK_VAR MONGA_TK_ID ':' type ';'
     {
-        printf("var \"%.*s\" : type ; -> def_variable\n",
-            $<id>2.size, $<id>2.str);
+        printf("var \"%s\" : type ; -> def_variable\n", $<id>2);
     }
 
 type :
 
     MONGA_TK_ID
     {
-        printf("\"%.*s\" -> type\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" -> type\n", $<id>1);
     }
 
 def_type :
 
     MONGA_TK_TYPE MONGA_TK_ID '=' typedesc ';'
     {
-        printf("type \"%.*s\" = typedesc ; -> def_type\n",
-            $<id>2.size, $<id>2.str);
+        printf("type \"%s\" = typedesc ; -> def_type\n", $<id>2);
     }
 
 typedesc :
 
     MONGA_TK_ID
     {
-        printf("\"%.*s\" -> typedesc\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" -> typedesc\n", $<id>1);
     }
     | '[' typedesc ']'
     {
@@ -122,16 +115,14 @@ field :
 
     MONGA_TK_ID ':' type ';'
     {
-        printf("\"%.*s\" : type ; -> field\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" : type ; -> field\n", $<id>1);
     }
 
 def_function :
 
     MONGA_TK_FUNCTION MONGA_TK_ID '(' opt_parameter_list ')' opt_def_function_type block
     {
-        printf("function \"%.*s\" ( opt_parameter_list ) opt_def_function_type block -> def_function\n",
-            $<id>2.size, $<id>2.str);
+        printf("function \"%s\" ( opt_parameter_list ) opt_def_function_type block -> def_function\n", $<id>2);
     }
 
 opt_def_function_type :
@@ -167,8 +158,7 @@ parameter :
 
     MONGA_TK_ID ':' type
     {
-        printf("\"%.*s\" : type -> parameter\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" : type -> parameter\n", $<id>1);
     }
 
 block :
@@ -249,8 +239,7 @@ var :
 
     MONGA_TK_ID
     {
-        printf("\"%.*s\" -> var\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" -> var\n", $<id>1);
     }
     | primary_exp '[' exp ']'
     {
@@ -258,8 +247,7 @@ var :
     }
     | primary_exp '.' MONGA_TK_ID
     {
-        printf("primary_exp . \"%.*s\" -> var\n",
-            $<id>3.size, $<id>3.str);
+        printf("primary_exp . \"%s\" -> var\n", $<id>3);
     }
 
 primary_exp :
@@ -471,8 +459,7 @@ call :
 
     MONGA_TK_ID '(' opt_exp_list ')'
     {
-        printf("\"%.*s\" ( opt_exp_list ) -> call\n",
-            $<id>1.size, $<id>1.str);
+        printf("\"%s\" ( opt_exp_list ) -> call\n", $<id>1);
     }
 
 opt_exp_list :
