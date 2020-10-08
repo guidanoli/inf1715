@@ -1,0 +1,74 @@
+(program
+	(def_function id="conds"
+		(parameter id="a" type="int")
+		(parameter id="b" type="int")
+		(block
+			(statement if
+				(condition ==
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition ~=
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition <=
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition >=
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition <
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition >
+					(expression variable
+						(variable "a")
+					)
+					(expression variable
+						(variable "b")
+					)
+				)
+				(block)
+			)
+		)
+	)
+)

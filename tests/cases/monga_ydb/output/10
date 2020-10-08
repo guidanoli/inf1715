@@ -1,0 +1,191 @@
+(program
+	(def_function id="conds2"
+		(parameter id="a" type="int")
+		(parameter id="b" type="int")
+		(parameter id="c" type="int")
+		(block
+			(statement if
+				(condition ||
+					(condition ==
+						(expression variable
+							(variable "a")
+						)
+						(expression variable
+							(variable "b")
+						)
+					)
+					(condition &&
+						(condition >
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "c")
+							)
+						)
+						(condition >
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition &&
+					(condition ||
+						(condition ==
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+						(condition >
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+					(condition >
+						(expression variable
+							(variable "a")
+						)
+						(expression variable
+							(variable "b")
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition ||
+					(condition ==
+						(expression variable
+							(variable "a")
+						)
+						(expression variable
+							(variable "b")
+						)
+					)
+					(condition &&
+						(condition >
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "c")
+							)
+						)
+						(condition >
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition !
+					(condition ==
+						(expression variable
+							(variable "a")
+						)
+						(expression variable
+							(variable "b")
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition !
+					(condition !
+						(condition ==
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition !
+					(condition !
+						(condition ==
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition ||
+					(condition !
+						(condition ==
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+					)
+					(condition <
+						(expression variable
+							(variable "c")
+						)
+						(expression variable
+							(variable "a")
+						)
+					)
+				)
+				(block)
+			)
+			(statement if
+				(condition !
+					(condition ||
+						(condition ==
+							(expression variable
+								(variable "a")
+							)
+							(expression variable
+								(variable "b")
+							)
+						)
+						(condition <
+							(expression variable
+								(variable "c")
+							)
+							(expression variable
+								(variable "a")
+							)
+						)
+					)
+				)
+				(block)
+			)
+		)
+	)
+)

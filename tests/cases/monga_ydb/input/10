@@ -1,0 +1,11 @@
+function conds2(a : int, b : int, c : int)
+{
+    if a == b || a > c && a > b {}
+    if (a == b || a > b) && a > b {}
+    if a == b || (a > c && a > b) {}
+    if !(a == b) {}
+    if !!(a == b) {}
+    if !(!(a == b) ) {}
+    if !(a == b) || c < a {}
+    if !(a == b || c < a) {}
+}
