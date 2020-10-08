@@ -57,14 +57,15 @@ for file in $(tests/list "$tester"); do
 		# Compare the expected and obtained outputs and
 		# redirect the diff analysis to the log directory
 		if  diff $tmpdir/$file $outputdir/$file > $logdir/$file ; then
-			printf $LGREEN"PASSED"
+			printf $LGREEN"PASSED$NOCOLOR\n"
 		else
-			printf $LRED"FAILED"
+			printf $LRED"FAILED$NOCOLOR\n"
+            echo "Diff result:"
+            cat $logdir/$file
 
 			# Increase the count of failed tests
 			((++failedcnt))
 		fi
-		printf $NOCOLOR"\n";
 	else
 		# Skip test case because output is missing 
 		printf $YELLOW"SKIPPED"$NOCOLOR" (missing output)\n"
