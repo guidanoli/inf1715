@@ -1,7 +1,7 @@
 # Abstract Syntax Tree
 
 ```
-program = (*definition)
+program = (definition*)
 
 definition : def_variable
            | def_function
@@ -19,15 +19,15 @@ id_typedesc = (id: string)
 
 array_typedesc = (typedesc)
 
-record_typedesc = (*field)
+record_typedesc = (field+)
 
 field = (id: string, type: string)
 
-def_function = (id: string, *parameter, ?type: string, block)
+def_function = (id: string, parameter*, type?: string, block)
 
 parameter = (id: string, type: string)
 
-block = (*def_variable, *statement)
+block = (def_variable*, statement*)
 
 statement : if_statement
           | while_statement
@@ -37,13 +37,13 @@ statement : if_statement
           | print_statement
           | block_statement
 
-if_statement = (cond, block, ?block)
+if_statement = (cond, block, block?)
 
 while_statement = (cond, block)
 
 assign_statement = (var, exp)
 
-return_statement = (?exp)
+return_statement = (exp?)
 
 call_statement = (call)
 
@@ -65,7 +65,7 @@ exp : integer_exp
     | call_exp
     | cast_exp
     | new_exp
-    | negation_exp
+    | negative_exp
     | addition_exp
     | subtraction_exp
     | multiplication_exp
@@ -82,9 +82,9 @@ call_exp = (call)
 
 cast_exp = (exp, type: string)
 
-new_exp = (type: string, ?exp)
+new_exp = (type: string, exp?)
 
-negation_exp = (exp)
+negative_exp = (exp)
 
 addition_exp = (exp, exp)
 
@@ -124,7 +124,7 @@ and_cond = (exp, exp)
 
 or_cond = (exp, exp)
 
-call = (id: string, *exp)
+call = (id: string, exp*)
 ```
 
 ## Legend
@@ -134,7 +134,9 @@ x = (a: y, b: z) - x is defined as a of type y and b of type z
 
 x : a | b - x is defined as a or b
 
-x = (*a, c : y) - x is defined as a list of a and c of type y
+x = (a*, c : y) - x is defined as a list of a and c of type y
 
-x = (?a, d : w) - x is defined as an optional a and d of type w
+x = (a+, c : y) - x is defined as a non-empty list of a and c of type y
+
+x = (a?, d : w) - x is defined as an optional a and d of type w
 ```

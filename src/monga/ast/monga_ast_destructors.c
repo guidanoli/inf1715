@@ -185,20 +185,11 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             monga_ast_expression_destroy(ast->negative_exp.exp);
             break;
         case MONGA_AST_EXPRESSION_ADDITION:
-            monga_ast_expression_destroy(ast->addition_exp.exp1);
-            monga_ast_expression_destroy(ast->addition_exp.exp2);
-            break;
         case MONGA_AST_EXPRESSION_SUBTRACTION:
-            monga_ast_expression_destroy(ast->subtraction_exp.exp1);
-            monga_ast_expression_destroy(ast->subtraction_exp.exp2);
-            break;
         case MONGA_AST_EXPRESSION_MULTIPLICATION:
-            monga_ast_expression_destroy(ast->multiplication_exp.exp1);
-            monga_ast_expression_destroy(ast->multiplication_exp.exp2);
-            break;
         case MONGA_AST_EXPRESSION_DIVISION:
-            monga_ast_expression_destroy(ast->division_exp.exp1);
-            monga_ast_expression_destroy(ast->division_exp.exp2);
+            monga_ast_expression_destroy(ast->binop_exp.exp1);
+            monga_ast_expression_destroy(ast->binop_exp.exp2);
             break;
         case MONGA_AST_EXPRESSION_CONDITIONAL:
             monga_ast_condition_destroy(ast->conditional_exp.cond);
@@ -217,39 +208,21 @@ void monga_ast_condition_destroy(struct monga_ast_condition_t* ast)
 {
     switch (ast->tag) {
         case MONGA_AST_CONDITION_EQ:
-            monga_ast_expression_destroy(ast->eq_cond.exp1);
-            monga_ast_expression_destroy(ast->eq_cond.exp2);
-            break;
         case MONGA_AST_CONDITION_NE:
-            monga_ast_expression_destroy(ast->ne_cond.exp1);
-            monga_ast_expression_destroy(ast->ne_cond.exp2);
-            break;
         case MONGA_AST_CONDITION_LE:
-            monga_ast_expression_destroy(ast->le_cond.exp1);
-            monga_ast_expression_destroy(ast->le_cond.exp2);
-            break;
         case MONGA_AST_CONDITION_GE:
-            monga_ast_expression_destroy(ast->ge_cond.exp1);
-            monga_ast_expression_destroy(ast->ge_cond.exp2);
-            break;
         case MONGA_AST_CONDITION_LT:
-            monga_ast_expression_destroy(ast->lt_cond.exp1);
-            monga_ast_expression_destroy(ast->lt_cond.exp2);
-            break;
         case MONGA_AST_CONDITION_GT:
-            monga_ast_expression_destroy(ast->gt_cond.exp1);
-            monga_ast_expression_destroy(ast->gt_cond.exp2);
-            break;
-        case MONGA_AST_CONDITION_NOT:
-            monga_ast_condition_destroy(ast->not_cond.cond);
+            monga_ast_expression_destroy(ast->exp_binop_cond.exp1);
+            monga_ast_expression_destroy(ast->exp_binop_cond.exp2);
             break;
         case MONGA_AST_CONDITION_AND:
-            monga_ast_condition_destroy(ast->and_cond.cond1);
-            monga_ast_condition_destroy(ast->and_cond.cond2);
-            break;
         case MONGA_AST_CONDITION_OR:
-            monga_ast_condition_destroy(ast->or_cond.cond1);
-            monga_ast_condition_destroy(ast->or_cond.cond2);
+            monga_ast_condition_destroy(ast->cond_binop_cond.cond1);
+            monga_ast_condition_destroy(ast->cond_binop_cond.cond2);
+            break;
+        case MONGA_AST_CONDITION_NOT:
+            monga_ast_condition_destroy(ast->cond_unop_cond.cond);
             break;
         default:
             monga_unreachable();

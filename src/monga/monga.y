@@ -493,16 +493,16 @@ multiplicative_exp :
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_MULTIPLICATION;
-        $$->multiplication_exp.exp1 = $1;
-        $$->multiplication_exp.exp2 = $3;
+        $$->binop_exp.exp1 = $1;
+        $$->binop_exp.exp2 = $3;
         $$->next = NULL;
     }
     | multiplicative_exp '/' unary_exp
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_DIVISION;
-        $$->division_exp.exp1 = $1;
-        $$->division_exp.exp2 = $3;
+        $$->binop_exp.exp1 = $1;
+        $$->binop_exp.exp2 = $3;
         $$->next = NULL;
     }
 
@@ -516,16 +516,16 @@ additive_exp :
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_ADDITION;
-        $$->addition_exp.exp1 = $1;
-        $$->addition_exp.exp2 = $3;
+        $$->binop_exp.exp1 = $1;
+        $$->binop_exp.exp2 = $3;
         $$->next = NULL;
     }
     | additive_exp '-' multiplicative_exp
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_SUBTRACTION;
-        $$->subtraction_exp.exp1 = $1;
-        $$->subtraction_exp.exp2 = $3;
+        $$->binop_exp.exp1 = $1;
+        $$->binop_exp.exp2 = $3;
         $$->next = NULL;
     }
 
@@ -587,7 +587,7 @@ negated_cond :
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_NOT;
-        $$->not_cond.cond = $2;
+        $$->cond_unop_cond.cond = $2;
     }
 
 relational_cond :
@@ -600,29 +600,29 @@ relational_cond :
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_LT;
-        $$->lt_cond.exp1 = $1;
-        $$->lt_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
     | additive_exp '>' additive_exp
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_GT;
-        $$->gt_cond.exp1 = $1;
-        $$->gt_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_LE additive_exp
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_LE;
-        $$->le_cond.exp1 = $1;
-        $$->le_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_GE additive_exp
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_GE;
-        $$->ge_cond.exp1 = $1;
-        $$->ge_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
 
 equality_cond :
@@ -635,15 +635,15 @@ equality_cond :
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_EQ;
-        $$->eq_cond.exp1 = $1;
-        $$->eq_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_NE additive_exp
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_NE;
-        $$->ne_cond.exp1 = $1;
-        $$->ne_cond.exp2 = $3;
+        $$->exp_binop_cond.exp1 = $1;
+        $$->exp_binop_cond.exp2 = $3;
     }
 
 logical_and_cond :
@@ -656,8 +656,8 @@ logical_and_cond :
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_AND;
-        $$->and_cond.cond1 = $1;
-        $$->and_cond.cond2 = $3;
+        $$->cond_binop_cond.cond1 = $1;
+        $$->cond_binop_cond.cond2 = $3;
     }
 
 logical_or_cond :
@@ -670,8 +670,8 @@ logical_or_cond :
     {
         $$ = construct(condition);
         $$->tag = MONGA_AST_CONDITION_OR;
-        $$->or_cond.cond1 = $1;
-        $$->or_cond.cond2 = $3;
+        $$->cond_binop_cond.cond1 = $1;
+        $$->cond_binop_cond.cond2 = $3;
     }
 
 cond :

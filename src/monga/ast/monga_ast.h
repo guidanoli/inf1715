@@ -34,38 +34,14 @@ struct monga_ast_condition_t
         struct {
             struct monga_ast_expression_t *exp1;
             struct monga_ast_expression_t *exp2;
-        } eq_cond;
+        } exp_binop_cond;
         struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } ne_cond;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } le_cond;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } ge_cond;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } lt_cond;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } gt_cond;
+            struct monga_ast_condition_t *cond1;
+            struct monga_ast_condition_t *cond2;
+        } cond_binop_cond;
         struct {
             struct monga_ast_condition_t *cond;
-        } not_cond;
-        struct {
-            struct monga_ast_condition_t *cond1;
-            struct monga_ast_condition_t *cond2;
-        } and_cond;
-        struct {
-            struct monga_ast_condition_t *cond1;
-            struct monga_ast_condition_t *cond2;
-        } or_cond;
+        } cond_unop_cond;
     };
 };
 
@@ -112,19 +88,7 @@ struct monga_ast_expression_t
         struct {
             struct monga_ast_expression_t *exp1;
             struct monga_ast_expression_t *exp2;
-        } addition_exp;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } subtraction_exp;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } multiplication_exp;
-        struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
-        } division_exp;
+        } binop_exp;
         struct {
             struct monga_ast_condition_t *cond;
             struct monga_ast_expression_t *true_exp;
@@ -279,7 +243,7 @@ extern struct monga_ast_program_t *root;
 /* Constructors */
 
 #define construct(type) \
-monga_malloc(sizeof(struct monga_ast_ ## type ## _t))
+((struct monga_ast_ ## type ## _t *) monga_malloc(sizeof(struct monga_ast_ ## type ## _t)))
 
 /* Destructors */
 
