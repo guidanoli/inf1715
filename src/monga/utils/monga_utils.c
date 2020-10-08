@@ -42,3 +42,9 @@ size_t monga_get_allocated_cnt()
 {
 	return allocated_cnt;
 }
+
+void monga_unreachable()
+{
+	fprintf(stderr, "Reached the unreachable.\n");
+	exit(MONGA_ERR_UNREACHABLE);
+}

@@ -1,81 +1,50 @@
-"int" -> typedesc
-[ typedesc ] -> typedesc
-type "inta" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"inta" -> type
-"arr" : type ; -> field
-field -> field_list
-"int" -> type
-"size" : type ; -> field
-field_list field -> field_list
-{ field_list } -> typedesc
-type "ivec" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-"n" : type -> parameter
-parameter -> parameter_list
-parameter_list -> opt_parameter_list
-"ivec" -> type
-: type -> opt_def_function_type
-"ivec" -> type
-var "v" : type ; -> def_variable
-opt_def_variable_list def_variable -> opt_def_variable_list
-"v" -> var
-"ivec" -> type
-new type opt_item_acess -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-"v" -> var
-var -> primary_exp
-primary_exp . "size" -> var
-"n" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-"v" -> var
-var -> primary_exp
-primary_exp . "arr" -> var
-"int" -> type
-"n" -> var
-var -> primary_exp
-[ primary_exp ] -> item_access
-item_access -> opt_item_access
-new type opt_item_acess -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-"v" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-exp -> opt_exp
-return opt_exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-opt_def_variable_list opt_statement_list -> block
-function "ivec_new" ( opt_parameter_list ) opt_def_function_type block -> def_function
-def_function -> definition
-opt_definition_list definition -> opt_definition_list
-opt_definition_list -> program
+(program
+	(def_type id="inta"
+		(typedesc array
+			(typedesc "int")
+		)
+	)
+	(def_type id="ivec"
+		(typedesc record
+			(field id="arr" type="inta")
+			(field id="size" type="int")
+		)
+	)
+	(def_function id="ivec_new" type="ivec"
+		(parameter id="n" type="int")
+		(block
+			(def_variable id="v" type="ivec")
+			(statement =
+				(variable "v")
+				(expression new type="ivec")
+			)
+			(statement =
+				(variable record field="size"
+					(expression variable
+						(variable "v")
+					)
+				)
+				(expression variable
+					(variable "n")
+				)
+			)
+			(statement =
+				(variable record field="arr"
+					(expression variable
+						(variable "v")
+					)
+				)
+				(expression new type="int"
+					(expression variable
+						(variable "n")
+					)
+				)
+			)
+			(statement return
+				(expression variable
+					(variable "v")
+				)
+			)
+		)
+	)
+)

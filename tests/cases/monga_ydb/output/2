@@ -1,17 +1,6 @@
-"int" -> type
-var "v1" : type ; -> def_variable
-def_variable -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-var "v2" : type ; -> def_variable
-def_variable -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-var "v3" : type ; -> def_variable
-def_variable -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-var "v4" : type ; -> def_variable
-def_variable -> definition
-opt_definition_list definition -> opt_definition_list
-opt_definition_list -> program
+(program
+	(def_variable id="v1" type="int")
+	(def_variable id="v2" type="int")
+	(def_variable id="v3" type="int")
+	(def_variable id="v4" type="int")
+)

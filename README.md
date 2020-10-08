@@ -11,11 +11,9 @@ The goal of the project is to build a compiler for it, making use of some common
 
 ## Dependencies
 
-* A good C99 compliant compiler
 * [Lex](http://dinosaur.compilertools.net/lex/index.html)
 * [Yacc](http://dinosaur.compilertools.net/yacc/index.html)
-* CMake + any supported generator
-* Bash
+* [CMake](https://cmake.org/)
 
 ## Building
 
@@ -25,7 +23,7 @@ Simply run, from the project root folder:
 mkdir build
 cd build
 cmake ..
-make
+cmake --build .
 ```
 
 ## Testing

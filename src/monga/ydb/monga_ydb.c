@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 {
     int res = yyparse();
     if (root) {
-        monga_ast_program_print(root, 0);
+        monga_ast_program_print(root);
         monga_ast_program_destroy(root);
     }
     if (monga_get_allocated_cnt() != 0) {

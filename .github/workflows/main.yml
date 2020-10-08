@@ -15,4 +15,8 @@ jobs:
 
       - name: Test
         run: |
-          make tests
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build .
+          ctest -V

@@ -478,8 +478,8 @@ unary_exp :
     | '-' unary_exp
     {
         $$ = construct(expression);
-        $$->tag = MONGA_AST_EXPRESSION_NEGATION;
-        $$->negation_exp.exp = $2;
+        $$->tag = MONGA_AST_EXPRESSION_NEGATIVE;
+        $$->negative_exp.exp = $2;
         $$->next = NULL;
     }
 

@@ -1,49 +1,41 @@
-"int" -> typedesc
-type "a" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> typedesc
-[ typedesc ] -> typedesc
-type "b" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> typedesc
-[ typedesc ] -> typedesc
-[ typedesc ] -> typedesc
-type "c" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-"x" : type ; -> field
-field -> field_list
-"float" -> type
-"y" : type ; -> field
-field_list field -> field_list
-{ field_list } -> typedesc
-[ typedesc ] -> typedesc
-type "d" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"int" -> type
-"x" : type ; -> field
-field -> field_list
-"float" -> type
-"y" : type ; -> field
-field_list field -> field_list
-{ field_list } -> typedesc
-[ typedesc ] -> typedesc
-[ typedesc ] -> typedesc
-type "e" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-"a" -> type
-"x" : type ; -> field
-field -> field_list
-"b" -> type
-"y" : type ; -> field
-field_list field -> field_list
-{ field_list } -> typedesc
-type "f" = typedesc ; -> def_type
-def_type -> definition
-opt_definition_list definition -> opt_definition_list
-opt_definition_list -> program
+(program
+	(def_type id="a"
+		(typedesc "int")
+	)
+	(def_type id="b"
+		(typedesc array
+			(typedesc "int")
+		)
+	)
+	(def_type id="c"
+		(typedesc array
+			(typedesc array
+				(typedesc "int")
+			)
+		)
+	)
+	(def_type id="d"
+		(typedesc array
+			(typedesc record
+				(field id="x" type="int")
+				(field id="y" type="float")
+			)
+		)
+	)
+	(def_type id="e"
+		(typedesc array
+			(typedesc array
+				(typedesc record
+					(field id="x" type="int")
+					(field id="y" type="float")
+				)
+			)
+		)
+	)
+	(def_type id="f"
+		(typedesc record
+			(field id="x" type="a")
+			(field id="y" type="b")
+		)
+	)
+)

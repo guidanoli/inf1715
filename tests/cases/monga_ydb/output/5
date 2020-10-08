@@ -1,95 +1,47 @@
-"int" -> type
-"n" : type -> parameter
-parameter -> parameter_list
-parameter_list -> opt_parameter_list
-"int" -> type
-: type -> opt_def_function_type
-"int" -> type
-var "sum" : type ; -> def_variable
-opt_def_variable_list def_variable -> opt_def_variable_list
-"sum" -> var
-0 -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-"n" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-0 -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp > additive_exp -> relational_cond
-relational_cond -> equality_cond
-equality_cond -> logical_and_cond
-logical_and_cond -> logical_or_cond
-logical_or_cond -> cond
-"sum" -> var
-"sum" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-"n" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-additive_exp + multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-"n" -> var
-"n" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-1 -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-additive_exp - multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-var = exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-opt_def_variable_list opt_statement_list -> block
-while cond block -> statement
-opt_statement_list statement -> opt_statement_list
-"sum" -> var
-var -> primary_exp
-primary_exp -> postfix_exp
-postfix_exp -> new_exp
-new_exp -> unary_exp
-unary_exp -> multiplicative_exp
-multiplicative_exp -> additive_exp
-additive_exp -> conditional_exp
-conditional_exp -> exp
-exp -> opt_exp
-return opt_exp ; -> statement
-opt_statement_list statement -> opt_statement_list
-opt_def_variable_list opt_statement_list -> block
-function "ap" ( opt_parameter_list ) opt_def_function_type block -> def_function
-def_function -> definition
-opt_definition_list definition -> opt_definition_list
-opt_definition_list -> program
+(program
+	(def_function id="ap" type="int"
+		(parameter id="n" type="int")
+		(block
+			(def_variable id="sum" type="int")
+			(statement =
+				(variable "sum")
+				(expression integer "0")
+			)
+			(statement while
+				(condition >
+					(expression variable
+						(variable "n")
+					)
+					(expression integer "0")
+				)
+				(block
+					(statement =
+						(variable "sum")
+						(expression +
+							(expression variable
+								(variable "sum")
+							)
+							(expression variable
+								(variable "n")
+							)
+						)
+					)
+					(statement =
+						(variable "n")
+						(expression -
+							(expression variable
+								(variable "n")
+							)
+							(expression integer "1")
+						)
+					)
+				)
+			)
+			(statement return
+				(expression variable
+					(variable "sum")
+				)
+			)
+		)
+	)
+)

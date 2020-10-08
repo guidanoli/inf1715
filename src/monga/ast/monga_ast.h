@@ -78,7 +78,7 @@ struct monga_ast_expression_t
         MONGA_AST_EXPRESSION_CALL,
         MONGA_AST_EXPRESSION_CAST,
         MONGA_AST_EXPRESSION_NEW,
-        MONGA_AST_EXPRESSION_NEGATION,
+        MONGA_AST_EXPRESSION_NEGATIVE,
         MONGA_AST_EXPRESSION_ADDITION,
         MONGA_AST_EXPRESSION_SUBTRACTION,
         MONGA_AST_EXPRESSION_MULTIPLICATION,
@@ -108,7 +108,7 @@ struct monga_ast_expression_t
         } new_exp;
         struct {
             struct monga_ast_expression_t *exp;
-        } negation_exp;
+        } negative_exp;
         struct {
             struct monga_ast_expression_t *exp1;
             struct monga_ast_expression_t *exp2;
@@ -300,7 +300,7 @@ void monga_ast_call_destroy(struct monga_ast_call_t* ast);
 
 /* Print */
 
-void monga_ast_program_print(struct monga_ast_program_t* ast, int identation);
+void monga_ast_program_print(struct monga_ast_program_t* ast);
 void monga_ast_definition_print(struct monga_ast_definition_t* ast, int identation);
 void monga_ast_def_variable_print(struct monga_ast_def_variable_t* ast, int identation);
 void monga_ast_def_type_print(struct monga_ast_def_type_t* ast, int identation);
