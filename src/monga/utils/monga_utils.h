@@ -21,4 +21,7 @@ void* monga_memdup(void* mem, size_t size);
 size_t monga_get_allocated_cnt();
 void monga_unreachable();
 
+/* Scanner */
+size_t monga_get_lineno();
+
 #endif

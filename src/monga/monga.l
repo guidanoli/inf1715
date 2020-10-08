@@ -5,6 +5,8 @@
 
 #include "monga_utils.h"
 #include "monga.y.h"
+
+static size_t monga_lineno;
 %}
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
@@ -27,7 +29,8 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 
 %option noyywrap
 %%
-[ \n\t] ;
+[\n] { ++monga_lineno; }
+[ \t] ;
 #[^\n]* ;
 "as" { return MONGA_TK_AS; }
 "else" { return MONGA_TK_ELSE; }
@@ -66,3 +69,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 }
 . { return *yytext; }
 %%
+size_t monga_get_lineno()
+{
+	return monga_lineno;
+}

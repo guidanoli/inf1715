@@ -1,24 +1,23 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "monga.y.h"
 #include "monga_ast.h"
 
 void yyerror(const char* err)
 {
-    fprintf(stderr, "%s\n", err);
+    fprintf(stderr, "%s (line %zu)\n", err, monga_get_lineno());
 }
 
 int main(int argc, char** argv)
 {
     int res = yyparse();
-    if (root) {
+    if (!res) {
         monga_ast_program_print(root);
         monga_ast_program_destroy(root);
-    }
-    if (monga_get_allocated_cnt() != 0) {
-        fprintf(stderr, "Memory leak detected.\n");
-        exit(MONGA_ERR_LEAK);
+        if (monga_get_allocated_cnt() != 0) {
+            fprintf(stderr, "Memory leak detected.\n");
+            return MONGA_ERR_LEAK;
+        }
     }
     return res;
 }

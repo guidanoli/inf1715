@@ -34,7 +34,7 @@ for file in $(tests/list "$tester"); do
 	fi
 
 	# Run test, saving the output
-	cat $inputdir/$file | $testerpath > $candidatesdir/$file
+	cat $inputdir/$file | $testerpath > $candidatesdir/$file 2>&1
 
 	# Notify that the output has been generated...
 	printf "Generated output for test #%s...\n" "$file"
