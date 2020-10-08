@@ -1,10 +1,14 @@
 %{
     #include <stdio.h>
+    #include <stdlib.h>
+
+    #include "monga_ast.h"
 
     /* Declare symbols from lex that yacc
        needs in order to compile */
     extern int yylex();
     void yyerror(const char* err);
+    struct monga_ast_program_t* root = NULL;
 %}
 
 %token MONGA_TK_ID
@@ -27,459 +31,686 @@
 %token MONGA_TK_TYPE
 
 %union {
-    char* id;
+    /* Terminals */
+    char *id;
     int integer;
     double real;
+    /* AST nodes */
+    struct monga_ast_call_t *call;
+    struct monga_ast_condition_t *condition;
+    struct monga_ast_expression_t *expression;
+    struct monga_ast_variable_t *variable;
+    struct monga_ast_statement_t *statement;
+    struct monga_ast_block_t *block;
+    struct monga_ast_parameter_t *parameter;
+    struct monga_ast_field_t *field;
+    struct monga_ast_typedesc_t *typedesc;
+    struct monga_ast_def_function_t *def_function;
+    struct monga_ast_def_type_t *def_type;
+    struct monga_ast_def_variable_t *def_variable;
+    struct monga_ast_definition_t *definition;
+    struct monga_ast_program_t *program;
 }
+
+%type <program> program
+%type <definition> definition definition_list opt_definition_list
+%type <def_variable> def_variable def_variable_list opt_def_variable_list
+%type <id> type opt_def_function_type
+%type <def_type> def_type
+%type <typedesc> typedesc
+%type <field> field field_list
+%type <def_function> def_function
+%type <parameter> parameter parameter_list opt_parameter_list
+%type <block> block opt_else_block
+%type <statement> statement statement_list opt_statement_list
+%type <expression> exp opt_exp primary_exp postfix_exp new_exp unary_exp multiplicative_exp additive_exp conditional_exp opt_item_access item_access opt_exp_list exp_list
+%type <variable> var
+%type <condition> cond primary_cond negated_cond relational_cond equality_cond logical_and_cond logical_or_cond
+%type <call> call
 
 %%
 program :
 
     opt_definition_list
     {
-        printf("opt_definition_list -> program\n");
+        $$ = construct(program);
+        $$->definitions = $1;
+        root = $$; /* saves program root */
     }
 
 opt_definition_list :
 
-    opt_definition_list definition
+    definition_list
     {
-        printf("opt_definition_list definition -> opt_definition_list\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
+
+definition_list:
+
+    definition definition_list
+    {
+        $$ = $1;
+        $$->next = $2;
+    }
+    | definition
+    {
+        $$ = $1;
+    }
 
 definition :
 
     def_variable
     {
-        printf("def_variable -> definition\n");
+        $$ = construct(definition);
+        $$->tag = MONGA_AST_DEFINITION_VARIABLE;
+        $$->def_variable = $1;
+        $$->next = NULL;
     }
     | def_function
     {
-        printf("def_function -> definition\n");
+        $$ = construct(definition);
+        $$->tag = MONGA_AST_DEFINITION_FUNCTION;
+        $$->def_function = $1;
+        $$->next = NULL;
     }
     | def_type
     {
-        printf("def_type -> definition\n");
+        $$ = construct(definition);
+        $$->tag = MONGA_AST_DEFINITION_TYPE;
+        $$->def_type = $1;
+        $$->next = NULL;
     }
 
 def_variable :
 
     MONGA_TK_VAR MONGA_TK_ID ':' type ';'
     {
-        printf("var \"%s\" : type ; -> def_variable\n", $<id>2);
+        $$ = construct(def_variable);
+        $$->id = $<id>2;
+        $$->type = $4;
+        $$->next = NULL;
     }
 
 type :
 
     MONGA_TK_ID
     {
-        printf("\"%s\" -> type\n", $<id>1);
+        $$ = $<id>1;
     }
 
 def_type :
 
     MONGA_TK_TYPE MONGA_TK_ID '=' typedesc ';'
     {
-        printf("type \"%s\" = typedesc ; -> def_type\n", $<id>2);
+        $$ = construct(def_type);
+        $$->id = $<id>2;
+        $$->typedesc = $4;
     }
 
 typedesc :
 
     MONGA_TK_ID
     {
-        printf("\"%s\" -> typedesc\n", $<id>1);
+        $$ = construct(typedesc);
+        $$->tag = MONGA_AST_TYPEDESC_ID;
+        $$->id_typedesc = $<id>1;
     }
     | '[' typedesc ']'
     {
-        printf("[ typedesc ] -> typedesc\n");
+        $$ = construct(typedesc);
+        $$->tag = MONGA_AST_TYPEDESC_ARRAY;
+        $$->array_typedesc = $2;
     }
     | '{' field_list '}'
     {
-        printf("{ field_list } -> typedesc\n");
+        $$ = construct(typedesc);
+        $$->tag = MONGA_AST_TYPEDESC_RECORD;
+        $$->record_typedesc = $2;
     }
 
 field_list :
 
-    field_list field
+    field field_list
     {
-        printf("field_list field -> field_list\n");
+        $$ = $1;
+        $$->next = $2;
     }
     | field
     {
-        printf("field -> field_list\n");
+        $$ = $1;
     }
 
 field :
 
     MONGA_TK_ID ':' type ';'
     {
-        printf("\"%s\" : type ; -> field\n", $<id>1);
+        $$ = construct(field);
+        $$->id = $<id>1;
+        $$->type = $3;
+        $$->next = NULL;
     }
 
 def_function :
 
     MONGA_TK_FUNCTION MONGA_TK_ID '(' opt_parameter_list ')' opt_def_function_type block
     {
-        printf("function \"%s\" ( opt_parameter_list ) opt_def_function_type block -> def_function\n", $<id>2);
+        $$ = construct(def_function);
+        $$->id = $<id>2;
+        $$->parameters = $4;
+        $$->type = $6;
+        $$->block = $7;
     }
 
 opt_def_function_type :
 
     ':' type
     {
-        printf(": type -> opt_def_function_type\n");
+        $$ = $2;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 opt_parameter_list :
 
     parameter_list
     {
-        printf("parameter_list -> opt_parameter_list\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 parameter_list :
 
-    parameter_list ',' parameter
+    parameter ',' parameter_list
     {
-        printf("parameter_list , parameter -> parameter_list\n");
+        $$ = $1;
+        $$->next = $3;
     }
     | parameter
     {
-        printf("parameter -> parameter_list\n");
+        $$ = $1;
     }
 
 parameter :
 
     MONGA_TK_ID ':' type
     {
-        printf("\"%s\" : type -> parameter\n", $<id>1);
+        $$ = construct(parameter);
+        $$->id = $<id>1;
+        $$->type = $3;
     }
 
 block :
 
     '{' opt_def_variable_list opt_statement_list '}'
     {
-        printf("opt_def_variable_list opt_statement_list -> block\n");
+        $$ = construct(block);
+        $$->variables = $2;
+        $$->statements = $3;
     }
 
 opt_def_variable_list :
 
-    opt_def_variable_list def_variable
+    def_variable_list
     {
-        printf("opt_def_variable_list def_variable -> opt_def_variable_list\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
+
+def_variable_list :
+
+    def_variable def_variable_list
+    {
+        $$ = $1;
+        $$->next = $2;
+    }
+    | def_variable
+    {
+        $$ = $1;
+    }
 
 opt_statement_list :
 
-    opt_statement_list statement
+    statement_list
     {
-        printf("opt_statement_list statement -> opt_statement_list\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
+
+statement_list :
+
+    statement statement_list
+    {
+        $$ = $1;
+        $$->next = $2;
+    }
+    | statement
+    {
+        $$ = $1;
+    }
 
 statement :
 
     MONGA_TK_IF cond block opt_else_block
     {
-        printf("if cond block opt_else_block -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_IF;
+        $$->if_stmt.cond = $2;
+        $$->if_stmt.then_block = $3;
+        $$->if_stmt.else_block = $4;
+        $$->next = NULL;
     }
     | MONGA_TK_WHILE cond block
     {
-        printf("while cond block -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_WHILE;
+        $$->while_stmt.cond = $2;
+        $$->while_stmt.loop = $3;
+        $$->next = NULL;
     }
     | var '=' exp ';'
     {
-        printf("var = exp ; -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_ASSIGN;
+        $$->assign_stmt.var = $1;
+        $$->assign_stmt.exp = $3;
+        $$->next = NULL;
     }
     | MONGA_TK_RETURN opt_exp ';'
     {
-        printf("return opt_exp ; -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_RETURN;
+        $$->return_stmt.exp = $2;
+        $$->next = NULL;
     }
     | call ';'
     {
-        printf("call ; -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_CALL;
+        $$->call_stmt.call = $1;
+        $$->next = NULL;
     }
     | '@' exp ';'
     {
-        printf("@ exp ; -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_PRINT;
+        $$->print_stmt.exp = $2;
+        $$->next = NULL;
     }
     | block
     {
-        printf("block -> statement\n");
+        $$ = construct(statement);
+        $$->tag = MONGA_AST_STATEMENT_BLOCK;
+        $$->block_stmt.block = $1;
+        $$->next = NULL;
     }
 
 opt_else_block :
 
     MONGA_TK_ELSE block
     {
-        printf("else block -> opt_else_block\n");
+        $$ = $2;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 opt_exp :
 
     exp
     {
-        printf("exp -> opt_exp\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 var :
 
     MONGA_TK_ID
     {
-        printf("\"%s\" -> var\n", $<id>1);
+        $$ = construct(variable);
+        $$->tag = MONGA_AST_VARIABLE_ID;
+        $$->id_var.id = $<id>1;
     }
     | primary_exp '[' exp ']'
     {
-        printf("primary_exp [ exp ] -> var\n");
+        $$ = construct(variable);
+        $$->tag = MONGA_AST_VARIABLE_ARRAY;
+        $$->array_var.array = $1;
+        $$->array_var.index = $3;
     }
     | primary_exp '.' MONGA_TK_ID
     {
-        printf("primary_exp . \"%s\" -> var\n", $<id>3);
+        $$ = construct(variable);
+        $$->tag = MONGA_AST_VARIABLE_RECORD;
+        $$->record_var.record = $1;
+        $$->record_var.field = $<id>3;
     }
 
 primary_exp :
 
     MONGA_TK_INTEGER
     {
-        printf("%d -> primary_exp\n", $<integer>1);
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_INTEGER;
+        $$->integer_exp.integer = $<integer>1;
+        $$->next = NULL;
     }
     | MONGA_TK_REAL
     {
-        printf("%g -> primary_exp\n", $<real>1);
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_REAL;
+        $$->real_exp.real = $<real>1;
+        $$->next = NULL;
     }
     | var
     {
-        printf("var -> primary_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_VAR;
+        $$->var_exp.var = $1;
+        $$->next = NULL;
     }
     | call
     {
-        printf("call -> primary_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_CALL;
+        $$->call_exp.call = $1;
+        $$->next = NULL;
     }
     | '(' exp ')'
     {
-        printf("( exp ) -> primary_exp\n");
+        $$ = $2;
     }
 
 postfix_exp :
 
     primary_exp
     {
-        printf("primary_exp -> postfix_exp\n");
+        $$ = $1;
     }
     | postfix_exp MONGA_TK_AS type
     {
-        printf("postfix_exp as type -> postfix_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_CAST;
+        $$->cast_exp.exp = $1;
+        $$->cast_exp.type = $3;
+        $$->next = NULL;
     }
 
 new_exp :
 
     postfix_exp
     {
-        printf("postfix_exp -> new_exp\n");
+        $$ = $1;
     }
     | MONGA_TK_NEW type opt_item_access
     {
-        printf("new type opt_item_acess -> new_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_NEW;
+        $$->new_exp.type = $2;
+        $$->new_exp.exp = $3;
+        $$->next = NULL;
     }
 
 unary_exp :
 
     new_exp
     {
-        printf("new_exp -> unary_exp\n");
+        $$ = $1;
     }
     | '-' unary_exp
     {
-        printf("- unary_exp -> unary_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_NEGATION;
+        $$->negation_exp.exp = $2;
+        $$->next = NULL;
     }
 
 multiplicative_exp :
 
     unary_exp
     {
-        printf("unary_exp -> multiplicative_exp\n");
+        $$ = $1;
     }
     | multiplicative_exp '*' unary_exp
     {
-        printf("multiplicative_exp * unary_exp -> multiplicative_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_MULTIPLICATION;
+        $$->multiplication_exp.exp1 = $1;
+        $$->multiplication_exp.exp2 = $3;
+        $$->next = NULL;
     }
     | multiplicative_exp '/' unary_exp
     {
-        printf("multiplicative_exp / unary_exp -> multiplicative_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_DIVISION;
+        $$->division_exp.exp1 = $1;
+        $$->division_exp.exp2 = $3;
+        $$->next = NULL;
     }
 
 additive_exp :
 
     multiplicative_exp
     {
-        printf("multiplicative_exp -> additive_exp\n");
+        $$ = $1;
     }
     | additive_exp '+' multiplicative_exp
     {
-        printf("additive_exp + multiplicative_exp -> additive_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_ADDITION;
+        $$->addition_exp.exp1 = $1;
+        $$->addition_exp.exp2 = $3;
+        $$->next = NULL;
     }
     | additive_exp '-' multiplicative_exp
     {
-        printf("additive_exp - multiplicative_exp -> additive_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_SUBTRACTION;
+        $$->subtraction_exp.exp1 = $1;
+        $$->subtraction_exp.exp2 = $3;
+        $$->next = NULL;
     }
 
 conditional_exp :
 
     additive_exp
     {
-        printf("additive_exp -> conditional_exp\n");
+        $$ = $1;
     }
     | equality_cond '?' exp ':' conditional_exp 
     {
-        printf("equality_cond ? exp : conditional_exp -> conditional_exp\n");
+        $$ = construct(expression);
+        $$->tag = MONGA_AST_EXPRESSION_CONDITIONAL;
+        $$->conditional_exp.cond = $1;
+        $$->conditional_exp.true_exp = $3;
+        $$->conditional_exp.false_exp = $5;
+        $$->next = NULL;
     }
 
 exp :
 
     conditional_exp
     {
-        printf("conditional_exp -> exp\n");
+        $$ = $1;
     }
 
 opt_item_access :
 
     item_access
     {
-        printf("item_access -> opt_item_access\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 item_access :
 
     '[' primary_exp ']'
     {
-        printf("[ primary_exp ] -> item_access\n");
+        $$ = $2;
     }
 
 primary_cond :
 
     '(' cond ')'
     {
-        printf("( cond ) -> primary_cond\n");
+        $$ = $2;
     }
 
 negated_cond :
 
     primary_cond
     {
-        printf("primary_cond -> negated_cond\n");
+        $$ = $1;
     }
     | '!' negated_cond
     {
-        printf("! negated_cond -> negated_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_NOT;
+        $$->not_cond.cond = $2;
     }
 
 relational_cond :
 
     negated_cond
     {
-        printf("negated_cond -> relational_cond\n");
+        $$ = $1;
     }
     | additive_exp '<' additive_exp
     {
-        printf("additive_exp < additive_exp -> relational_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_LT;
+        $$->lt_cond.exp1 = $1;
+        $$->lt_cond.exp2 = $3;
     }
     | additive_exp '>' additive_exp
     {
-        printf("additive_exp > additive_exp -> relational_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_GT;
+        $$->gt_cond.exp1 = $1;
+        $$->gt_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_LE additive_exp
     {
-        printf("additive_exp <= additive_exp -> relational_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_LE;
+        $$->le_cond.exp1 = $1;
+        $$->le_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_GE additive_exp
     {
-        printf("additive_exp >= additive_exp -> relational_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_GE;
+        $$->ge_cond.exp1 = $1;
+        $$->ge_cond.exp2 = $3;
     }
 
 equality_cond :
 
     relational_cond
     {
-        printf("relational_cond -> equality_cond\n");
+        $$ = $1;
     }
     | additive_exp MONGA_TK_EQ additive_exp
     {
-        printf("additive_exp == additive_exp -> equality_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_EQ;
+        $$->eq_cond.exp1 = $1;
+        $$->eq_cond.exp2 = $3;
     }
     | additive_exp MONGA_TK_NE additive_exp
     {
-        printf("additive_exp ~= additive_exp -> equality_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_NE;
+        $$->ne_cond.exp1 = $1;
+        $$->ne_cond.exp2 = $3;
     }
 
 logical_and_cond :
 
     equality_cond
     {
-        printf("equality_cond -> logical_and_cond\n");
+        $$ = $1;
     }
     | logical_and_cond MONGA_TK_AND equality_cond
     {
-        printf("logical_and_cond && equality_cond -> logical_and_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_AND;
+        $$->and_cond.cond1 = $1;
+        $$->and_cond.cond2 = $3;
     }
 
 logical_or_cond :
 
     logical_and_cond
     {
-        printf("logical_and_cond -> logical_or_cond\n");
+        $$ = $1;
     }
     | logical_or_cond MONGA_TK_OR logical_and_cond
     {
-        printf("logical_or_cond || logical_and_cond -> logical_or_cond\n");
+        $$ = construct(condition);
+        $$->tag = MONGA_AST_CONDITION_OR;
+        $$->or_cond.cond1 = $1;
+        $$->or_cond.cond2 = $3;
     }
 
 cond :
 
     logical_or_cond
     {
-        printf("logical_or_cond -> cond\n");
+        $$ = $1;
     }
 
 call :
 
     MONGA_TK_ID '(' opt_exp_list ')'
     {
-        printf("\"%s\" ( opt_exp_list ) -> call\n", $<id>1);
+        $$ = construct(call);
+        $$->function_id = $<id>1;
+        $$->expressions = $3;
     }
 
 opt_exp_list :
 
     exp_list
     {
-        printf("exp_list -> opt_exp_list\n");
+        $$ = $1;
     }
     | /* empty */
-    ;
+    {
+        $$ = NULL;
+    }
 
 exp_list :
 
-    exp_list ',' exp
+    exp ',' exp_list
     {
-        printf("exp_list , exp -> exp_list\n");
+        $$ = $1;
+        $$->next = $3;
     }
     | exp
     {
-        printf("exp -> exp_list\n");
+        $$ = $1;
     }
 
 %%

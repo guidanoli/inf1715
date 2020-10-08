@@ -1,18 +1,24 @@
 #ifndef MONGA_AST_H
 #define MONGA_AST_H
 
+#include "monga_utils.h"
+
 /* Incomplete types */
+
 struct monga_ast_def_variable_t;
 struct monga_ast_block_t;
 struct monga_ast_expression_t;
 
-struct {
+/* Type definitions */
+
+struct monga_ast_call_t
+{
     char *function_id;
-    struct monga_ast_expression_t *parameters;
+    struct monga_ast_expression_t *expressions; /* nullable */
+};
 
-} monga_ast_call_t;
-
-struct {
+struct monga_ast_condition_t
+{
     enum {
         MONGA_AST_CONDITION_EQ,
         MONGA_AST_CONDITION_NE,
@@ -50,20 +56,21 @@ struct {
             struct monga_ast_expression_t *exp2;
         } gt_cond;
         struct {
-            struct monga_ast_expression_t *exp;
+            struct monga_ast_condition_t *cond;
         } not_cond;
         struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
+            struct monga_ast_condition_t *cond1;
+            struct monga_ast_condition_t *cond2;
         } and_cond;
         struct {
-            struct monga_ast_expression_t *exp1;
-            struct monga_ast_expression_t *exp2;
+            struct monga_ast_condition_t *cond1;
+            struct monga_ast_condition_t *cond2;
         } or_cond;
     };
-} monga_ast_condition_t;
+};
 
-struct {
+struct monga_ast_expression_t
+{
     enum {
         MONGA_AST_EXPRESSION_INTEGER,
         MONGA_AST_EXPRESSION_REAL,
@@ -97,7 +104,7 @@ struct {
         } cast_exp;
         struct {
             char *type;
-            struct monga_ast_expression_t *size; /* nullable */
+            struct monga_ast_expression_t *exp; /* nullable */
         } new_exp;
         struct {
             struct monga_ast_expression_t *exp;
@@ -125,9 +132,10 @@ struct {
         } conditional_exp;
     };
     struct monga_ast_expression_t *next; /* nullable */
-} monga_ast_expression_t;
+};
 
-struct {
+struct monga_ast_variable_t
+{
     enum {
         MONGA_AST_VARIABLE_ID,
         MONGA_AST_VARIABLE_ARRAY,
@@ -144,15 +152,16 @@ struct {
         struct {
             struct monga_ast_expression_t *record;
             char *field;
-        };
+        } record_var;
     };
-} monga_ast_variable_t;
+};
 
-struct {
+struct monga_ast_statement_t
+{
     enum {
         MONGA_AST_STATEMENT_IF,
         MONGA_AST_STATEMENT_WHILE,
-        MONGA_AST_STATEMENT_ASSIGNMENT,
+        MONGA_AST_STATEMENT_ASSIGN,
         MONGA_AST_STATEMENT_RETURN,
         MONGA_AST_STATEMENT_CALL,
         MONGA_AST_STATEMENT_PRINT,
@@ -185,26 +194,31 @@ struct {
             struct monga_ast_block_t* block;
         } block_stmt;
     };
-} monga_ast_statement_t;
+    struct monga_ast_statement_t *next; /* nullable */
+};
 
-struct {
-    struct monga_ast_def_variable_t *variables;
-    struct monga_ast_statement_t *statements;
-} monga_ast_block_t;
+struct monga_ast_block_t
+{
+    struct monga_ast_def_variable_t *variables; /* nullable */
+    struct monga_ast_statement_t *statements; /* nullable */
+};
 
-struct {
+struct monga_ast_parameter_t
+{
     char *id;
     char *type;
     struct monga_ast_parameter_t *next; /* nullable */
-} monga_ast_parameter_t;
+};
 
-struct {
+struct monga_ast_field_t
+{
     char *id;
     char *type;
     struct monga_ast_field_t *next; /* nullable */
-} monga_ast_field_t;
+};
 
-struct {
+struct monga_ast_typedesc_t
+{
     enum {
         MONGA_AST_TYPEDESC_ID,
         MONGA_AST_TYPEDESC_ARRAY,
@@ -215,27 +229,31 @@ struct {
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_t* record_typedesc;
     };
-} monga_ast_typedesc_t;
+};
 
-struct {
+struct monga_ast_def_function_t
+{
     char *id;
     struct monga_ast_parameter_t *parameters; /* nullable */
     char *type; /* nullable */
     struct monga_ast_block_t *block;
-} monga_ast_def_function_t;
+};
 
-struct {
+struct monga_ast_def_type_t
+{
     char *id;
     struct monga_ast_typedesc_t *typedesc;
-} monga_ast_def_type_t;
+};
 
-struct {
+struct monga_ast_def_variable_t
+{
     char *id;
     char *type;
     struct monga_ast_def_variable_t *next; /* nullable */
-} monga_ast_def_variable_t;
+};
 
-struct {
+struct monga_ast_definition_t
+{
     enum {
         MONGA_AST_DEFINITION_VARIABLE,
         MONGA_AST_DEFINITION_TYPE,
@@ -247,10 +265,54 @@ struct {
         struct monga_ast_def_function_t *def_function;
     };
     struct monga_ast_definition_t *next; /* nullable */
-} monga_ast_definition_t;
+};
 
-struct {
+struct monga_ast_program_t
+{
     struct monga_ast_definition_t *definitions; /* nullable */
-} monga_ast_program_t;
+};
+
+/* Program root */
+
+extern struct monga_ast_program_t *root;
+
+/* Constructors */
+
+#define construct(type) \
+monga_malloc(sizeof(struct monga_ast_ ## type ## _t))
+
+/* Destructors */
+
+void monga_ast_program_destroy(struct monga_ast_program_t* ast);
+void monga_ast_definition_destroy(struct monga_ast_definition_t* ast);
+void monga_ast_def_variable_destroy(struct monga_ast_def_variable_t* ast);
+void monga_ast_def_type_destroy(struct monga_ast_def_type_t* ast);
+void monga_ast_def_function_destroy(struct monga_ast_def_function_t* ast);
+void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast);
+void monga_ast_field_destroy(struct monga_ast_field_t* ast);
+void monga_ast_parameter_destroy(struct monga_ast_parameter_t* ast);
+void monga_ast_block_destroy(struct monga_ast_block_t* ast);
+void monga_ast_statement_destroy(struct monga_ast_statement_t* ast);
+void monga_ast_variable_destroy(struct monga_ast_variable_t* ast);
+void monga_ast_expression_destroy(struct monga_ast_expression_t* ast);
+void monga_ast_condition_destroy(struct monga_ast_condition_t* ast);
+void monga_ast_call_destroy(struct monga_ast_call_t* ast);
+
+/* Print */
+
+void monga_ast_program_print(struct monga_ast_program_t* ast, int identation);
+void monga_ast_definition_print(struct monga_ast_definition_t* ast, int identation);
+void monga_ast_def_variable_print(struct monga_ast_def_variable_t* ast, int identation);
+void monga_ast_def_type_print(struct monga_ast_def_type_t* ast, int identation);
+void monga_ast_def_function_print(struct monga_ast_def_function_t* ast, int identation);
+void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation);
+void monga_ast_field_print(struct monga_ast_field_t* ast, int identation);
+void monga_ast_parameter_print(struct monga_ast_parameter_t* ast, int identation);
+void monga_ast_block_print(struct monga_ast_block_t* ast, int identation);
+void monga_ast_statement_print(struct monga_ast_statement_t* ast, int identation);
+void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation);
+void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identation);
+void monga_ast_condition_print(struct monga_ast_condition_t* ast, int identation);
+void monga_ast_call_print(struct monga_ast_call_t* ast, int identation);
 
 #endif

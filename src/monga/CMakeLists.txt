@@ -13,6 +13,7 @@ if (BISON_FOUND)
             --output=${BISON_OUTPUT_C}
             -d
             ${CMAKE_CURRENT_SOURCE_DIR}/monga.y
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/monga.y
             COMMENT "Generating monga.y.c and monga.y.h")
 endif ()
 
@@ -23,6 +24,7 @@ if (FLEX_FOUND)
             COMMAND ${FLEX_EXECUTABLE}
             --outfile=${FLEX_OUTPUT}
             ${CMAKE_CURRENT_SOURCE_DIR}/monga.l
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/monga.l
             COMMENT "Generating monga.l.c")
 endif ()
 
