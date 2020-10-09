@@ -12,7 +12,7 @@ void monga_ast_program_print(struct monga_ast_program_t* ast)
 {
     if (ast->definitions) {
         printf("(program\n");
-        monga_ast_definition_print(ast->definitions, 1);
+        monga_ast_definition_print(ast->definitions->first, 1);
         printf(")\n");
     } else {
         printf("(program)\n");
@@ -63,7 +63,7 @@ void monga_ast_def_function_print(struct monga_ast_def_function_t* ast, int iden
         printf(" type=\"%s\"", ast->type);
     printf("\n");
     if (ast->parameters)
-        monga_ast_parameter_print(ast->parameters, identation+1);
+        monga_ast_parameter_print(ast->parameters->first, identation+1);
     monga_ast_block_print(ast->block, identation+1);
     monga_ast_print_identation(identation);
     printf(")\n");
@@ -83,7 +83,7 @@ void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation)
             break;
         case MONGA_AST_TYPEDESC_RECORD:
             printf("record\n");
-            monga_ast_field_print(ast->record_typedesc, identation+1);
+            monga_ast_field_print(ast->record_typedesc->first, identation+1);
             break;
         default:
             monga_unreachable();
@@ -114,9 +114,9 @@ void monga_ast_block_print(struct monga_ast_block_t* ast, int identation)
     if (ast->variables || ast->statements) {
         printf("(block\n");
         if (ast->variables)
-            monga_ast_def_variable_print(ast->variables, identation+1);
+            monga_ast_def_variable_print(ast->variables->first, identation+1);
         if (ast->statements)
-            monga_ast_statement_print(ast->statements, identation+1);
+            monga_ast_statement_print(ast->statements->first, identation+1);
         monga_ast_print_identation(identation);
         printf(")\n");
     } else {
@@ -351,7 +351,7 @@ void monga_ast_call_print(struct monga_ast_call_t* ast, int identation)
     monga_ast_print_identation(identation);
     if (ast->expressions) {
         printf("(call function=\"%s\"\n", ast->function_id);
-        monga_ast_expression_print(ast->expressions, identation+1);
+        monga_ast_expression_print(ast->expressions->first, identation+1);
         monga_ast_print_identation(identation);
         printf(")\n");
     } else {

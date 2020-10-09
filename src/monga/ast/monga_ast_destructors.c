@@ -4,8 +4,10 @@
 
 void monga_ast_program_destroy(struct monga_ast_program_t* ast)
 {
-    if (ast->definitions)
-        monga_ast_definition_destroy(ast->definitions);
+    if (ast->definitions) {
+        monga_ast_definition_destroy(ast->definitions->first);
+        monga_free(ast->definitions);
+    }
     monga_free(ast);
 }
 
@@ -48,8 +50,10 @@ void monga_ast_def_type_destroy(struct monga_ast_def_type_t* ast)
 void monga_ast_def_function_destroy(struct monga_ast_def_function_t* ast)
 {
     monga_free(ast->id);
-    if (ast->parameters)
-        monga_ast_parameter_destroy(ast->parameters);
+    if (ast->parameters) {
+        monga_ast_parameter_destroy(ast->parameters->first);
+        monga_free(ast->parameters);
+    }
     if (ast->type)
         monga_free(ast->type);
     monga_ast_block_destroy(ast->block);
@@ -66,7 +70,8 @@ void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast)
             monga_ast_typedesc_destroy(ast->array_typedesc);
             break;
         case MONGA_AST_TYPEDESC_RECORD:
-            monga_ast_field_destroy(ast->record_typedesc);
+            monga_ast_field_destroy(ast->record_typedesc->first);
+            monga_free(ast->record_typedesc);
             break;
         default:
             monga_unreachable();
@@ -94,10 +99,14 @@ void monga_ast_parameter_destroy(struct monga_ast_parameter_t* ast)
 
 void monga_ast_block_destroy(struct monga_ast_block_t* ast)
 {
-    if (ast->variables)
-        monga_ast_def_variable_destroy(ast->variables);
-    if (ast->statements)
-        monga_ast_statement_destroy(ast->statements);
+    if (ast->variables) {
+        monga_ast_def_variable_destroy(ast->variables->first);
+        monga_free(ast->variables);
+    }
+    if (ast->statements) {
+        monga_ast_statement_destroy(ast->statements->first);
+        monga_free(ast->statements);
+    }
     monga_free(ast);
 }
 
@@ -233,7 +242,9 @@ void monga_ast_condition_destroy(struct monga_ast_condition_t* ast)
 void monga_ast_call_destroy(struct monga_ast_call_t* ast)
 {
     monga_free(ast->function_id);
-    if (ast->expressions)
-        monga_ast_expression_destroy(ast->expressions);
+    if (ast->expressions) {
+        monga_ast_expression_destroy(ast->expressions->first);
+        monga_free(ast->expressions);
+    }
     monga_free(ast);
 }

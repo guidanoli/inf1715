@@ -11,10 +11,16 @@ struct monga_ast_expression_t;
 
 /* Type definitions */
 
+struct monga_ast_expression_list_t
+{
+    struct monga_ast_expression_t *first;
+    struct monga_ast_expression_t *last;
+};
+
 struct monga_ast_call_t
 {
     char *function_id;
-    struct monga_ast_expression_t *expressions; /* nullable */
+    struct monga_ast_expression_list_t *expressions; /* nullable */
 };
 
 struct monga_ast_condition_t
@@ -161,10 +167,22 @@ struct monga_ast_statement_t
     struct monga_ast_statement_t *next; /* nullable */
 };
 
+struct monga_ast_def_variable_list_t
+{
+    struct monga_ast_def_variable_t *first;
+    struct monga_ast_def_variable_t *last;
+};
+
+struct monga_ast_statement_list_t
+{
+    struct monga_ast_statement_t *first;
+    struct monga_ast_statement_t *last;
+};
+
 struct monga_ast_block_t
 {
-    struct monga_ast_def_variable_t *variables; /* nullable */
-    struct monga_ast_statement_t *statements; /* nullable */
+    struct monga_ast_def_variable_list_t *variables; /* nullable */
+    struct monga_ast_statement_list_t *statements; /* nullable */
 };
 
 struct monga_ast_parameter_t
@@ -181,6 +199,12 @@ struct monga_ast_field_t
     struct monga_ast_field_t *next; /* nullable */
 };
 
+struct monga_ast_field_list_t
+{
+    struct monga_ast_field_t *first;
+    struct monga_ast_field_t *last;
+};
+
 struct monga_ast_typedesc_t
 {
     enum {
@@ -191,14 +215,20 @@ struct monga_ast_typedesc_t
     union {
         char* id_typedesc;
         struct monga_ast_typedesc_t* array_typedesc;
-        struct monga_ast_field_t* record_typedesc;
+        struct monga_ast_field_list_t* record_typedesc;
     };
+};
+
+struct monga_ast_parameter_list_t
+{
+    struct monga_ast_parameter_t *first;
+    struct monga_ast_parameter_t *last;
 };
 
 struct monga_ast_def_function_t
 {
     char *id;
-    struct monga_ast_parameter_t *parameters; /* nullable */
+    struct monga_ast_parameter_list_t *parameters; /* nullable */
     char *type; /* nullable */
     struct monga_ast_block_t *block;
 };
@@ -231,9 +261,15 @@ struct monga_ast_definition_t
     struct monga_ast_definition_t *next; /* nullable */
 };
 
+struct monga_ast_definition_list_t
+{
+    struct monga_ast_definition_t *first;
+    struct monga_ast_definition_t *last;
+};
+
 struct monga_ast_program_t
 {
-    struct monga_ast_definition_t *definitions; /* nullable */
+    struct monga_ast_definition_list_t *definitions; /* nullable */
 };
 
 /* Program root */

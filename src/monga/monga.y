@@ -39,31 +39,43 @@
     struct monga_ast_call_t *call;
     struct monga_ast_condition_t *condition;
     struct monga_ast_expression_t *expression;
+    struct monga_ast_expression_list_t *expression_list;
     struct monga_ast_variable_t *variable;
     struct monga_ast_statement_t *statement;
+    struct monga_ast_statement_list_t *statement_list;
     struct monga_ast_block_t *block;
     struct monga_ast_parameter_t *parameter;
+    struct monga_ast_parameter_list_t *parameter_list;
     struct monga_ast_field_t *field;
+    struct monga_ast_field_list_t *field_list;
     struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_def_function_t *def_function;
     struct monga_ast_def_type_t *def_type;
     struct monga_ast_def_variable_t *def_variable;
+    struct monga_ast_def_variable_list_t *def_variable_list;
     struct monga_ast_definition_t *definition;
+    struct monga_ast_definition_list_t *definition_list;
     struct monga_ast_program_t *program;
 }
 
 %type <program> program
-%type <definition> definition definition_list opt_definition_list
-%type <def_variable> def_variable def_variable_list opt_def_variable_list
+%type <definition_list> definition_list opt_definition_list
+%type <definition> definition
+%type <def_variable_list> def_variable_list opt_def_variable_list
+%type <def_variable> def_variable
 %type <id> type opt_def_function_type
 %type <def_type> def_type
 %type <typedesc> typedesc
-%type <field> field field_list
+%type <field_list> field_list
+%type <field> field
 %type <def_function> def_function
-%type <parameter> parameter parameter_list opt_parameter_list
+%type <parameter_list> parameter_list opt_parameter_list
+%type <parameter> parameter
 %type <block> block opt_else_block
-%type <statement> statement statement_list opt_statement_list
-%type <expression> exp opt_exp primary_exp postfix_exp new_exp unary_exp multiplicative_exp additive_exp conditional_exp opt_item_access item_access opt_exp_list exp_list
+%type <statement_list> statement_list opt_statement_list
+%type <statement> statement
+%type <expression_list> opt_exp_list exp_list
+%type <expression> exp opt_exp primary_exp postfix_exp new_exp unary_exp multiplicative_exp additive_exp conditional_exp opt_item_access item_access
 %type <variable> var
 %type <condition> cond primary_cond negated_cond relational_cond equality_cond logical_and_cond logical_or_cond
 %type <call> call
@@ -91,14 +103,16 @@ opt_definition_list :
 
 definition_list:
 
-    definition definition_list
+    definition_list definition
     {
         $$ = $1;
-        $$->next = $2;
+        $$->last->next = $2;
+        $$->last = $2;
     }
     | definition
     {
-        $$ = $1;
+        $$ = construct(definition_list);
+        $$->first = $$->last = $1;
     }
 
 definition :
@@ -174,14 +188,16 @@ typedesc :
 
 field_list :
 
-    field field_list
+    field_list field
     {
         $$ = $1;
-        $$->next = $2;
+        $$->last->next = $2;
+        $$->last = $2;
     }
     | field
     {
-        $$ = $1;
+        $$ = construct(field_list);
+        $$->first = $$->last = $1;
     }
 
 field :
@@ -229,14 +245,16 @@ opt_parameter_list :
 
 parameter_list :
 
-    parameter ',' parameter_list
+    parameter_list ',' parameter
     {
         $$ = $1;
-        $$->next = $3;
+        $$->last->next = $3;
+        $$->last = $3;
     }
     | parameter
     {
-        $$ = $1;
+        $$ = construct(parameter_list);
+        $$->first = $$->last = $1;
     }
 
 parameter :
@@ -270,14 +288,16 @@ opt_def_variable_list :
 
 def_variable_list :
 
-    def_variable def_variable_list
+    def_variable_list def_variable
     {
         $$ = $1;
-        $$->next = $2;
+        $$->last->next = $2;
+        $$->last = $2;
     }
     | def_variable
     {
-        $$ = $1;
+        $$ = construct(def_variable_list);
+        $$->first = $$->last = $1;
     }
 
 opt_statement_list :
@@ -293,14 +313,16 @@ opt_statement_list :
 
 statement_list :
 
-    statement statement_list
+    statement_list statement
     {
         $$ = $1;
-        $$->next = $2;
+        $$->last->next = $2;
+        $$->last = $2;
     }
     | statement
     {
-        $$ = $1;
+        $$ = construct(statement_list);
+        $$->first = $$->last = $1;
     }
 
 statement :
@@ -703,14 +725,16 @@ opt_exp_list :
 
 exp_list :
 
-    exp ',' exp_list
+    exp_list ',' exp
     {
         $$ = $1;
-        $$->next = $3;
+        $$->last->next = $3;
+        $$->last = $3;
     }
     | exp
     {
-        $$ = $1;
+        $$ = construct(expression_list);
+        $$->first = $$->last = $1;
     }
 
 %%

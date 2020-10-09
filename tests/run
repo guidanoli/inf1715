@@ -51,7 +51,7 @@ for file in $(tests/list "$tester"); do
 	printf "[ TEST ] Running test #%s... " "$file"
 
 	# Run test, saving the output in the temporary directory
-	cat $inputdir/$file | $testerpath > $tmpdir/$file
+	cat $inputdir/$file | $testerpath > $tmpdir/$file 2>&1
 
 	if [[ -f $outputdir/$file ]] ; then
 		# Compare the expected and obtained outputs and
