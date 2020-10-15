@@ -34,7 +34,7 @@ void monga_ast_definition_destroy(struct monga_ast_definition_t* ast)
 void monga_ast_def_variable_destroy(struct monga_ast_def_variable_t* ast)
 {
     monga_free(ast->id);
-    monga_free(ast->type);
+    monga_free(ast->type.id);
     if (ast->next)
         monga_ast_def_variable_destroy(ast->next);
     monga_free(ast);
@@ -54,8 +54,8 @@ void monga_ast_def_function_destroy(struct monga_ast_def_function_t* ast)
         monga_ast_parameter_destroy(ast->parameters->first);
         monga_free(ast->parameters);
     }
-    if (ast->type)
-        monga_free(ast->type);
+    if (ast->type.id)
+        monga_free(ast->type.id);
     monga_ast_block_destroy(ast->block);
     monga_free(ast);
 }
@@ -64,7 +64,7 @@ void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast)
 {
     switch (ast->tag) {
         case MONGA_AST_TYPEDESC_ID:
-            monga_free(ast->id_typedesc);
+            monga_free(ast->id_typedesc.id);
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
             monga_ast_typedesc_destroy(ast->array_typedesc);
@@ -82,7 +82,7 @@ void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast)
 void monga_ast_field_destroy(struct monga_ast_field_t* ast)
 {
     monga_free(ast->id);
-    monga_free(ast->type);
+    monga_free(ast->type.id);
     if (ast->next)
         monga_ast_field_destroy(ast->next);
     monga_free(ast);
@@ -91,7 +91,7 @@ void monga_ast_field_destroy(struct monga_ast_field_t* ast)
 void monga_ast_parameter_destroy(struct monga_ast_parameter_t* ast)
 {
     monga_free(ast->id);
-    monga_free(ast->type);
+    monga_free(ast->type.id);
     if (ast->next)
         monga_ast_parameter_destroy(ast->next);
     monga_free(ast);
@@ -160,7 +160,7 @@ void monga_ast_variable_destroy(struct monga_ast_variable_t* ast)
             break;
         case MONGA_AST_VARIABLE_RECORD:
             monga_ast_expression_destroy(ast->record_var.record);
-            monga_free(ast->record_var.field);
+            monga_free(ast->record_var.field.id);
             break;
         default:
             monga_unreachable();
@@ -183,10 +183,10 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             break;
         case MONGA_AST_EXPRESSION_CAST:
             monga_ast_expression_destroy(ast->cast_exp.exp);
-            monga_free(ast->cast_exp.type);
+            monga_free(ast->cast_exp.type.id);
             break;
         case MONGA_AST_EXPRESSION_NEW:
-            monga_free(ast->new_exp.type);
+            monga_free(ast->new_exp.type.id);
             if (ast->new_exp.exp)
                 monga_ast_expression_destroy(ast->new_exp.exp);
             break;
@@ -241,7 +241,7 @@ void monga_ast_condition_destroy(struct monga_ast_condition_t* ast)
 
 void monga_ast_call_destroy(struct monga_ast_call_t* ast)
 {
-    monga_free(ast->function_id);
+    monga_free(ast->function.id);
     if (ast->expressions) {
         monga_ast_expression_destroy(ast->expressions->first);
         monga_free(ast->expressions);

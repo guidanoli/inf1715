@@ -5,6 +5,7 @@
 
 /* Incomplete types */
 
+struct monga_ast_definition_t;
 struct monga_ast_def_variable_t;
 struct monga_ast_block_t;
 struct monga_ast_expression_t;
@@ -19,7 +20,10 @@ struct monga_ast_expression_list_t
 
 struct monga_ast_call_t
 {
-    char *function_id;
+    struct {
+        char *id;
+        struct monga_ast_definition_t *ref;
+    } function;
     struct monga_ast_expression_list_t *expressions; /* nullable */
 };
 
@@ -82,10 +86,16 @@ struct monga_ast_expression_t
         } call_exp;
         struct {
             struct monga_ast_expression_t *exp;
-            char *type;
+            struct {
+                char *id;
+                struct monga_ast_definition_t *ref;
+            } type;
         } cast_exp;
         struct {
-            char *type;
+            struct {
+                char *id;
+                struct monga_ast_definition_t *ref;
+            } type;
             struct monga_ast_expression_t *exp; /* nullable */
         } new_exp;
         struct {
@@ -114,6 +124,7 @@ struct monga_ast_variable_t
     union {
         struct {
             char *id;
+            struct monga_ast_definition_t *ref;
         } id_var;
         struct {
             struct monga_ast_expression_t *array;
@@ -121,7 +132,10 @@ struct monga_ast_variable_t
         } array_var;
         struct {
             struct monga_ast_expression_t *record;
-            char *field;
+            struct {
+                char *id;
+                struct monga_ast_definition_t *ref;
+            } field;
         } record_var;
     };
 };
@@ -188,14 +202,20 @@ struct monga_ast_block_t
 struct monga_ast_parameter_t
 {
     char *id;
-    char *type;
+    struct {
+        char *id;
+        struct monga_ast_definition_t *ref;
+    } type;
     struct monga_ast_parameter_t *next; /* nullable */
 };
 
 struct monga_ast_field_t
 {
     char *id;
-    char *type;
+    struct {
+        char *id;
+        struct monga_ast_definition_t *ref;
+    } type;
     struct monga_ast_field_t *next; /* nullable */
 };
 
@@ -213,7 +233,10 @@ struct monga_ast_typedesc_t
         MONGA_AST_TYPEDESC_RECORD,
     } tag;
     union {
-        char* id_typedesc;
+        struct {
+            char* id;
+            struct monga_ast_definition_t* ref;
+        } id_typedesc;
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_list_t* record_typedesc;
     };
@@ -229,7 +252,10 @@ struct monga_ast_def_function_t
 {
     char *id;
     struct monga_ast_parameter_list_t *parameters; /* nullable */
-    char *type; /* nullable */
+    struct {
+        char *id; /* nullable */
+        struct monga_ast_definition_t *ref;
+    } type;
     struct monga_ast_block_t *block;
 };
 
@@ -242,7 +268,10 @@ struct monga_ast_def_type_t
 struct monga_ast_def_variable_t
 {
     char *id;
-    char *type;
+    struct {
+        char *id;
+        struct monga_ast_definition_t *ref;
+    } type;
     struct monga_ast_def_variable_t *next; /* nullable */
 };
 
@@ -252,11 +281,19 @@ struct monga_ast_definition_t
         MONGA_AST_DEFINITION_VARIABLE,
         MONGA_AST_DEFINITION_TYPE,
         MONGA_AST_DEFINITION_FUNCTION,
+
+        /* only for name binding */
+        MONGA_AST_DEFINITION_PARAMETER,
+        MONGA_AST_DEFINITION_FIELD,
     } tag;
     union {
         struct monga_ast_def_variable_t *def_variable;
         struct monga_ast_def_type_t *def_type;
         struct monga_ast_def_function_t *def_function;
+
+        /* only for name binding */
+        struct monga_ast_parameter_t *parameter;
+        struct monga_ast_field_t *field;
     };
     struct monga_ast_definition_t *next; /* nullable */
 };

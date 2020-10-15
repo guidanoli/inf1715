@@ -41,7 +41,7 @@ void monga_ast_definition_print(struct monga_ast_definition_t* ast, int identati
 void monga_ast_def_variable_print(struct monga_ast_def_variable_t* ast, int identation)
 {
     monga_ast_print_identation(identation);
-    printf("(def_variable id=\"%s\" type=\"%s\")\n", ast->id, ast->type);
+    printf("(def_variable id=\"%s\" type=\"%s\")\n", ast->id, ast->type.id);
     if (ast->next)
         monga_ast_def_variable_print(ast->next, identation);
 }
@@ -59,8 +59,8 @@ void monga_ast_def_function_print(struct monga_ast_def_function_t* ast, int iden
 {
     monga_ast_print_identation(identation);
     printf("(def_function id=\"%s\"", ast->id);
-    if (ast->type)
-        printf(" type=\"%s\"", ast->type);
+    if (ast->type.id)
+        printf(" type=\"%s\"", ast->type.id);
     printf("\n");
     if (ast->parameters)
         monga_ast_parameter_print(ast->parameters->first, identation+1);
@@ -75,7 +75,7 @@ void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation)
     printf("(typedesc ");
     switch (ast->tag) {
         case MONGA_AST_TYPEDESC_ID:
-            printf("\"%s\")\n", ast->id_typedesc);
+            printf("\"%s\")\n", ast->id_typedesc.id);
             return;
         case MONGA_AST_TYPEDESC_ARRAY:
             printf("array\n");
@@ -95,7 +95,7 @@ void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation)
 void monga_ast_field_print(struct monga_ast_field_t* ast, int identation)
 {
     monga_ast_print_identation(identation);
-    printf("(field id=\"%s\" type=\"%s\")\n", ast->id, ast->type);
+    printf("(field id=\"%s\" type=\"%s\")\n", ast->id, ast->type.id);
     if (ast->next)
         monga_ast_field_print(ast->next, identation);
 }
@@ -103,7 +103,7 @@ void monga_ast_field_print(struct monga_ast_field_t* ast, int identation)
 void monga_ast_parameter_print(struct monga_ast_parameter_t* ast, int identation)
 {
     monga_ast_print_identation(identation);
-    printf("(parameter id=\"%s\" type=\"%s\")\n", ast->id, ast->type);
+    printf("(parameter id=\"%s\" type=\"%s\")\n", ast->id, ast->type.id);
     if (ast->next)
         monga_ast_parameter_print(ast->next, identation);
 }
@@ -190,7 +190,7 @@ void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation)
             monga_ast_expression_print(ast->array_var.index, identation+1);
             break;
         case MONGA_AST_VARIABLE_RECORD:
-            printf("record field=\"%s\"\n", ast->record_var.field);
+            printf("record field=\"%s\"\n", ast->record_var.field.id);
             monga_ast_expression_print(ast->record_var.record, identation+1);
             break;
         default:
@@ -218,13 +218,13 @@ void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identati
             printf("call\n");
             break;
         case MONGA_AST_EXPRESSION_CAST:
-            printf("cast type=\"%s\"\n", ast->cast_exp.type);
+            printf("cast type=\"%s\"\n", ast->cast_exp.type.id);
             break;
         case MONGA_AST_EXPRESSION_NEW:
             if (ast->new_exp.exp) {
-                printf("new type=\"%s\"\n", ast->new_exp.type);
+                printf("new type=\"%s\"\n", ast->new_exp.type.id);
             } else {
-                printf("new type=\"%s\")\n", ast->new_exp.type);
+                printf("new type=\"%s\")\n", ast->new_exp.type.id);
                 return;
             }
             break;
@@ -350,11 +350,11 @@ void monga_ast_call_print(struct monga_ast_call_t* ast, int identation)
 {
     monga_ast_print_identation(identation);
     if (ast->expressions) {
-        printf("(call function=\"%s\"\n", ast->function_id);
+        printf("(call function=\"%s\"\n", ast->function.id);
         monga_ast_expression_print(ast->expressions->first, identation+1);
         monga_ast_print_identation(identation);
         printf(")\n");
     } else {
-        printf("(call function=\"%s\")\n", ast->function_id);
+        printf("(call function=\"%s\")\n", ast->function.id);
     }
 }

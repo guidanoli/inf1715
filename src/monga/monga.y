@@ -145,7 +145,7 @@ def_variable :
     {
         $$ = construct(def_variable);
         $$->id = $<id>2;
-        $$->type = $4;
+        $$->type.id = $4;
         $$->next = NULL;
     }
 
@@ -171,7 +171,7 @@ typedesc :
     {
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ID;
-        $$->id_typedesc = $<id>1;
+        $$->id_typedesc.id = $<id>1;
     }
     | '[' typedesc ']'
     {
@@ -206,7 +206,7 @@ field :
     {
         $$ = construct(field);
         $$->id = $<id>1;
-        $$->type = $3;
+        $$->type.id = $3;
         $$->next = NULL;
     }
 
@@ -217,7 +217,7 @@ def_function :
         $$ = construct(def_function);
         $$->id = $<id>2;
         $$->parameters = $4;
-        $$->type = $6;
+        $$->type.id = $6;
         $$->block = $7;
     }
 
@@ -263,7 +263,7 @@ parameter :
     {
         $$ = construct(parameter);
         $$->id = $<id>1;
-        $$->type = $3;
+        $$->type.id = $3;
     }
 
 block :
@@ -423,7 +423,7 @@ var :
         $$ = construct(variable);
         $$->tag = MONGA_AST_VARIABLE_RECORD;
         $$->record_var.record = $1;
-        $$->record_var.field = $<id>3;
+        $$->record_var.field.id = $<id>3;
     }
 
 primary_exp :
@@ -472,7 +472,7 @@ postfix_exp :
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_CAST;
         $$->cast_exp.exp = $1;
-        $$->cast_exp.type = $3;
+        $$->cast_exp.type.id = $3;
         $$->next = NULL;
     }
 
@@ -486,7 +486,7 @@ new_exp :
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_NEW;
-        $$->new_exp.type = $2;
+        $$->new_exp.type.id = $2;
         $$->new_exp.exp = $3;
         $$->next = NULL;
     }
@@ -708,7 +708,7 @@ call :
     MONGA_TK_ID '(' opt_exp_list ')'
     {
         $$ = construct(call);
-        $$->function_id = $<id>1;
+        $$->function.id = $<id>1;
         $$->expressions = $3;
     }
 
