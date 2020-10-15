@@ -1,4 +1,4 @@
-# AST name binding
+# AST binding
 
 The following non-terminal symbols contains a field of type string.
 Since Monga does not (yet) have string literals, that most definitely means that it holds an identifier.
@@ -92,7 +92,7 @@ OPTION #2: Allocate a new structure that holds a tag identifying the kind of def
 
 Since it seems far more attractive to compose an uniform interface for the concept of "definition" than to have to manage different types of definitions without any type of hygiene... we'll be opting for the second option. This might ease the maintance work later on if new types of definitions are added to the language.
 
-Another advantage of using an uniform interface for "definition" is that when dealing with data structures used in name binding, having a header which contains a tag that tells which kind of definition is being pointed to, is quite handy if not inevitable.
+Another advantage of using an uniform interface for "definition" is that when dealing with data structures used in binding, having a header which contains a tag that tells which kind of definition is being pointed to, is quite handy if not inevitable.
 
 An elegant way to group id and reference is in a new sub-struct which contains a parsed identifier and a reference to the definition.
 

@@ -282,7 +282,7 @@ struct monga_ast_definition_t
         MONGA_AST_DEFINITION_TYPE,
         MONGA_AST_DEFINITION_FUNCTION,
 
-        /* only for name binding */
+        /* not used by parser */
         MONGA_AST_DEFINITION_PARAMETER,
         MONGA_AST_DEFINITION_FIELD,
     } tag;
@@ -291,7 +291,7 @@ struct monga_ast_definition_t
         struct monga_ast_def_type_t *def_type;
         struct monga_ast_def_function_t *def_function;
 
-        /* only for name binding */
+        /* not used by parser */
         struct monga_ast_parameter_t *parameter;
         struct monga_ast_field_t *field;
     };
@@ -351,5 +351,7 @@ void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation);
 void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identation);
 void monga_ast_condition_print(struct monga_ast_condition_t* ast, int identation);
 void monga_ast_call_print(struct monga_ast_call_t* ast, int identation);
+
+/* Binding */
 
 #endif
