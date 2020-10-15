@@ -1,5 +1,6 @@
 add_library(monga_ast STATIC
-    monga_ast_destructors.c
+    monga_ast_bind.c
+    monga_ast_destroy.c
     monga_ast_print.c)
 target_link_libraries(monga_ast monga_utils)
 target_include_directories(monga_ast PUBLIC
