@@ -107,4 +107,4 @@ struct monga_ast_reference_t
 };
 ```
 
-Uma premissa que pode-se levar em conta na implementação é a que, caso `id` seja `NULL`, o valor que reside no campo `ref` é indeterminado. Isto porque a ausência de um identificador (que pode ser opcional, no caso de `def_function`) implica na ausência de uma referência. O contrário nem sempre é válido, por exemplo, em um programa (inválido) em que um identificador foi referenciado mas não declarado, este campo conteria lixo.
+A premise that can be taken into account during the implementation is considering `ref` undetermined if `id` is `NULL`. That's due to the fact that the absence of an identifier implies in the absence of a reference. The other way around isn't always true, since that in an (invalid) program an identifier can be referenced but not declared.
