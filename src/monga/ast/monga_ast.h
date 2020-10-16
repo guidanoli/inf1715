@@ -7,10 +7,34 @@
 
 struct monga_ast_definition_t;
 struct monga_ast_def_variable_t;
+struct monga_ast_def_type_t;
+struct monga_ast_def_function_t;
+struct monga_ast_parameter_t;
+struct monga_ast_field_t;
 struct monga_ast_block_t;
 struct monga_ast_expression_t;
 
 /* Type definitions */
+
+enum monga_ast_reference_tag_t {
+    MONGA_AST_REFERENCE_VARIABLE,
+    MONGA_AST_REFERENCE_TYPE,
+    MONGA_AST_REFERENCE_FUNCTION,
+    MONGA_AST_REFERENCE_PARAMETER,
+};
+
+struct monga_ast_reference_t
+{
+    enum monga_ast_reference_tag_t tag;
+    union {
+        struct monga_ast_def_variable_t *def_variable; /* reference */
+        struct monga_ast_def_type_t *def_type; /* reference */
+        struct monga_ast_def_function_t *def_function; /* reference */
+        struct monga_ast_parameter_t *parameter; /* reference */
+        void *generic; /* reference (for implementation purposes) */
+    };
+    char *id;
+};
 
 struct monga_ast_expression_list_t
 {
@@ -20,10 +44,7 @@ struct monga_ast_expression_list_t
 
 struct monga_ast_call_t
 {
-    struct {
-        char *id;
-        struct monga_ast_definition_t *ref;
-    } function;
+    struct monga_ast_reference_t function;
     struct monga_ast_expression_list_t *expressions; /* nullable */
 };
 
@@ -86,16 +107,10 @@ struct monga_ast_expression_t
         } call_exp;
         struct {
             struct monga_ast_expression_t *exp;
-            struct {
-                char *id;
-                struct monga_ast_definition_t *ref;
-            } type;
+            struct monga_ast_reference_t type;
         } cast_exp;
         struct {
-            struct {
-                char *id;
-                struct monga_ast_definition_t *ref;
-            } type;
+            struct monga_ast_reference_t type;
             struct monga_ast_expression_t *exp; /* nullable */
         } new_exp;
         struct {
@@ -111,6 +126,7 @@ struct monga_ast_expression_t
             struct monga_ast_expression_t *false_exp;
         } conditional_exp;
     };
+    struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_expression_t *next; /* nullable */
 };
 
@@ -122,20 +138,14 @@ struct monga_ast_variable_t
         MONGA_AST_VARIABLE_RECORD,
     } tag;
     union {
-        struct {
-            char *id;
-            struct monga_ast_definition_t *ref;
-        } id_var;
+        struct monga_ast_reference_t id_var;
         struct {
             struct monga_ast_expression_t *array;
             struct monga_ast_expression_t *index;
         } array_var;
         struct {
             struct monga_ast_expression_t *record;
-            struct {
-                char *id;
-                struct monga_ast_definition_t *ref;
-            } field;
+            struct monga_ast_reference_t field;
         } record_var;
     };
 };
@@ -202,20 +212,14 @@ struct monga_ast_block_t
 struct monga_ast_parameter_t
 {
     char *id;
-    struct {
-        char *id;
-        struct monga_ast_definition_t *ref;
-    } type;
+    struct monga_ast_reference_t type;
     struct monga_ast_parameter_t *next; /* nullable */
 };
 
 struct monga_ast_field_t
 {
     char *id;
-    struct {
-        char *id;
-        struct monga_ast_definition_t *ref;
-    } type;
+    struct monga_ast_reference_t type;
     struct monga_ast_field_t *next; /* nullable */
 };
 
@@ -228,15 +232,17 @@ struct monga_ast_field_list_t
 struct monga_ast_typedesc_t
 {
     enum {
+        MONGA_AST_TYPEDESC_BUILTIN,
         MONGA_AST_TYPEDESC_ID,
         MONGA_AST_TYPEDESC_ARRAY,
         MONGA_AST_TYPEDESC_RECORD,
     } tag;
     union {
-        struct {
-            char* id;
-            struct monga_ast_definition_t* ref;
-        } id_typedesc;
+        enum {
+            MONGA_AST_TYPEDESC_BUILTIN_INT,
+            MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
+        } builtin_typedesc;
+        struct monga_ast_reference_t id_typedesc;
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_list_t* record_typedesc;
     };
@@ -252,10 +258,7 @@ struct monga_ast_def_function_t
 {
     char *id;
     struct monga_ast_parameter_list_t *parameters; /* nullable */
-    struct {
-        char *id; /* nullable */
-        struct monga_ast_definition_t *ref;
-    } type;
+    struct monga_ast_reference_t type; /* nullable */
     struct monga_ast_block_t *block;
 };
 
@@ -268,10 +271,7 @@ struct monga_ast_def_type_t
 struct monga_ast_def_variable_t
 {
     char *id;
-    struct {
-        char *id;
-        struct monga_ast_definition_t *ref;
-    } type;
+    struct monga_ast_reference_t type;
     struct monga_ast_def_variable_t *next; /* nullable */
 };
 
@@ -281,19 +281,11 @@ struct monga_ast_definition_t
         MONGA_AST_DEFINITION_VARIABLE,
         MONGA_AST_DEFINITION_TYPE,
         MONGA_AST_DEFINITION_FUNCTION,
-
-        /* not used by parser */
-        MONGA_AST_DEFINITION_PARAMETER,
-        MONGA_AST_DEFINITION_FIELD,
     } tag;
     union {
         struct monga_ast_def_variable_t *def_variable;
         struct monga_ast_def_type_t *def_type;
         struct monga_ast_def_function_t *def_function;
-
-        /* not used by parser */
-        struct monga_ast_parameter_t *parameter;
-        struct monga_ast_field_t *field;
     };
     struct monga_ast_definition_t *next; /* nullable */
 };
@@ -354,19 +346,41 @@ void monga_ast_call_print(struct monga_ast_call_t* ast, int identation);
 
 /* Binding */
 
+struct monga_ast_bind_stack_name_t {
+    struct monga_ast_reference_t reference;
+    struct monga_ast_bind_stack_name_t* next; /* nullable */
+};
+
+struct monga_ast_bind_stack_block_t {
+    struct monga_ast_bind_stack_block_t* next; /* nullable */
+    struct monga_ast_bind_stack_name_t* start; /* nullable */
+};
+
+struct monga_ast_bind_stack_t {
+    struct monga_ast_bind_stack_block_t* blocks; /* nullable */
+    struct monga_ast_bind_stack_name_t* names; /* nullable */
+};
+
+struct monga_ast_bind_stack_t* monga_ast_bind_stack_create();
+void monga_ast_bind_stack_block_enter(struct monga_ast_bind_stack_t* stack);
+void monga_ast_bind_stack_block_exit(struct monga_ast_bind_stack_t* stack);
+void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t tag, void* definition);
+void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t *tag_ptr, void** definition_ptr);
+void monga_ast_bind_stack_destroy(struct monga_ast_bind_stack_t* stack);
+
 void monga_ast_program_bind(struct monga_ast_program_t* ast);
-void monga_ast_definition_bind(struct monga_ast_definition_t* ast);
-void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast);
-void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast);
-void monga_ast_def_function_bind(struct monga_ast_def_function_t* ast);
-void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast);
-void monga_ast_field_bind(struct monga_ast_field_t* ast);
-void monga_ast_parameter_bind(struct monga_ast_parameter_t* ast);
-void monga_ast_block_bind(struct monga_ast_block_t* ast);
-void monga_ast_statement_bind(struct monga_ast_statement_t* ast);
-void monga_ast_variable_bind(struct monga_ast_variable_t* ast);
-void monga_ast_expression_bind(struct monga_ast_expression_t* ast);
-void monga_ast_condition_bind(struct monga_ast_condition_t* ast);
-void monga_ast_call_bind(struct monga_ast_call_t* ast);
+void monga_ast_definition_bind(struct monga_ast_definition_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_def_function_bind(struct monga_ast_def_function_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_field_bind(struct monga_ast_field_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_parameter_bind(struct monga_ast_parameter_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_block_bind(struct monga_ast_block_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_statement_bind(struct monga_ast_statement_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_ast_bind_stack_t* stack);
+void monga_ast_call_bind(struct monga_ast_call_t* ast, struct monga_ast_bind_stack_t* stack);
 
 #endif
