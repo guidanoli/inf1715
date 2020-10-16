@@ -6,10 +6,13 @@ on:
   pull_request:
     branches: [ master ]
 
-defaults:
-  runs-on: ubuntu-latest
-
-  steps:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        CONFIG: [Release, Debug]
+    steps:
     - uses: actions/checkout@v2
 
     - name: Setup
@@ -25,11 +28,3 @@ defaults:
     - name: Test
       run: |
         ctest -V -C $CONFIG
-
-jobs:
-  release:
-    env:
-      CONFIG: Release
-  debug:
-    env:
-      CONFIG: Debug
