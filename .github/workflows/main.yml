@@ -11,22 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        CONFIG: [Release, Debug]
+        Config: [Release, Debug]
     steps:
     - uses: actions/checkout@v2
 
     - name: Setup
       run: |
-        mkdir build_$CONFIG
-        cd build_$CONFIG
-        cmake .. -DCMAKE_BUILD_TYPE=$CONFIG
+        mkdir build_${{ matrix.Config }}
+        cd build_${{ matrix.Config }}
+        cmake .. -DCMAKE_BUILD_TYPE=${{ matrix.Config }}
     
     - name: Compile
-      working-directory: build_$CONFIG
+      working-directory: build_${{ matrix.Config }}
       run: |
-        cmake --build . --config $CONFIG
+        cmake --build . --config ${{ matrix.Config }}
 
     - name: Test
-      working-directory: build_$CONFIG
+      working-directory: build_${{ matrix.Config }}
       run: |
-        ctest -V -C $CONFIG
+        ctest -V -C ${{ matrix.Config }}
