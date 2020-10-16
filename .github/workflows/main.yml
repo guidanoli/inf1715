@@ -23,7 +23,7 @@ jobs:
     
     - name: Compile
       run: |
-        cmake --build . --config=$CONFIG
+        cmake --build . --config $CONFIG
 
     - name: Test
       run: |
