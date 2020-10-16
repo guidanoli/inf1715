@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 static void monga_ast_bind_stack_name_destroy(struct monga_ast_bind_stack_name_t* name, struct monga_ast_bind_stack_name_t* sentinel);
 static void monga_ast_bind_stack_block_destroy(struct monga_ast_bind_stack_block_t* block);

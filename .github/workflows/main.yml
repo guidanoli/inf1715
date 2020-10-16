@@ -6,17 +6,30 @@ on:
   pull_request:
     branches: [ master ]
 
+defaults:
+  runs-on: ubuntu-latest
+
+  steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup
+      run: |
+        mkdir build_$CONFIG
+        cd build_$CONFIG
+        cmake .. -DCMAKE_BUILD_TYPE=$CONFIG
+    
+    - name: Compile
+      run: |
+        cmake --build . --config=$CONFIG
+
+    - name: Test
+      run: |
+        ctest -V -C $CONFIG
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Test
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          cmake --build .
-          ctest -V
+  release:
+    env:
+      CONFIG: Release
+  debug:
+    env:
+      CONFIG: Debug

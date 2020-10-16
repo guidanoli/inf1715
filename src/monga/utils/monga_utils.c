@@ -111,6 +111,7 @@ void monga_free(void* mem)
 	free(mem);
 }
 
+#ifdef MONGA_DEBUG
 void monga_clean_amb()
 {
 	struct monga_amb_list* node;
@@ -120,6 +121,7 @@ void monga_clean_amb()
 		free(node->mem);
 	}
 }
+#endif
 
 size_t monga_get_allocated_cnt()
 {
