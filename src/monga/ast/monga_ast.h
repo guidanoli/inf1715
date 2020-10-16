@@ -11,6 +11,7 @@ struct monga_ast_def_type_t;
 struct monga_ast_def_function_t;
 struct monga_ast_parameter_t;
 struct monga_ast_field_t;
+struct monga_ast_field_list_t;
 struct monga_ast_block_t;
 struct monga_ast_expression_t;
 
@@ -21,6 +22,7 @@ enum monga_ast_reference_tag_t {
     MONGA_AST_REFERENCE_TYPE,
     MONGA_AST_REFERENCE_FUNCTION,
     MONGA_AST_REFERENCE_PARAMETER,
+    MONGA_AST_REFERENCE_FIELD,
 };
 
 struct monga_ast_reference_t
@@ -31,9 +33,31 @@ struct monga_ast_reference_t
         struct monga_ast_def_type_t *def_type; /* reference */
         struct monga_ast_def_function_t *def_function; /* reference */
         struct monga_ast_parameter_t *parameter; /* reference */
+        struct monga_ast_field_t *field; /* reference */
         void *generic; /* reference (for implementation purposes) */
     };
     char *id;
+};
+
+enum monga_ast_typedesc_builtin_t {
+    MONGA_AST_TYPEDESC_BUILTIN_INT,
+    MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
+};
+
+struct monga_ast_typedesc_t
+{
+    enum {
+        MONGA_AST_TYPEDESC_BUILTIN,
+        MONGA_AST_TYPEDESC_ID,
+        MONGA_AST_TYPEDESC_ARRAY,
+        MONGA_AST_TYPEDESC_RECORD,
+    } tag;
+    union {
+        enum monga_ast_typedesc_builtin_t builtin_typedesc;
+        struct monga_ast_reference_t id_typedesc;
+        struct monga_ast_typedesc_t* array_typedesc;
+        struct monga_ast_field_list_t* record_typedesc;
+    };
 };
 
 struct monga_ast_expression_list_t
@@ -126,7 +150,7 @@ struct monga_ast_expression_t
             struct monga_ast_expression_t *false_exp;
         } conditional_exp;
     };
-    struct monga_ast_typedesc_t *typedesc;
+    struct monga_ast_typedesc_t typedesc;
     struct monga_ast_expression_t *next; /* nullable */
 };
 
@@ -148,6 +172,7 @@ struct monga_ast_variable_t
             struct monga_ast_reference_t field;
         } record_var;
     };
+    struct monga_ast_typedesc_t typedesc;
 };
 
 struct monga_ast_statement_t
@@ -227,25 +252,6 @@ struct monga_ast_field_list_t
 {
     struct monga_ast_field_t *first;
     struct monga_ast_field_t *last;
-};
-
-struct monga_ast_typedesc_t
-{
-    enum {
-        MONGA_AST_TYPEDESC_BUILTIN,
-        MONGA_AST_TYPEDESC_ID,
-        MONGA_AST_TYPEDESC_ARRAY,
-        MONGA_AST_TYPEDESC_RECORD,
-    } tag;
-    union {
-        enum {
-            MONGA_AST_TYPEDESC_BUILTIN_INT,
-            MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
-        } builtin_typedesc;
-        struct monga_ast_reference_t id_typedesc;
-        struct monga_ast_typedesc_t* array_typedesc;
-        struct monga_ast_field_list_t* record_typedesc;
-    };
 };
 
 struct monga_ast_parameter_list_t
