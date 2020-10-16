@@ -22,9 +22,11 @@ jobs:
         cmake .. -DCMAKE_BUILD_TYPE=$CONFIG
     
     - name: Compile
+      working-directory: build_$CONFIG
       run: |
         cmake --build . --config $CONFIG
 
     - name: Test
+      working-directory: build_$CONFIG
       run: |
         ctest -V -C $CONFIG
