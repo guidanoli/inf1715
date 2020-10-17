@@ -144,12 +144,12 @@ void monga_unreachable_func(
 }
 
 void monga_assert_func(
-	bool condition,
-	const char* condition_str,
 #ifdef MONGA_DEBUG
 	const char* file,
-	int line
+	int line,
 #endif
+	bool condition,
+	const char* condition_str
 )
 {
 	if (!condition) {

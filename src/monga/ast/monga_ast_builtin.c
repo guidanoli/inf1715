@@ -1,4 +1,4 @@
-#include "monga_ast.h"
+#include "monga_ast_builtin.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -33,7 +33,7 @@ const struct monga_ast_typedesc_t* monga_ast_builtin_typedesc(enum monga_ast_typ
     return monga_ast_builtin_typedescs[builtin];
 }
 
-const struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_builtin_t builtin)
+struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_builtin_t builtin)
 {
     monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
     return monga_ast_builtin_def_types[builtin];

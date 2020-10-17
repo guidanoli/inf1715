@@ -70,16 +70,16 @@ void monga_unreachable_func(
 #endif
 
 void monga_assert_func(
-	bool condition,
-	const char* condition_str,
 #ifdef MONGA_DEBUG
 	const char* file,
-	int line
+	int line,
 #endif
+	bool condition,
+	const char* condition_str
 );
 
 #ifdef MONGA_DEBUG
-#define monga_assert(cond) monga_assert_func(cond, #cond, __FILE__, __LINE__)
+#define monga_assert(cond) monga_assert_func(__FILE__, __LINE__, cond, #cond)
 #else
 #define monga_assert(cond) monga_assert_func(cond, #cond)
 #endif

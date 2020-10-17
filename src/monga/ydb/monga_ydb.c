@@ -2,6 +2,9 @@
 
 #include "monga.y.h"
 #include "monga_ast.h"
+#include "monga_ast_bind.h"
+#include "monga_ast_print.h"
+#include "monga_ast_destroy.h"
 
 void yyerror(const char* err)
 {

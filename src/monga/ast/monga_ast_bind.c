@@ -1,9 +1,12 @@
-#include "monga_ast.h"
+#include "monga_ast_bind.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+
+#include "monga_ast_builtin.h"
+#include "monga_ast_typedesc.h"
 
 /* Function declarations */
 
@@ -14,50 +17,6 @@ static void monga_ast_call_parameters_bind(struct monga_ast_def_function_t* def_
     struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack);
 
 /* Function definitions */
-
-void monga_ast_typedesc_copy(const struct monga_ast_typedesc_t *orig, struct monga_ast_typedesc_t *dest)
-{
-    memcpy(dest, orig, sizeof(*dest));
-}
-
-void monga_ast_typedesc_make_array(struct monga_ast_typedesc_t *array_type, struct monga_ast_typedesc_t *typedesc)
-{
-    typedesc->tag = MONGA_AST_TYPEDESC_ARRAY;
-    typedesc->array_typedesc = array_type;
-}
-
-void monga_ast_typedesc_write(FILE* f, struct monga_ast_typedesc_t* typedesc)
-{
-    switch (typedesc->tag) {
-    case MONGA_AST_TYPEDESC_BUILTIN:
-        fprintf(f, "%s", monga_ast_builtin_typedesc_id(typedesc->builtin_typedesc));
-        break;
-    case MONGA_AST_TYPEDESC_ID:
-        fprintf(f, "%s", typedesc->id_typedesc.id);
-        break;
-    case MONGA_AST_TYPEDESC_ARRAY:
-        fprintf(f, "[");
-        monga_ast_typedesc_write(f, typedesc->array_typedesc);
-        fprintf(f, "]");
-        break;
-    case MONGA_AST_TYPEDESC_RECORD:
-        fprintf(f, "{");
-        {
-            struct monga_ast_field_t* field;
-            for (field = typedesc->record_typedesc->first; field; field = field->next) {
-                fprintf(f, "%s : ", field->id);
-                monga_ast_typedesc_write(f, field->type.def_type->typedesc);
-                if (field->next)
-                    fprintf(f, "; ");
-            }
-
-        }
-        fprintf(f, "}");
-        break;
-    default:
-        monga_unreachable();
-    }
-}
 
 struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_typedesc_t *typedesc, struct monga_ast_bind_stack_t* stack)
 {
@@ -145,7 +104,7 @@ void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast, struct mo
     monga_ast_bind_stack_insert_name(stack, ast->id, MONGA_AST_REFERENCE_VARIABLE, ast);
     monga_ast_bind_stack_get_typed_name(stack, &ast->type, 1, MONGA_AST_REFERENCE_TYPE);
     if (ast->next)
-        monga_ast_def_variable_destroy(ast->next);
+        monga_ast_def_variable_bind(ast->next, stack);
 }
 
 void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_bind_stack_t* stack)
