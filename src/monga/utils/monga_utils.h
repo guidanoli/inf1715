@@ -2,6 +2,10 @@
 #define MONGA_UTILS_H
 
 #include <stddef.h>
+#include <stdbool.h>
+
+/* Size of static C array */
+#define sizeofv(v) (sizeof(v)/sizeof(*v))
 
 /* Program error codes */
 typedef enum
@@ -11,6 +15,7 @@ typedef enum
 	MONGA_ERR_FREE,
 	MONGA_ERR_LEAK,
 	MONGA_ERR_UNREACHABLE,
+	MONGA_ERR_ASSERT,
 	MONGA_ERR_REDECLARATION,
 	MONGA_ERR_UNDECLARED,
 	MONGA_ERR_REFERENCE_KIND,
@@ -35,7 +40,7 @@ void* monga_memdup(
 	const char* file,
 	int line,
 #endif
-	void* mem,
+	const void* mem,
 	size_t size);
 
 #if defined(MONGA_DEBUG) && !defined(MONGA_DO_NOT_DEFINE_MACROS)
@@ -62,6 +67,21 @@ void monga_unreachable_func(
 #define monga_unreachable() monga_unreachable_func(__FILE__, __LINE__)
 #else
 #define monga_unreachable() monga_unreachable_func()
+#endif
+
+void monga_assert_func(
+	bool condition,
+	const char* condition_str,
+#ifdef MONGA_DEBUG
+	const char* file,
+	int line
+#endif
+);
+
+#ifdef MONGA_DEBUG
+#define monga_assert(cond) monga_assert_func(cond, #cond, __FILE__, __LINE__)
+#else
+#define monga_assert(cond) monga_assert_func(cond, #cond)
 #endif
 
 /* Scanner */

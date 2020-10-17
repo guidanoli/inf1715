@@ -6,6 +6,9 @@
 #include "monga_utils.h"
 #include "monga.y.h"
 
+/* POSIX function */
+extern int fileno (FILE *stream);
+
 static size_t monga_lineno;
 %}
 

@@ -1,4 +1,6 @@
 add_library(monga_ast STATIC
+    monga_ast.c
+    monga_ast_builtin.c
     monga_ast_bind.c
     monga_ast_bind_stack.c
     monga_ast_destroy.c

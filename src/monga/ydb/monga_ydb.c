@@ -12,9 +12,12 @@ int main(int argc, char** argv)
 {
     int res = yyparse();
     if (!res) {
+        monga_ast_init();
         monga_ast_program_bind(root);
         monga_ast_program_print(root);
         monga_ast_program_destroy(root);
+        monga_ast_close();
+
         if (monga_get_allocated_cnt() != 0) {
             fprintf(stderr, "Memory leak detected.\n");
 #ifdef MONGA_DEBUG

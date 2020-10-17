@@ -1,6 +1,8 @@
 #ifndef MONGA_AST_H
 #define MONGA_AST_H
 
+#include <stdio.h>
+
 #include "monga_utils.h"
 
 /* Incomplete types */
@@ -42,6 +44,7 @@ struct monga_ast_reference_t
 enum monga_ast_typedesc_builtin_t {
     MONGA_AST_TYPEDESC_BUILTIN_INT,
     MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
+    MONGA_AST_TYPEDESC_BUILTIN_CNT, /* pseudo value */
 };
 
 struct monga_ast_typedesc_t
@@ -311,6 +314,11 @@ struct monga_ast_program_t
 
 extern struct monga_ast_program_t *root;
 
+/* Module initializing and closing */
+
+void monga_ast_init();
+void monga_ast_close();
+
 /* Constructors */
 
 #define construct(type) \
@@ -371,8 +379,13 @@ struct monga_ast_bind_stack_t* monga_ast_bind_stack_create();
 void monga_ast_bind_stack_block_enter(struct monga_ast_bind_stack_t* stack);
 void monga_ast_bind_stack_block_exit(struct monga_ast_bind_stack_t* stack);
 void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t tag, void* definition);
-void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t *tag_ptr, void** definition_ptr);
+void monga_ast_bind_stack_get_typed_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference, int n, ...);
+void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference);
 void monga_ast_bind_stack_destroy(struct monga_ast_bind_stack_t* stack);
+
+void monga_ast_typedesc_copy(const struct monga_ast_typedesc_t *orig, struct monga_ast_typedesc_t *dest);
+void monga_ast_typedesc_make_array(struct monga_ast_typedesc_t *array_type, struct monga_ast_typedesc_t *typedesc);
+void monga_ast_typedesc_write(FILE* f, struct monga_ast_typedesc_t* typedesc);
 
 void monga_ast_program_bind(struct monga_ast_program_t* ast);
 void monga_ast_definition_bind(struct monga_ast_definition_t* ast, struct monga_ast_bind_stack_t* stack);
@@ -388,5 +401,14 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
 void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_ast_bind_stack_t* stack);
 void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_ast_bind_stack_t* stack);
 void monga_ast_call_bind(struct monga_ast_call_t* ast, struct monga_ast_bind_stack_t* stack);
+
+/* Built-ins */
+
+void monga_ast_builtin_init();
+void monga_ast_builtin_close();
+
+const struct monga_ast_typedesc_t* monga_ast_builtin_typedesc(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_typedesc_id(enum monga_ast_typedesc_builtin_t builtin);
+const struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_builtin_t builtin);
 
 #endif

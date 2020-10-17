@@ -1,5 +1,6 @@
 #include "monga_ast.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,18 +66,69 @@ void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, char
     stack->names = name;
 }
 
-void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t *tag_ptr, void** definition_ptr)
+void monga_ast_bind_stack_get_typed_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference, int n, ...)
+{
+    va_list va;
+    bool matches_tag;
+    enum monga_ast_reference_tag_t tag;
+    monga_ast_bind_stack_get_name(stack, reference);
+    va_start(va, n);
+    matches_tag = false;
+    for (int i = 0; i < n; ++i) {
+        tag = va_arg(va, enum monga_ast_reference_tag_t);
+        if (tag == reference->tag) {
+            matches_tag = true;
+            break;
+        }
+    }
+    va_end(va);
+    if (!matches_tag && n > 0) {
+        fprintf(stderr, "Expected \"%s\" to be a reference", reference->id);
+        va_start(va, n);
+        for (int i = 0; i < n; ++i) {
+            const char* reference_name;
+            tag = va_arg(va, enum monga_ast_reference_tag_t);
+            switch (tag) {
+            case MONGA_AST_REFERENCE_VARIABLE:
+                reference_name = "variable";
+                break;
+            case MONGA_AST_REFERENCE_TYPE:
+                reference_name = "type";
+                break;
+            case MONGA_AST_REFERENCE_FUNCTION:
+                reference_name = "function";
+                break;
+            case MONGA_AST_REFERENCE_PARAMETER:
+                reference_name = "parameter";
+                break;
+            case MONGA_AST_REFERENCE_FIELD:
+                reference_name = "field";
+                break;
+            default:
+                monga_unreachable();
+            }
+            fprintf(stderr, " to a %s", reference_name);
+            if (i < n-1)
+                fprintf(stderr, " or");
+        }
+        fprintf(stderr, "\n");
+        va_end(va);
+        exit(MONGA_ERR_REFERENCE_KIND);
+    }
+}
+
+void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference)
 {
     struct monga_ast_bind_stack_name_t* name;
     for (name = stack->names; name; name = name->next) {
-        if (strcmp(name->reference.id, id) == 0) {
-            *tag_ptr = name->reference.tag;
-            *definition_ptr = name->reference.generic;
+        if (strcmp(name->reference.id, reference->id) == 0) {
+            reference->tag = name->reference.tag;
+            reference->generic = name->reference.generic;
             return;
         }
     }
     /* TODO: line number */
-    fprintf(stderr, "Undeclared name \"%s\"\n", id);
+    fprintf(stderr, "Undeclared name \"%s\"\n", reference->id);
     exit(MONGA_ERR_UNDECLARED);
 }
 

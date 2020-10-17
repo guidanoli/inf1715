@@ -25,7 +25,7 @@ void* monga_memdup(
 	const char* file,
 	int line,
 #endif
-	void* mem,
+	const void* mem,
 	size_t size)
 {
 	void* new_mem = monga_malloc(
@@ -141,4 +141,23 @@ void monga_unreachable_func(
 	fprintf(stderr, "Reached the unexpected\n");
 #endif
 	exit(MONGA_ERR_UNREACHABLE);
+}
+
+void monga_assert_func(
+	bool condition,
+	const char* condition_str,
+#ifdef MONGA_DEBUG
+	const char* file,
+	int line
+#endif
+)
+{
+	if (!condition) {
+#ifdef MONGA_DEBUG
+		fprintf(stderr, "Assertion \"%s\" failed (%s:%d)\n", condition_str, file, line);
+#else
+		fprintf(stderr, "Assertion \"%s\" failed\n", condition_str);
+#endif
+		exit(MONGA_ERR_ASSERT);
+	}
 }
