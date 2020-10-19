@@ -15,6 +15,8 @@ static bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, str
 static bool monga_ast_field_list_equal(struct monga_ast_field_t *field1, struct monga_ast_field_t *field2, struct monga_ast_bind_stack_t* stack);
 static void monga_ast_call_parameters_bind(struct monga_ast_def_function_t* def_function, struct monga_ast_parameter_t* parameter,
     struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack);
+static void monga_ast_check_function_statements(struct monga_ast_statement_t* statement, struct monga_ast_typedesc_t* typedesc,
+    struct monga_ast_bind_stack_t* stack);
 
 /* Function definitions */
 
@@ -113,6 +115,76 @@ void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_
     monga_ast_typedesc_bind(ast->typedesc, stack);
 }
 
+/* typedesc can be nullable if function doesn't return value */
+void monga_ast_check_function_statements(struct monga_ast_statement_t* statement, struct monga_ast_typedesc_t* typedesc,
+    struct monga_ast_bind_stack_t* stack)
+{
+    switch (statement->tag) {
+    case MONGA_AST_STATEMENT_IF:
+    {
+        struct monga_ast_block_t* then_block = statement->if_stmt.then_block;
+        struct monga_ast_block_t* else_block = statement->if_stmt.else_block;
+        if (then_block->statements)
+            monga_ast_check_function_statements(then_block->statements->first, typedesc, stack);
+        if (else_block && else_block->statements)
+            monga_ast_check_function_statements(else_block->statements->first, typedesc, stack);
+        break;
+    }
+    case MONGA_AST_STATEMENT_WHILE:
+    {
+        struct monga_ast_block_t* loop = statement->while_stmt.loop;
+        if (loop->statements)
+            monga_ast_check_function_statements(loop->statements->first, typedesc, stack);
+        break;
+    }
+    case MONGA_AST_STATEMENT_ASSIGN:
+        break;
+    case MONGA_AST_STATEMENT_RETURN:
+    {
+        struct monga_ast_expression_t* exp = statement->return_stmt.exp;
+        if (exp) {
+            if (typedesc) {
+                if (!monga_ast_typedesc_equal(&exp->typedesc, typedesc, stack)) {
+                    fprintf(stderr, "Return value of type ");
+                    monga_ast_typedesc_write(stderr, &exp->typedesc);
+                    fprintf(stderr, " doesn't match function return type ");
+                    monga_ast_typedesc_write(stderr, typedesc);
+                    fprintf(stderr, "\n");
+                    exit(MONGA_ERR_TYPE);
+                }
+            } else {
+                fprintf(stderr, "Return with value in non-returning function\n");
+                exit(MONGA_ERR_TYPE);
+            }
+        } else {
+            if (typedesc) {
+                fprintf(stderr, "Return with no value in function returning value\n");
+                exit(MONGA_ERR_TYPE);
+            }
+        }
+        if (statement->next) {
+            fprintf(stderr, "Warning: all statements after a return statement will be ignored.\n");
+        }
+        break;
+    }
+    case MONGA_AST_STATEMENT_CALL:
+        break;
+    case MONGA_AST_STATEMENT_PRINT:
+        break;
+    case MONGA_AST_STATEMENT_BLOCK:
+    {
+        struct monga_ast_block_t* block = statement->block_stmt.block;
+        if (block->statements)
+            monga_ast_check_function_statements(block->statements->first, typedesc, stack);
+        break;
+    }
+    default:
+        monga_unreachable();
+    }
+    if (statement->next)
+        monga_ast_check_function_statements(statement->next, typedesc, stack);
+}
+
 void monga_ast_def_function_bind(struct monga_ast_def_function_t* ast, struct monga_ast_bind_stack_t* stack)
 {
     monga_ast_bind_stack_insert_name(stack, ast->id, MONGA_AST_REFERENCE_FUNCTION, ast);
@@ -122,11 +194,11 @@ void monga_ast_def_function_bind(struct monga_ast_def_function_t* ast, struct mo
     if (ast->parameters)
         monga_ast_parameter_bind(ast->parameters->first, stack);
     monga_ast_block_bind(ast->block, stack);
+    if (ast->block->statements) {
+        struct monga_ast_typedesc_t* typedesc = ast->type.id ? ast->type.def_type->typedesc : NULL;
+        monga_ast_check_function_statements(ast->block->statements->first, typedesc, stack);
+    }
     monga_ast_bind_stack_block_exit(stack);
-    /* TODO: check if the expressions of all the return statements have the same type as the function.
-             or if all return statements DON'T have expressions if the function doesn't have a return
-             value either... In order to do that, you need to inspect all the statements. */
-    /* TODO: warn that all statements after return statements will be ignored */
 }
 
 void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_bind_stack_t* stack)
@@ -208,9 +280,18 @@ void monga_ast_statement_bind(struct monga_ast_statement_t* ast, struct monga_as
                 monga_ast_expression_bind(ast->return_stmt.exp, stack);
             break;
         case MONGA_AST_STATEMENT_CALL:
-            monga_ast_call_bind(ast->call_stmt.call, stack);
-            /* TODO: Warn that return value is being thrown away */
+        {
+            struct monga_ast_call_t* call = ast->call_stmt.call;
+            struct monga_ast_reference_t* function = &call->function;
+            struct monga_ast_def_function_t* def_function;
+            monga_ast_call_bind(call, stack);
+            monga_assert(function->tag == MONGA_AST_REFERENCE_FUNCTION);
+            def_function = function->def_function;
+            if (def_function->type.id) {
+                fprintf(stderr, "Warning: Return value of call to function \"%s\" will be ignored.\n", function->id);
+            }
             break;
+        }
         case MONGA_AST_STATEMENT_PRINT:
             monga_ast_expression_bind(ast->print_stmt.exp, stack);
             break;
