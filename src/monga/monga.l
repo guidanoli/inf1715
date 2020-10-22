@@ -9,7 +9,7 @@
 /* POSIX function */
 extern int fileno (FILE *stream);
 
-static size_t monga_lineno;
+static size_t monga_lineno = 1;
 %}
 
 ID [a-zA-Z_][a-zA-Z_0-9]*
@@ -32,7 +32,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 
 %option noyywrap
 %%
-[\n] { yylval.terminal.line = ++monga_lineno; }
+[\n] { ++monga_lineno; }
 [ \t] ;
 #[^\n]* ;
 "as" { return MONGA_TK_AS; }
@@ -52,25 +52,33 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 "||" { return MONGA_TK_OR; }
 {ID} {
 	yylval.terminal.id = monga_memdup(yytext, yyleng+1);
+	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_ID;
 }
 {INTEGER_DECIMAL} {
 	yylval.terminal.integer = strtol(yytext, NULL, 10);
+	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_INTEGER;
 }
 {REAL_DECIMAL} {
 	yylval.terminal.real = strtod(yytext, NULL);
+	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_REAL;
 }
 {INTEGER_HEXADECIMAL} {
 	yylval.terminal.integer = strtol(yytext, NULL, 16);
+	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_INTEGER;
 }
 {REAL_HEXADECIMAL} {
 	yylval.terminal.real = strtod(yytext, NULL);
+	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_REAL;
 }
-. { return *yytext; }
+. {
+	yylval.terminal.line = monga_lineno;
+	return *yytext;
+}
 %%
 size_t monga_get_lineno()
 {

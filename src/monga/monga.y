@@ -68,7 +68,7 @@
 %type <definition> definition
 %type <def_variable_list> def_variable_list opt_def_variable_list
 %type <def_variable> def_variable
-%type <terminal.id> type opt_def_function_type
+%type <terminal> type opt_def_function_type
 %type <def_type> def_type
 %type <typedesc> typedesc
 %type <field_list> field_list
@@ -150,8 +150,8 @@ def_variable :
     {
         $$ = construct(def_variable);
         $$->id = $<terminal.id>2;
-        $$->type.id = $4;
-        $$->line = $<terminal.line>1;
+        $$->type.id = $4.id;
+        $$->line = $<terminal.line>2;
         $$->next = NULL;
     }
 
@@ -159,7 +159,8 @@ type :
 
     MONGA_TK_ID
     {
-        $$ = $<terminal.id>1;
+        $$.id = $<terminal.id>1;
+        $$.line = $<terminal.line>1;
     }
 
 def_type :
@@ -169,7 +170,7 @@ def_type :
         $$ = construct(def_type);
         $$->id = $<terminal.id>2;
         $$->typedesc = $4;
-        $$->line = $<terminal.line>1;
+        $$->line = $<terminal.line>2;
     }
 
 typedesc :
@@ -179,21 +180,18 @@ typedesc :
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ID;
         $$->id_typedesc.id = $<terminal.id>1;
-        $$->line = $<terminal.line>1;
     }
     | '[' typedesc ']'
     {
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ARRAY;
         $$->array_typedesc = $2;
-        $$->line = $<terminal.line>1;
     }
     | '{' field_list '}'
     {
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_RECORD;
         $$->record_typedesc = $2;
-        $$->line = $<terminal.line>1;
     }
 
 field_list :
@@ -216,7 +214,7 @@ field :
     {
         $$ = construct(field);
         $$->id = $<terminal.id>1;
-        $$->type.id = $3;
+        $$->type.id = $3.id;
         $$->line = $<terminal.line>1;
         $$->next = NULL;
     }
@@ -228,20 +226,21 @@ def_function :
         $$ = construct(def_function);
         $$->id = $<terminal.id>2;
         $$->parameters = $4;
-        $$->type.id = $6;
+        $$->type.id = $6.id;
         $$->block = $7;
-        $$->line = $<terminal.line>1;
+        $$->line = $<terminal.line>2;
     }
 
 opt_def_function_type :
 
     ':' type
     {
-        $$ = $2;
+        $$.id = $2.id;
+        $$.line = $2.line;
     }
     | /* empty */
     {
-        $$ = NULL;
+        $$.id = NULL;
     }
 
 opt_parameter_list :
@@ -275,7 +274,7 @@ parameter :
     {
         $$ = construct(parameter);
         $$->id = $<terminal.id>1;
-        $$->type.id = $3;
+        $$->type.id = $3.id;
         $$->line = $<terminal.line>1;
     }
 
@@ -348,7 +347,7 @@ statement :
         $$->if_stmt.cond = $2;
         $$->if_stmt.then_block = $3;
         $$->if_stmt.else_block = $4;
-        $$->line = $<terminal.line>1;
+        $$->line = $2->line;
         $$->next = NULL;
     }
     | MONGA_TK_WHILE cond block
@@ -357,7 +356,7 @@ statement :
         $$->tag = MONGA_AST_STATEMENT_WHILE;
         $$->while_stmt.cond = $2;
         $$->while_stmt.loop = $3;
-        $$->line = $<terminal.line>1;
+        $$->line = $2->line;
         $$->next = NULL;
     }
     | var '=' exp ';'
@@ -374,7 +373,7 @@ statement :
         $$ = construct(statement);
         $$->tag = MONGA_AST_STATEMENT_RETURN;
         $$->return_stmt.exp = $2;
-        $$->line = $<terminal.line>1;
+        $$->line = $<terminal.line>3;
         $$->next = NULL;
     }
     | call ';'
@@ -498,7 +497,7 @@ postfix_exp :
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_CAST;
         $$->cast_exp.exp = $1;
-        $$->cast_exp.type.id = $3;
+        $$->cast_exp.type.id = $3.id;
         $$->line = $1->line;
         $$->next = NULL;
     }
@@ -513,9 +512,9 @@ new_exp :
     {
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_NEW;
-        $$->new_exp.type.id = $2;
+        $$->new_exp.type.id = $2.id;
         $$->new_exp.exp = $3;
-        $$->line = $<terminal.line>1;
+        $$->line = $2.line;
         $$->next = NULL;
     }
 

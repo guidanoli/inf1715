@@ -60,7 +60,6 @@ struct monga_ast_typedesc_t
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_list_t* record_typedesc;
     };
-    size_t line;
 };
 
 struct monga_ast_expression_list_t

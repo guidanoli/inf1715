@@ -6,6 +6,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+static size_t monga_ast_bind_stack_get_reference_line(struct monga_ast_reference_t* reference);
+static const char* monga_ast_bind_stack_get_reference_name(enum monga_ast_reference_tag_t tag);
+static bool monga_ast_bind_stack_check_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id, struct monga_ast_bind_stack_name_t** name_ptr);
 static void monga_ast_bind_stack_name_destroy(struct monga_ast_bind_stack_name_t* name, struct monga_ast_bind_stack_name_t* sentinel);
 static void monga_ast_bind_stack_block_destroy(struct monga_ast_bind_stack_block_t* block);
 
@@ -36,24 +39,63 @@ void monga_ast_bind_stack_block_exit(struct monga_ast_bind_stack_t* stack)
     monga_free(block);
 }
 
-bool monga_ast_bind_stack_check_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id)
+bool monga_ast_bind_stack_check_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id, struct monga_ast_bind_stack_name_t** name_ptr)
 {
     struct monga_ast_bind_stack_name_t* name, * last_name = NULL;
     last_name = stack->blocks ? stack->blocks->start : NULL;
     for (name = stack->names; name != last_name; name = name->next) {
         if (strcmp(name->reference.id, id) == 0) {
+            if (name_ptr)
+                *name_ptr = name;
             return true;
         }
     }
     return false;
 }
 
+size_t monga_ast_bind_stack_get_reference_line(struct monga_ast_reference_t* reference)
+{
+    switch (reference->tag) {
+    case MONGA_AST_REFERENCE_VARIABLE:
+        return reference->def_variable->line;
+    case MONGA_AST_REFERENCE_TYPE:
+        return reference->def_type->line;
+    case MONGA_AST_REFERENCE_FUNCTION:
+        return reference->def_function->line;
+    case MONGA_AST_REFERENCE_PARAMETER:
+        return reference->parameter->line;
+    case MONGA_AST_REFERENCE_FIELD:
+        return reference->field->line;
+    default:
+        monga_unreachable();
+    }
+}
+
+const char* monga_ast_bind_stack_get_reference_name(enum monga_ast_reference_tag_t tag)
+{
+    switch (tag) {
+    case MONGA_AST_REFERENCE_VARIABLE:
+        return "variable";
+    case MONGA_AST_REFERENCE_TYPE:
+        return "type";
+    case MONGA_AST_REFERENCE_FUNCTION:
+        return "function";
+    case MONGA_AST_REFERENCE_PARAMETER:
+        return "parameter";
+    case MONGA_AST_REFERENCE_FIELD:
+        return "field";
+    default:
+        monga_unreachable();
+    }
+}
+
 void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t tag, void* definition)
 {
     struct monga_ast_bind_stack_name_t* name;
-    if (monga_ast_bind_stack_check_name_in_current_block(stack, id)) {
-        /* TODO: line number, type of declaration, previously declared name */
-        fprintf(stderr, "Redeclaration of \"%s\"\n", id);
+    if (monga_ast_bind_stack_check_name_in_current_block(stack, id, &name)) {
+        size_t defined_line = monga_ast_bind_stack_get_reference_line(&name->reference);
+        const char* reference_name = monga_ast_bind_stack_get_reference_name(name->reference.tag);
+        fprintf(stderr, "%s \"%s\" defined at line %zu but redefined\n", reference_name, id, defined_line);
         exit(MONGA_ERR_REDECLARATION);
     }
     name = construct(bind_stack_name);
@@ -86,25 +128,7 @@ void monga_ast_bind_stack_get_typed_name(struct monga_ast_bind_stack_t* stack, s
         for (int i = 0; i < n; ++i) {
             const char* reference_name;
             tag = va_arg(va, enum monga_ast_reference_tag_t);
-            switch (tag) {
-            case MONGA_AST_REFERENCE_VARIABLE:
-                reference_name = "variable";
-                break;
-            case MONGA_AST_REFERENCE_TYPE:
-                reference_name = "type";
-                break;
-            case MONGA_AST_REFERENCE_FUNCTION:
-                reference_name = "function";
-                break;
-            case MONGA_AST_REFERENCE_PARAMETER:
-                reference_name = "parameter";
-                break;
-            case MONGA_AST_REFERENCE_FIELD:
-                reference_name = "field";
-                break;
-            default:
-                monga_unreachable();
-            }
+            reference_name = monga_ast_bind_stack_get_reference_name(tag);
             fprintf(stderr, " to a %s", reference_name);
             if (i < n-1)
                 fprintf(stderr, " or");
