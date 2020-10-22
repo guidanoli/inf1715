@@ -31,10 +31,8 @@ void monga_ast_bind_stack_block_exit(struct monga_ast_bind_stack_t* stack)
     if (block == NULL)
         monga_unreachable();
     stack->blocks = block->next;
-    if (stack->names != block->start) {
-        monga_ast_bind_stack_name_destroy(stack->names, block->start);
-        stack->names = block->start;
-    }
+    monga_ast_bind_stack_name_destroy(stack->names, block->start);
+    stack->names = block->start;
     monga_free(block);
 }
 
@@ -134,24 +132,36 @@ void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, struct 
 
 void monga_ast_bind_stack_block_destroy(struct monga_ast_bind_stack_block_t* block)
 {
-    if (block->next)
-        monga_ast_bind_stack_block_destroy(block->next);
+    struct monga_ast_bind_stack_block_t* next;
+
+    if (block == NULL)
+        return;
+
+    next = block->next;
+
     monga_free(block);
+
+    monga_ast_bind_stack_block_destroy(next);
 }
 
 void monga_ast_bind_stack_name_destroy(struct monga_ast_bind_stack_name_t* name, struct monga_ast_bind_stack_name_t* sentinel)
 {
+    struct monga_ast_bind_stack_name_t* next;
+
+    if (name == NULL || name == sentinel)
+        return;
+    
+    next = name->next;
+
     monga_free(name->reference.id);
-    if (name->next != NULL && name->next != sentinel)
-        monga_ast_bind_stack_name_destroy(name->next, sentinel);
     monga_free(name);
+
+    monga_ast_bind_stack_name_destroy(next, sentinel);
 }
 
 void monga_ast_bind_stack_destroy(struct monga_ast_bind_stack_t* stack)
 {
-    if (stack->blocks)
-        monga_ast_bind_stack_block_destroy(stack->blocks);
-    if (stack->names)
-        monga_ast_bind_stack_name_destroy(stack->names, NULL);
+    monga_ast_bind_stack_block_destroy(stack->blocks);
+    monga_ast_bind_stack_name_destroy(stack->names, NULL);
     monga_free(stack);
 }

@@ -70,7 +70,11 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 	yylval.real = strtod(yytext, NULL);
 	return MONGA_TK_REAL;
 }
-. { return *yytext; }
+. {
+	/* get line from here */
+	yylval.integer = monga_lineno;
+	return *yytext;
+}
 %%
 size_t monga_get_lineno()
 {

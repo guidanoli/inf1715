@@ -187,8 +187,10 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             break;
         case MONGA_AST_EXPRESSION_NEW:
             monga_free(ast->new_exp.type.id);
-            if (ast->new_exp.exp)
+            if (ast->new_exp.exp) {
                 monga_ast_expression_destroy(ast->new_exp.exp);
+                monga_free(ast->typedesc);
+            }
             break;
         case MONGA_AST_EXPRESSION_NEGATIVE:
             monga_ast_expression_destroy(ast->negative_exp.exp);

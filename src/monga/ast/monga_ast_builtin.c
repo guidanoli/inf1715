@@ -27,7 +27,7 @@ const char* monga_ast_builtin_typedesc_id(enum monga_ast_typedesc_builtin_t buil
     return monga_ast_builtin_typedesc_ids[builtin];
 }
 
-const struct monga_ast_typedesc_t* monga_ast_builtin_typedesc(enum monga_ast_typedesc_builtin_t builtin)
+struct monga_ast_typedesc_t* monga_ast_builtin_typedesc(enum monga_ast_typedesc_builtin_t builtin)
 {
     monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
     return monga_ast_builtin_typedescs[builtin];
