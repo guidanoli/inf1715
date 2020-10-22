@@ -3,18 +3,18 @@
 #include <stddef.h>
 #include <string.h>
 
-static const struct monga_ast_typedesc_t monga_ast_builtin_int_typedesc = {
+static struct monga_ast_typedesc_t monga_ast_builtin_int_typedesc = {
     MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_INT };
 
-static const struct monga_ast_typedesc_t monga_ast_builtin_float_typedesc = {
+static struct monga_ast_typedesc_t monga_ast_builtin_float_typedesc = {
     MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_FLOAT };
 
-static const struct monga_ast_typedesc_t* const monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+static struct monga_ast_typedesc_t* monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
     [MONGA_AST_TYPEDESC_BUILTIN_INT] = &monga_ast_builtin_int_typedesc,
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = &monga_ast_builtin_float_typedesc,
 };
 
-static const char* const monga_ast_builtin_typedesc_ids[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+static const char* monga_ast_builtin_typedesc_ids[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
     [MONGA_AST_TYPEDESC_BUILTIN_INT] = "int",
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "float",
 };
@@ -43,7 +43,7 @@ void monga_ast_builtin_init()
 {
     for (size_t i = 0; i < sizeofv(monga_ast_builtin_def_types); ++i) {
         enum monga_ast_typedesc_builtin_t builtin;
-        const struct monga_ast_typedesc_t* typedesc;
+        struct monga_ast_typedesc_t* typedesc;
         const char* typedesc_id;
 
         builtin = (enum monga_ast_typedesc_builtin_t) i;

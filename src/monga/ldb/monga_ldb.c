@@ -14,14 +14,14 @@ int main(int argc, char** argv)
 	while (tk = yylex()) {
 		switch (tk) {
 			case MONGA_TK_ID:
-				printf("ID \"%s\"\n", yylval.id);
-				monga_free(yylval.id);
+				printf("ID \"%s\"\n", yylval.terminal.id);
+				monga_free(yylval.terminal.id);
 				break;
 			case MONGA_TK_INTEGER:
-				printf("INTEGER %d\n", yylval.integer);
+				printf("INTEGER %d\n", yylval.terminal.integer);
 				break;
 			case MONGA_TK_REAL:
-				printf("REAL %g\n", yylval.real);
+				printf("REAL %g\n", yylval.terminal.real);
 				break;
 			case MONGA_TK_AS:
 				printf("AS\n");
@@ -75,6 +75,13 @@ int main(int argc, char** argv)
 					printf("UNKNOWN %d\n", tk);
 				break;
 		}
+	}
+	if (monga_get_allocated_cnt() != 0) {
+		fprintf(stderr, "Memory leak detected.\n");
+#ifdef MONGA_DEBUG
+		monga_clean_amb();
+#endif
+		return MONGA_ERR_LEAK;
 	}
 	return MONGA_ERR_OK;
 }
