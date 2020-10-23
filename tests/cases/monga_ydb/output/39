@@ -1,0 +1,11 @@
+(program
+	(def_function id="f"
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(block)
+	)
+	(def_variable id="a"
+		(reference id="float" kind="type" line=0)
+	)
+)

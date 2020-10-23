@@ -1,11 +1,16 @@
 (program
-	(def_function id="norm" type="int"
-		(parameter id="a" type="int")
+	(def_function id="norm"
+		(reference id="int" kind="type" line=0)
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement if
 				(condition ==
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression integer "0")
 				)
@@ -18,7 +23,9 @@
 					(statement if
 						(condition >
 							(expression variable
-								(variable "a")
+								(variable id
+									(reference id="a" kind="parameter" line=1)
+								)
 							)
 							(expression integer "0")
 						)

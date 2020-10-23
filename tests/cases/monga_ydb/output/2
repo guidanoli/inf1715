@@ -1,6 +1,14 @@
 (program
-	(def_variable id="v1" type="int")
-	(def_variable id="v2" type="int")
-	(def_variable id="v3" type="int")
-	(def_variable id="v4" type="int")
+	(def_variable id="v1"
+		(reference id="int" kind="type" line=0)
+	)
+	(def_variable id="v2"
+		(reference id="int" kind="type" line=0)
+	)
+	(def_variable id="v3"
+		(reference id="int" kind="type" line=0)
+	)
+	(def_variable id="v4"
+		(reference id="int" kind="type" line=0)
+	)
 )

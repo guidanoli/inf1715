@@ -1,67 +1,99 @@
 (program
 	(def_function id="print_int"
-		(parameter id="x" type="int")
+		(parameter id="x"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement print
 				(expression variable
-					(variable "x")
+					(variable id
+						(reference id="x" kind="parameter" line=1)
+					)
 				)
 			)
 		)
 	)
-	(def_function id="dec" type="int"
-		(parameter id="x" type="int")
+	(def_function id="dec"
+		(reference id="int" kind="type" line=0)
+		(parameter id="x"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement return
 				(expression -
 					(expression variable
-						(variable "x")
+						(variable id
+							(reference id="x" kind="parameter" line=5)
+						)
 					)
 					(expression integer "1")
 				)
 			)
 		)
 	)
-	(def_function id="fac" type="int"
-		(parameter id="n" type="int")
+	(def_function id="fac"
+		(reference id="int" kind="type" line=0)
+		(parameter id="n"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
-			(def_variable id="prod" type="int")
+			(def_variable id="prod"
+				(reference id="int" kind="type" line=0)
+			)
 			(statement =
-				(variable "prod")
+				(variable id
+					(reference id="prod" kind="variable" line=10)
+				)
 				(expression integer "1")
 			)
 			(statement while
 				(condition >
 					(expression variable
-						(variable "n")
+						(variable id
+							(reference id="n" kind="parameter" line=9)
+						)
 					)
 					(expression integer "0")
 				)
 				(block
 					(statement =
-						(variable "prod")
+						(variable id
+							(reference id="prod" kind="variable" line=10)
+						)
 						(expression *
 							(expression variable
-								(variable "prod")
+								(variable id
+									(reference id="prod" kind="variable" line=10)
+								)
 							)
 							(expression variable
-								(variable "n")
+								(variable id
+									(reference id="n" kind="parameter" line=9)
+								)
 							)
 						)
 					)
 					(statement call
-						(call function="print_int"
+						(call
+							(reference id="print_int" kind="function" line=1)
 							(expression variable
-								(variable "prod")
+								(variable id
+									(reference id="prod" kind="variable" line=10)
+								)
 							)
 						)
 					)
 					(statement =
-						(variable "n")
+						(variable id
+							(reference id="n" kind="parameter" line=9)
+						)
 						(expression call
-							(call function="dec"
+							(call
+								(reference id="dec" kind="function" line=5)
 								(expression variable
-									(variable "n")
+									(variable id
+										(reference id="n" kind="parameter" line=9)
+									)
 								)
 							)
 						)
@@ -70,7 +102,9 @@
 			)
 			(statement return
 				(expression variable
-					(variable "prod")
+					(variable id
+						(reference id="prod" kind="variable" line=10)
+					)
 				)
 			)
 		)

@@ -1,36 +1,55 @@
 (program
-	(def_function id="ap" type="int"
-		(parameter id="n" type="int")
+	(def_function id="ap"
+		(reference id="int" kind="type" line=0)
+		(parameter id="n"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
-			(def_variable id="sum" type="int")
+			(def_variable id="sum"
+				(reference id="int" kind="type" line=0)
+			)
 			(statement =
-				(variable "sum")
+				(variable id
+					(reference id="sum" kind="variable" line=2)
+				)
 				(expression integer "0")
 			)
 			(statement while
 				(condition >
 					(expression variable
-						(variable "n")
+						(variable id
+							(reference id="n" kind="parameter" line=1)
+						)
 					)
 					(expression integer "0")
 				)
 				(block
 					(statement =
-						(variable "sum")
+						(variable id
+							(reference id="sum" kind="variable" line=2)
+						)
 						(expression +
 							(expression variable
-								(variable "sum")
+								(variable id
+									(reference id="sum" kind="variable" line=2)
+								)
 							)
 							(expression variable
-								(variable "n")
+								(variable id
+									(reference id="n" kind="parameter" line=1)
+								)
 							)
 						)
 					)
 					(statement =
-						(variable "n")
+						(variable id
+							(reference id="n" kind="parameter" line=1)
+						)
 						(expression -
 							(expression variable
-								(variable "n")
+								(variable id
+									(reference id="n" kind="parameter" line=1)
+								)
 							)
 							(expression integer "1")
 						)
@@ -39,7 +58,9 @@
 			)
 			(statement return
 				(expression variable
-					(variable "sum")
+					(variable id
+						(reference id="sum" kind="variable" line=2)
+					)
 				)
 			)
 		)

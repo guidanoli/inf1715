@@ -1,0 +1,2 @@
+type x = int;
+var x : float;

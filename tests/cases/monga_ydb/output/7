@@ -1,48 +1,76 @@
 (program
 	(def_type id="inta"
 		(typedesc array
-			(typedesc "int")
+			(typedesc id
+				(reference id="int" kind="type" line=0)
+			)
 		)
 	)
 	(def_type id="ivec"
 		(typedesc record
-			(field id="arr" type="inta")
-			(field id="size" type="int")
+			(field id="arr"
+				(reference id="inta" kind="type" line=1)
+			)
+			(field id="size"
+				(reference id="int" kind="type" line=0)
+			)
 		)
 	)
-	(def_function id="ivec_new" type="ivec"
-		(parameter id="n" type="int")
+	(def_function id="ivec_new"
+		(reference id="ivec" kind="type" line=2)
+		(parameter id="n"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
-			(def_variable id="v" type="ivec")
-			(statement =
-				(variable "v")
-				(expression new type="ivec")
+			(def_variable id="v"
+				(reference id="ivec" kind="type" line=2)
 			)
 			(statement =
-				(variable record field="size"
+				(variable id
+					(reference id="v" kind="variable" line=8)
+				)
+				(expression new
+					(reference id="ivec" kind="type" line=2)
+				)
+			)
+			(statement =
+				(variable record
+					(reference id="size" kind="field" line=4)
 					(expression variable
-						(variable "v")
+						(variable id
+							(reference id="v" kind="variable" line=8)
+						)
 					)
 				)
 				(expression variable
-					(variable "n")
+					(variable id
+						(reference id="n" kind="parameter" line=7)
+					)
 				)
 			)
 			(statement =
-				(variable record field="arr"
+				(variable record
+					(reference id="arr" kind="field" line=3)
 					(expression variable
-						(variable "v")
+						(variable id
+							(reference id="v" kind="variable" line=8)
+						)
 					)
 				)
-				(expression new type="int"
+				(expression new
+					(reference id="int" kind="type" line=0)
 					(expression variable
-						(variable "n")
+						(variable id
+							(reference id="n" kind="parameter" line=7)
+						)
 					)
 				)
 			)
 			(statement return
 				(expression variable
-					(variable "v")
+					(variable id
+						(reference id="v" kind="variable" line=8)
+					)
 				)
 			)
 		)

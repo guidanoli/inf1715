@@ -3,35 +3,57 @@
 		(block)
 	)
 	(def_function id="f2"
-		(parameter id="a" type="int")
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
 		(block)
 	)
 	(def_function id="f3"
-		(parameter id="a" type="int")
-		(parameter id="b" type="int")
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="b"
+			(reference id="int" kind="type" line=0)
+		)
 		(block)
 	)
 	(def_function id="f4"
-		(parameter id="a" type="int")
-		(parameter id="b" type="int")
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="b"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement return)
 		)
 	)
-	(def_function id="f5" type="int"
-		(parameter id="a" type="int")
-		(parameter id="b" type="int")
+	(def_function id="f5"
+		(reference id="int" kind="type" line=0)
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="b"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement return
 				(expression integer "1")
 			)
 		)
 	)
-	(def_function id="f6" type="int"
-		(parameter id="a" type="int")
-		(parameter id="b" type="int")
+	(def_function id="f6"
+		(reference id="int" kind="type" line=0)
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="b"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
-			(def_variable id="c" type="int")
+			(def_variable id="c"
+				(reference id="int" kind="type" line=0)
+			)
 			(statement return
 				(expression integer "1")
 			)

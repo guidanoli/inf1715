@@ -1,24 +1,34 @@
 (program
 	(def_type id="a"
-		(typedesc "int")
+		(typedesc id
+			(reference id="int" kind="type" line=0)
+		)
 	)
 	(def_type id="b"
 		(typedesc array
-			(typedesc "int")
+			(typedesc id
+				(reference id="int" kind="type" line=0)
+			)
 		)
 	)
 	(def_type id="c"
 		(typedesc array
 			(typedesc array
-				(typedesc "int")
+				(typedesc id
+					(reference id="int" kind="type" line=0)
+				)
 			)
 		)
 	)
 	(def_type id="d"
 		(typedesc array
 			(typedesc record
-				(field id="x" type="int")
-				(field id="y" type="float")
+				(field id="x"
+					(reference id="int" kind="type" line=0)
+				)
+				(field id="y"
+					(reference id="float" kind="type" line=0)
+				)
 			)
 		)
 	)
@@ -26,16 +36,24 @@
 		(typedesc array
 			(typedesc array
 				(typedesc record
-					(field id="x" type="int")
-					(field id="y" type="float")
+					(field id="x"
+						(reference id="int" kind="type" line=0)
+					)
+					(field id="y"
+						(reference id="float" kind="type" line=0)
+					)
 				)
 			)
 		)
 	)
 	(def_type id="f"
 		(typedesc record
-			(field id="x" type="a")
-			(field id="y" type="b")
+			(field id="x"
+				(reference id="a" kind="type" line=1)
+			)
+			(field id="y"
+				(reference id="b" kind="type" line=2)
+			)
 		)
 	)
 )

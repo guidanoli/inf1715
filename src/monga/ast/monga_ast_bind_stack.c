@@ -56,9 +56,9 @@ void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, stru
     if (name = monga_ast_bind_stack_get_name_in_current_block(stack, reference->id)) {
         size_t defined_line = monga_ast_reference_line(name->reference);
         size_t redefined_line = monga_ast_reference_line(reference);
-        const char* kind = monga_ast_reference_kind_name(name->reference->tag);
-        fprintf(stderr, "Redefined %s \"%s\" at line %zu (previously defined at line %zu)\n",
-            kind, reference->id, redefined_line, defined_line);
+        const char* defined_kind = monga_ast_reference_kind_name(name->reference->tag);
+        fprintf(stderr, "Redefined name \"%s\" in line %zu (previously defined in line %zu as a %s name)\n",
+            reference->id, redefined_line, defined_line, defined_kind);
         exit(MONGA_ERR_REDECLARATION);
     }
     name = construct(bind_stack_name);

@@ -1,15 +1,23 @@
 (program
 	(def_function id="conds"
-		(parameter id="a" type="int")
-		(parameter id="b" type="int")
+		(parameter id="a"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="b"
+			(reference id="int" kind="type" line=0)
+		)
 		(block
 			(statement if
 				(condition ==
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)
@@ -17,10 +25,14 @@
 			(statement if
 				(condition ~=
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)
@@ -28,10 +40,14 @@
 			(statement if
 				(condition <=
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)
@@ -39,10 +55,14 @@
 			(statement if
 				(condition >=
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)
@@ -50,10 +70,14 @@
 			(statement if
 				(condition <
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)
@@ -61,10 +85,14 @@
 			(statement if
 				(condition >
 					(expression variable
-						(variable "a")
+						(variable id
+							(reference id="a" kind="parameter" line=1)
+						)
 					)
 					(expression variable
-						(variable "b")
+						(variable id
+							(reference id="b" kind="parameter" line=1)
+						)
 					)
 				)
 				(block)

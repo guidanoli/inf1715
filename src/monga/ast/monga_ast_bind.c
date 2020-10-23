@@ -621,7 +621,11 @@ void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_as
             break;
         case MONGA_AST_CONDITION_AND:
         case MONGA_AST_CONDITION_OR:
+            monga_ast_condition_bind(ast->cond_binop_cond.cond1, stack);
+            monga_ast_condition_bind(ast->cond_binop_cond.cond2, stack);
+            break;
         case MONGA_AST_CONDITION_NOT:
+            monga_ast_condition_bind(ast->cond_unop_cond.cond, stack);
             break;
         default:
             monga_unreachable();

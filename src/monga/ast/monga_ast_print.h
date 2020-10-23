@@ -17,5 +17,6 @@ void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation);
 void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identation);
 void monga_ast_condition_print(struct monga_ast_condition_t* ast, int identation);
 void monga_ast_call_print(struct monga_ast_call_t* ast, int identation);
+void monga_ast_reference_print(struct monga_ast_reference_t* ast, int identation);
 
 #endif
