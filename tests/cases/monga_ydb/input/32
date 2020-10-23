@@ -1,0 +1,4 @@
+function f(a : int) {
+    var x : int;
+    x = new a;
+}

@@ -1,4 +1,5 @@
 #include "monga_ast_bind_stack.h"
+#include "monga_ast_reference.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -6,9 +7,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-static size_t monga_ast_bind_stack_get_reference_line(struct monga_ast_reference_t* reference);
-static const char* monga_ast_bind_stack_get_reference_name(enum monga_ast_reference_tag_t tag);
-static bool monga_ast_bind_stack_check_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id, struct monga_ast_bind_stack_name_t** name_ptr);
+static struct monga_ast_bind_stack_name_t* monga_ast_bind_stack_get_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id);
 static void monga_ast_bind_stack_name_destroy(struct monga_ast_bind_stack_name_t* name, struct monga_ast_bind_stack_name_t* sentinel);
 static void monga_ast_bind_stack_block_destroy(struct monga_ast_bind_stack_block_t* block);
 
@@ -39,118 +38,46 @@ void monga_ast_bind_stack_block_exit(struct monga_ast_bind_stack_t* stack)
     monga_free(block);
 }
 
-bool monga_ast_bind_stack_check_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id, struct monga_ast_bind_stack_name_t** name_ptr)
+struct monga_ast_bind_stack_name_t* monga_ast_bind_stack_get_name_in_current_block(struct monga_ast_bind_stack_t* stack, char* id)
 {
     struct monga_ast_bind_stack_name_t* name, * last_name = NULL;
     last_name = stack->blocks ? stack->blocks->start : NULL;
     for (name = stack->names; name != last_name; name = name->next) {
-        if (strcmp(name->reference.id, id) == 0) {
-            if (name_ptr)
-                *name_ptr = name;
-            return true;
+        if (strcmp(name->reference->id, id) == 0) {
+            return name;
         }
     }
-    return false;
+    return NULL;
 }
 
-size_t monga_ast_bind_stack_get_reference_line(struct monga_ast_reference_t* reference)
-{
-    switch (reference->tag) {
-    case MONGA_AST_REFERENCE_VARIABLE:
-        return reference->def_variable->line;
-    case MONGA_AST_REFERENCE_TYPE:
-        return reference->def_type->line;
-    case MONGA_AST_REFERENCE_FUNCTION:
-        return reference->def_function->line;
-    case MONGA_AST_REFERENCE_PARAMETER:
-        return reference->parameter->line;
-    case MONGA_AST_REFERENCE_FIELD:
-        return reference->field->line;
-    default:
-        monga_unreachable();
-    }
-}
-
-const char* monga_ast_bind_stack_get_reference_name(enum monga_ast_reference_tag_t tag)
-{
-    switch (tag) {
-    case MONGA_AST_REFERENCE_VARIABLE:
-        return "variable";
-    case MONGA_AST_REFERENCE_TYPE:
-        return "type";
-    case MONGA_AST_REFERENCE_FUNCTION:
-        return "function";
-    case MONGA_AST_REFERENCE_PARAMETER:
-        return "parameter";
-    case MONGA_AST_REFERENCE_FIELD:
-        return "field";
-    default:
-        monga_unreachable();
-    }
-}
-
-void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, char* id, enum monga_ast_reference_tag_t tag, void* definition)
+void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference)
 {
     struct monga_ast_bind_stack_name_t* name;
-    if (monga_ast_bind_stack_check_name_in_current_block(stack, id, &name)) {
-        size_t defined_line = monga_ast_bind_stack_get_reference_line(&name->reference);
-        const char* reference_name = monga_ast_bind_stack_get_reference_name(name->reference.tag);
-        fprintf(stderr, "%s \"%s\" defined at line %zu but redefined\n", reference_name, id, defined_line);
+    if (name = monga_ast_bind_stack_get_name_in_current_block(stack, reference->id)) {
+        size_t defined_line = monga_ast_reference_line(name->reference);
+        size_t redefined_line = monga_ast_reference_line(reference);
+        const char* kind = monga_ast_reference_kind_name(name->reference->tag);
+        fprintf(stderr, "Redefined %s \"%s\" at line %zu (previously defined at line %zu)\n",
+            kind, reference->id, redefined_line, defined_line);
         exit(MONGA_ERR_REDECLARATION);
     }
     name = construct(bind_stack_name);
     name->next = stack->names;
-    name->reference.id = monga_memdup(id, strlen(id)+1);
-    name->reference.tag = tag;
-    name->reference.generic = definition;
+    name->reference = reference;
     stack->names = name;
 }
 
-void monga_ast_bind_stack_get_typed_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference, int n, ...)
-{
-    va_list va;
-    bool matches_tag;
-    enum monga_ast_reference_tag_t tag;
-    monga_ast_bind_stack_get_name(stack, reference);
-    va_start(va, n);
-    matches_tag = false;
-    for (int i = 0; i < n; ++i) {
-        tag = va_arg(va, enum monga_ast_reference_tag_t);
-        if (tag == reference->tag) {
-            matches_tag = true;
-            break;
-        }
-    }
-    va_end(va);
-    if (!matches_tag && n > 0) {
-        fprintf(stderr, "Expected \"%s\" to be a reference", reference->id);
-        va_start(va, n);
-        for (int i = 0; i < n; ++i) {
-            const char* reference_name;
-            tag = va_arg(va, enum monga_ast_reference_tag_t);
-            reference_name = monga_ast_bind_stack_get_reference_name(tag);
-            fprintf(stderr, " to a %s", reference_name);
-            if (i < n-1)
-                fprintf(stderr, " or");
-        }
-        fprintf(stderr, "\n");
-        va_end(va);
-        exit(MONGA_ERR_REFERENCE_KIND);
-    }
-}
-
-void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference)
+void monga_ast_bind_stack_get_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference, size_t line)
 {
     struct monga_ast_bind_stack_name_t* name;
     for (name = stack->names; name; name = name->next) {
-        if (strcmp(name->reference.id, reference->id) == 0) {
-            reference->tag = name->reference.tag;
-            reference->generic = name->reference.generic;
+        if (strcmp(name->reference->id, reference->id) == 0) {
+            reference->tag = name->reference->tag;
+            reference->u = name->reference->u;
             return;
         }
     }
-    /* TODO: line number */
-    fprintf(stderr, "Undeclared name \"%s\"\n", reference->id);
+    fprintf(stderr, "Undeclared name \"%s\" referenced at line %zu\n", reference->id, line);
     exit(MONGA_ERR_UNDECLARED);
 }
 
@@ -177,7 +104,7 @@ void monga_ast_bind_stack_name_destroy(struct monga_ast_bind_stack_name_t* name,
     
     next = name->next;
 
-    monga_free(name->reference.id);
+    monga_free(name->reference);
     monga_free(name);
 
     monga_ast_bind_stack_name_destroy(next, sentinel);

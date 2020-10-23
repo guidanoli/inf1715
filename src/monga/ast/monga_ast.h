@@ -24,6 +24,7 @@ enum monga_ast_reference_tag_t
     MONGA_AST_REFERENCE_FUNCTION,
     MONGA_AST_REFERENCE_PARAMETER,
     MONGA_AST_REFERENCE_FIELD,
+    MONGA_AST_REFERENCE_CNT /* pseudo value */
 };
 
 struct monga_ast_reference_t
@@ -35,8 +36,7 @@ struct monga_ast_reference_t
         struct monga_ast_def_function_t *def_function; /* reference */
         struct monga_ast_parameter_t *parameter; /* reference */
         struct monga_ast_field_t *field; /* reference */
-        void *generic; /* reference (for implementation purposes) */
-    };
+    } u;
     char *id;
 };
 
@@ -60,6 +60,7 @@ struct monga_ast_typedesc_t
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_list_t* record_typedesc;
     };
+    size_t line;
 };
 
 struct monga_ast_expression_list_t

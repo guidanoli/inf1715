@@ -180,18 +180,21 @@ typedesc :
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ID;
         $$->id_typedesc.id = $<terminal.id>1;
+        $$->line = $<terminal.line>1;
     }
     | '[' typedesc ']'
     {
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ARRAY;
         $$->array_typedesc = $2;
+        $$->line = $<terminal.line>1;
     }
     | '{' field_list '}'
     {
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_RECORD;
         $$->record_typedesc = $2;
+        $$->line = $<terminal.line>1;
     }
 
 field_list :
@@ -430,6 +433,7 @@ var :
         $$ = construct(variable);
         $$->tag = MONGA_AST_VARIABLE_ID;
         $$->id_var.id = $<terminal.id>1;
+        $$->line = $<terminal.line>1;
     }
     | primary_exp '[' exp ']'
     {
@@ -437,6 +441,7 @@ var :
         $$->tag = MONGA_AST_VARIABLE_ARRAY;
         $$->array_var.array = $1;
         $$->array_var.index = $3;
+        $$->line = $1->line;
     }
     | primary_exp '.' MONGA_TK_ID
     {
@@ -444,6 +449,7 @@ var :
         $$->tag = MONGA_AST_VARIABLE_RECORD;
         $$->record_var.record = $1;
         $$->record_var.field.id = $<terminal.id>3;
+        $$->line = $1->line;
     }
 
 primary_exp :

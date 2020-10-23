@@ -4,10 +4,10 @@
 #include <string.h>
 
 static struct monga_ast_typedesc_t monga_ast_builtin_int_typedesc = {
-    MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_INT };
+    MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_INT, 0 };
 
 static struct monga_ast_typedesc_t monga_ast_builtin_float_typedesc = {
-    MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_FLOAT };
+    MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_FLOAT, 0 };
 
 static struct monga_ast_typedesc_t* monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
     [MONGA_AST_TYPEDESC_BUILTIN_INT] = &monga_ast_builtin_int_typedesc,
@@ -53,6 +53,7 @@ void monga_ast_builtin_init()
         monga_ast_builtin_def_types[i] = construct(def_type);
         monga_ast_builtin_def_types[i]->typedesc = (struct monga_ast_typedesc_t*) monga_memdup(typedesc, sizeof(*typedesc));
         monga_ast_builtin_def_types[i]->id = (char*) monga_memdup(typedesc_id, strlen(typedesc_id)+1);
+        monga_ast_builtin_def_types[i]->line = 0;
     }
 }
 

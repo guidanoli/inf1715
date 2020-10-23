@@ -94,7 +94,8 @@ void monga_remove_node(void* mem)
 		}
 		prev = node;
 	}
-	fprintf(stderr, "WARNING: Could not find node %p in allocated memory block list.\n", mem);
+	fprintf(stderr, "Could not find node %p in allocated memory block list.\n", mem);
+	exit(MONGA_ERR_LEAK);
 }
 #endif
 

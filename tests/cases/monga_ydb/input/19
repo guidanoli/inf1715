@@ -1,0 +1,4 @@
+var x : int;
+type y = {
+    a : x;
+};

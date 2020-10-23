@@ -1,0 +1,3 @@
+function f(a : int) {
+    var x : a;
+}
