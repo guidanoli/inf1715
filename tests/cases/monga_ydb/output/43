@@ -1,0 +1,42 @@
+(program
+	(def_function id="a"
+		(reference id="int" kind="type" line=0)
+		(block
+			(statement return
+				(expression integer "0")
+			)
+		)
+	)
+	(def_function id="f"
+		(block
+			(statement print
+				(expression call
+					(call
+						(reference id="a" kind="function" line=1)
+					)
+				)
+			)
+			(statement block
+				(block
+					(def_variable id="a"
+						(reference id="int" kind="type" line=0)
+					)
+					(statement print
+						(expression variable
+							(variable id
+								(reference id="a" kind="variable" line=7)
+							)
+						)
+					)
+				)
+			)
+			(statement print
+				(expression call
+					(call
+						(reference id="a" kind="function" line=1)
+					)
+				)
+			)
+		)
+	)
+)

@@ -1,0 +1,4 @@
+var global : int;
+function reset() {
+    global = 0;
+}

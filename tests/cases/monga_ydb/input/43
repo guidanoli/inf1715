@@ -1,0 +1,11 @@
+function a() : int {
+    return 0;
+}
+function f() {
+    @a();
+    {
+        var a : int;
+        @a;
+    }
+    @a();
+}

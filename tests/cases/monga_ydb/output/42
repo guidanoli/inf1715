@@ -1,0 +1,15 @@
+(program
+	(def_variable id="global"
+		(reference id="int" kind="type" line=0)
+	)
+	(def_function id="reset"
+		(block
+			(statement =
+				(variable id
+					(reference id="global" kind="variable" line=1)
+				)
+				(expression integer "0")
+			)
+		)
+	)
+)

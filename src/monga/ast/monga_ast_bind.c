@@ -16,8 +16,6 @@ static struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_a
     struct monga_ast_bind_stack_t* stack);
 static bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2,
     struct monga_ast_bind_stack_t* stack);
-static bool monga_ast_field_list_equal(struct monga_ast_field_t *field1, struct monga_ast_field_t *field2,
-    struct monga_ast_bind_stack_t* stack);
 static void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_ast_parameter_t* parameter,
     struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack);
 static void monga_ast_check_function_statements(struct monga_ast_statement_t* statement, struct monga_ast_typedesc_t* typedesc,
@@ -27,10 +25,10 @@ static void monga_ast_check_function_statements(struct monga_ast_statement_t* st
 
 struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_typedesc_t *typedesc, struct monga_ast_bind_stack_t* stack)
 {
-    if (typedesc->tag == MONGA_AST_TYPEDESC_ID) {
+    while (typedesc->tag == MONGA_AST_TYPEDESC_ID) {
         struct monga_ast_reference_t* id_typedesc = &typedesc->id_typedesc;
         monga_assert(id_typedesc->tag == MONGA_AST_REFERENCE_TYPE);
-        return monga_ast_typedesc_resolve_id(id_typedesc->u.def_type->typedesc, stack);
+        typedesc = id_typedesc->u.def_type->typedesc;
     }
     return typedesc;
 }
@@ -42,36 +40,20 @@ bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, struct mon
     if (typedesc1->tag == typedesc2->tag) {
         switch (typedesc1->tag) {
         case MONGA_AST_TYPEDESC_BUILTIN:
-            return typedesc1->builtin_typedesc == typedesc2->builtin_typedesc;
+            return typedesc1->builtin_typedesc == typedesc2->builtin_typedesc; /* same built-in type */
         case MONGA_AST_TYPEDESC_ID:
             monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
-            return monga_ast_typedesc_equal(typedesc1->array_typedesc, typedesc2->array_typedesc, stack);
+            return monga_ast_typedesc_equal(typedesc1->array_typedesc, typedesc2->array_typedesc, stack); /* propagate to subtype */
         case MONGA_AST_TYPEDESC_RECORD:
-            return monga_ast_field_list_equal(typedesc1->record_typedesc->first, typedesc2->record_typedesc->first, stack);
+            return typedesc1 == typedesc2; /* same type definition */
         default:
             monga_unreachable();
         }
     } else {
         return false;
     }
-}
-
-bool monga_ast_field_list_equal(struct monga_ast_field_t *field1, struct monga_ast_field_t *field2, struct monga_ast_bind_stack_t* stack)
-{
-    if (strcmp(field1->id, field2->id) != 0)
-        return false;
-    
-    if (!monga_ast_typedesc_equal(field1->type.u.def_type->typedesc, field2->type.u.def_type->typedesc, stack))
-        return false;
-    
-    if (!field1->next && !field2->next)
-        return true;
-    else if (field1->next && field2->next)
-        return monga_ast_field_list_equal(field1->next, field2->next, stack);
-    else
-        return false;
 }
 
 void monga_ast_program_bind(struct monga_ast_program_t* ast)
