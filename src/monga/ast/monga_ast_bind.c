@@ -48,14 +48,15 @@ static void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t*
     }
     case MONGA_AST_TYPEDESC_ARRAY:
     {
-        struct monga_ast_typedesc_t* haystack = typedesc;
+        struct monga_ast_typedesc_t* array_type = typedesc;
         
-        while (haystack->tag != MONGA_AST_TYPEDESC_ARRAY) {
-            haystack = haystack->array_typedesc;
+        /* get array first non-array typedesc */
+        while (array_type->tag == MONGA_AST_TYPEDESC_ARRAY) {
+            array_type = array_type->array_typedesc;
         }
         
-        if (haystack->tag == MONGA_AST_TYPEDESC_ID) {
-            struct monga_ast_reference_t* reference = &typedesc->id_typedesc;
+        if (array_type->tag == MONGA_AST_TYPEDESC_ID) {
+            struct monga_ast_reference_t* reference = &array_type->id_typedesc;
             monga_assert(reference->tag == MONGA_AST_REFERENCE_TYPE);
             def_type = reference->u.def_type;
         }
@@ -67,7 +68,7 @@ static void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t*
         monga_unreachable();
     }
 
-    if (def_type != NULL && def_type->typedesc == typedesc) {
+    if (def_type && def_type->typedesc == typedesc) {
         fprintf(stderr, "Type \"%s\" references itself (line %zu)\n", def_type->id, def_type->line);
         exit(MONGA_ERR_REDECLARATION);
     }

@@ -1,0 +1,14 @@
+(program
+	(def_type id="x"
+		(typedesc array
+			(typedesc record
+				(field id="v"
+					(reference id="int" kind="type" line=0)
+				)
+				(field id="next_array"
+					(reference id="x" kind="type" line=1)
+				)
+			)
+		)
+	)
+)
