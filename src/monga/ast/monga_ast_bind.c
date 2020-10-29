@@ -12,6 +12,7 @@
 /* Function declarations */
 
 static void monga_ast_repeated_field_check(struct monga_ast_field_t* field);
+static void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t* typedesc, struct monga_ast_bind_stack_t* stack);
 static struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_typedesc_t *typedesc, struct monga_ast_bind_stack_t* stack);
 static bool monga_ast_typedesc_can_cast(struct monga_ast_typedesc_t *base, struct monga_ast_typedesc_t *target, struct monga_ast_bind_stack_t* stack);
 static bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2, struct monga_ast_bind_stack_t* stack);
@@ -28,6 +29,48 @@ struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_type
         typedesc = id_typedesc->u.def_type->typedesc;
     }
     return typedesc;
+}
+
+static void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t* typedesc, struct monga_ast_bind_stack_t* stack)
+{
+    struct monga_ast_def_type_t* def_type = NULL; /* definition of self-referecing type */
+
+    switch (typedesc->tag) {
+    case MONGA_AST_TYPEDESC_BUILTIN:
+        break; /* built-in types never reference each other */
+    case MONGA_AST_TYPEDESC_ID:
+    {
+        struct monga_ast_reference_t* reference = &typedesc->id_typedesc;
+        monga_assert(reference->tag == MONGA_AST_REFERENCE_TYPE);
+
+        def_type = reference->u.def_type;
+        break;
+    }
+    case MONGA_AST_TYPEDESC_ARRAY:
+    {
+        struct monga_ast_typedesc_t* haystack = typedesc;
+        
+        while (haystack->tag != MONGA_AST_TYPEDESC_ARRAY) {
+            haystack = haystack->array_typedesc;
+        }
+        
+        if (haystack->tag == MONGA_AST_TYPEDESC_ID) {
+            struct monga_ast_reference_t* reference = &typedesc->id_typedesc;
+            monga_assert(reference->tag == MONGA_AST_REFERENCE_TYPE);
+            def_type = reference->u.def_type;
+        }
+        break;
+    }
+    case MONGA_AST_TYPEDESC_RECORD:
+        break; /* self reference in records is allowed */
+    default:
+        monga_unreachable();
+    }
+
+    if (def_type != NULL && def_type->typedesc == typedesc) {
+        fprintf(stderr, "Type \"%s\" references itself (line %zu)\n", def_type->id, def_type->line);
+        exit(MONGA_ERR_REDECLARATION);
+    }
 }
 
 static bool monga_ast_typedesc_can_cast(struct monga_ast_typedesc_t *base, struct monga_ast_typedesc_t *target, struct monga_ast_bind_stack_t* stack)
@@ -131,9 +174,9 @@ void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_
     reference->tag = MONGA_AST_REFERENCE_TYPE;
     reference->u.def_type = ast;
     reference->id = ast->id;
-    monga_ast_typedesc_bind(ast->typedesc, stack);
-    /* we don't want to allow recursion for now... (equality check leads to infinite loop) */
     monga_ast_bind_stack_insert_name(stack, reference);
+    monga_ast_typedesc_bind(ast->typedesc, stack);
+    monga_ast_typedesc_check_self_reference(ast->typedesc, stack);
 }
 
 /* typedesc can be nullable if function doesn't return value */

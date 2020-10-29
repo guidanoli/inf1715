@@ -1,3 +1,4 @@
-type x = {
-    a : x;
+type list = {
+    v : int;
+    next : list;
 };

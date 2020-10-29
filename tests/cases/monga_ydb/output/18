@@ -1,1 +1,12 @@
-Undeclared name "x" referenced at line 2
+(program
+	(def_type id="list"
+		(typedesc record
+			(field id="v"
+				(reference id="int" kind="type" line=0)
+			)
+			(field id="next"
+				(reference id="list" kind="type" line=1)
+			)
+		)
+	)
+)
