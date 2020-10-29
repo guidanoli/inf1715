@@ -1,0 +1,10 @@
+type x = {
+    a : int;
+    b : float;
+};
+
+function f() {
+    var a : x;
+    var b : int;
+    b = a as int;
+}

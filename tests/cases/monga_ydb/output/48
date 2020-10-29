@@ -1,0 +1,25 @@
+(program
+	(def_function id="f"
+		(parameter id="x"
+			(reference id="float" kind="type" line=0)
+		)
+		(parameter id="y"
+			(reference id="float" kind="type" line=0)
+		)
+		(block
+			(statement =
+				(variable id
+					(reference id="y" kind="parameter" line=1)
+				)
+				(expression cast
+					(reference id="float" kind="type" line=0)
+					(expression variable
+						(variable id
+							(reference id="x" kind="parameter" line=1)
+						)
+					)
+				)
+			)
+		)
+	)
+)

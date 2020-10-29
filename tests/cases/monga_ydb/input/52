@@ -1,0 +1,4 @@
+type int2 = int;
+function f(x : int2, y : int) {
+    y = x as int;
+}

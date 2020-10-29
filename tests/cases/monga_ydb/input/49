@@ -1,0 +1,3 @@
+function f(x : int, y : float) {
+    y = x as float;
+}

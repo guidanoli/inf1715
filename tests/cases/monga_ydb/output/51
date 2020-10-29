@@ -1,0 +1,30 @@
+(program
+	(def_type id="int2"
+		(typedesc id
+			(reference id="int" kind="type" line=0)
+		)
+	)
+	(def_function id="f"
+		(parameter id="x"
+			(reference id="int" kind="type" line=0)
+		)
+		(parameter id="y"
+			(reference id="int2" kind="type" line=1)
+		)
+		(block
+			(statement =
+				(variable id
+					(reference id="y" kind="parameter" line=2)
+				)
+				(expression cast
+					(reference id="int2" kind="type" line=1)
+					(expression variable
+						(variable id
+							(reference id="x" kind="parameter" line=2)
+						)
+					)
+				)
+			)
+		)
+	)
+)
