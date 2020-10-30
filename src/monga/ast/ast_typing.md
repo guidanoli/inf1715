@@ -22,13 +22,22 @@ There are some predicates that formalize the process of typing the tree.
 
 `assignable(t1,t2)` and `assignable(t2,t1)`
 
-### `base(t1,t2)`
+### `sibling(t1,t2)`
+
+`assignable(t1,t2)` or `assignable(t2,t1)`
+
+### `parent(t1,t2)`
 
 * `t1`, if `assignable(t1,t2)`
 * `t2`, if `assignable(t2,t1)`
 
+## Tautologies
 
-## Expression typing
+* Given `t1` and `t2`, if `sibling(t1,t2)` then exists `tp = parent(t1,t2)`
+* Given `t1` and `t2`, if `equal(t1,t2)` then `sibling(t1,t2)`
+* Given `t1` and `t2`, if `equal(t1,t2)` then exists `tp = parent(t1,t2)`
+
+## Expression binding
 
 | expression | nodes | rules | type |
 | :-: | :-: | :-: | :-: |
@@ -43,3 +52,19 @@ There are some predicates that formalize the process of typing the tree.
 | negative_exp | `exp` | `numeric(type(exp))` | `type(exp)` |
 | binop_exp | `exp1`, `exp2` | `numeric(type(exp1))` and `numeric(type(exp2))` and `equal(type(exp1),type(exp2))` | `type(exp1)` |
 | conditional_exp | `cond`, `expt`, `expf` | `assignable(type(expt),type(expf))` or `assignable(type(expf),type(expt))` | `base(type(expt),type(expf))` |
+
+## Condition binding
+
+| condition | nodes | rules |
+| :-: | :-: | :-: |
+| exp_binop_cond | `exp1`, `exp2` | `sibling(exp1,exp2)` |
+| cond_binop_cond | `cond1`, `cond2` | |
+| cond_unop_cond | `cond` | |
+
+## Variable binding
+
+| variable | nodes | rules | type |
+| :-: | :-: | :-: | :-: |
+| id_var | `var_ref` | | `type(var_ref.u.def_variable)` |
+| array_var | `array_exp`, `index_exp` | `type(index_exp) = integer` and `type(array_exp) = array(subtype)` | `subtype` |
+| record_var | `record_exp`, `field_ref` | `type(record_exp) = record(field_list)` and `field_ref.id ∈ field_list` | `type(field_ref.u.field)`

@@ -1,0 +1,4 @@
+type x = [int];
+function checknotnull(a : x) {
+    if a ~= null {}
+}

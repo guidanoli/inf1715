@@ -1,0 +1,4 @@
+type x = { v: int; };
+function checknull(a : x) {
+    if a == null {}
+}

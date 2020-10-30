@@ -1,0 +1,4 @@
+type x = [int];
+function f(a: int, b: x): int {
+    return a > b ? a : b;
+}

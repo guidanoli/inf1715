@@ -484,7 +484,7 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             monga_ast_bind_stack_get_name(stack, &ast->cast_exp.type, ast->line);
             monga_ast_reference_check_kind(&ast->cast_exp.type, MONGA_AST_REFERENCE_TYPE, ast->line);
             cast_typedesc = ast->cast_exp.type.u.def_type->typedesc;
-            if (!monga_ast_typedesc_castable(exp->typedesc, cast_typedesc)) {
+            if (!monga_ast_typedesc_castable(cast_typedesc, exp->typedesc)) {
                 fprintf(stderr, "Cannot cast expression of type ");
                 monga_ast_typedesc_write(stderr, exp->typedesc);
                 fprintf(stderr, " to type ");
@@ -531,7 +531,7 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
         {
             struct monga_ast_expression_t* exp = ast->negative_exp.exp;
             monga_ast_expression_bind(exp, stack);
-            if (!monga_ast_typedesc_is_numeric(exp->typedesc)) {
+            if (!monga_ast_typedesc_numeric(exp->typedesc)) {
                 fprintf(stderr, "Type ");
                 monga_ast_typedesc_write(stderr, exp->typedesc);
                 fprintf(stderr, " is not numeric (line %zu)\n", ast->line);
@@ -549,13 +549,13 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             struct monga_ast_expression_t* exp2 = ast->binop_exp.exp2;
             monga_ast_expression_bind(exp1, stack);
             monga_ast_expression_bind(exp2, stack);
-            if (!monga_ast_typedesc_is_numeric(exp1->typedesc)) {
+            if (!monga_ast_typedesc_numeric(exp1->typedesc)) {
                 fprintf(stderr, "Left operand is of type ");
                 monga_ast_typedesc_write(stderr, exp1->typedesc);
                 fprintf(stderr, " which is not numeric (line %zu)\n", exp1->line);
                 exit(MONGA_ERR_TYPE);
             }
-            if (!monga_ast_typedesc_is_numeric(exp2->typedesc)) {
+            if (!monga_ast_typedesc_numeric(exp2->typedesc)) {
                 fprintf(stderr, "Right operand is of type ");
                 monga_ast_typedesc_write(stderr, exp2->typedesc);
                 fprintf(stderr, " which is not numeric (line %zu)\n", exp2->line);
@@ -575,21 +575,31 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             break;
         }
         case MONGA_AST_EXPRESSION_CONDITIONAL:
+        {
+            struct monga_ast_typedesc_t* true_typedesc;
+            struct monga_ast_typedesc_t* false_typedesc;
+            struct monga_ast_typedesc_t* parent_typedesc;
+
             monga_ast_condition_bind(ast->conditional_exp.cond, stack);
             monga_ast_expression_bind(ast->conditional_exp.true_exp, stack);
             monga_ast_expression_bind(ast->conditional_exp.false_exp, stack);
-            if (monga_ast_typedesc_equal(ast->conditional_exp.true_exp->typedesc,
-                                         ast->conditional_exp.false_exp->typedesc)) {
-                ast->typedesc = ast->conditional_exp.true_exp->typedesc;
+            
+            true_typedesc = ast->conditional_exp.true_exp->typedesc;
+            false_typedesc = ast->conditional_exp.false_exp->typedesc;
+            parent_typedesc = monga_ast_typedesc_parent(true_typedesc, false_typedesc);
+            
+            if (parent_typedesc != NULL) {
+                ast->typedesc = parent_typedesc;
             } else {
                 fprintf(stderr, "Conditional expression with two possible types: ");
-                monga_ast_typedesc_write(stderr, ast->conditional_exp.true_exp->typedesc);
+                monga_ast_typedesc_write(stderr, true_typedesc);
                 fprintf(stderr, " and ");
-                monga_ast_typedesc_write(stderr, ast->conditional_exp.false_exp->typedesc);
+                monga_ast_typedesc_write(stderr, false_typedesc);
                 fprintf(stderr, " (line %zu)\n", ast->line);
                 exit(MONGA_ERR_TYPE);
             }
             break;
+        }
         default:
             monga_unreachable();
     }
@@ -609,22 +619,11 @@ void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_as
         {
             struct monga_ast_expression_t* exp1 = ast->exp_binop_cond.exp1;
             struct monga_ast_expression_t* exp2 = ast->exp_binop_cond.exp2;
+
             monga_ast_expression_bind(exp1, stack);
             monga_ast_expression_bind(exp2, stack);
-            if (!monga_ast_typedesc_is_numeric(exp1->typedesc)) {
-                fprintf(stderr, "Left operand is of type ");
-                monga_ast_typedesc_write(stderr, exp1->typedesc);
-                fprintf(stderr, " which is not numeric (line %zu)\n", exp1->line);
-                exit(MONGA_ERR_TYPE);
-            }
-            if (!monga_ast_typedesc_is_numeric(exp2->typedesc)) {
-                fprintf(stderr, "Right operand is of type ");
-                monga_ast_typedesc_write(stderr, exp2->typedesc);
-                fprintf(stderr, " which is not numeric (line %zu)\n", exp2->line);
-                exit(MONGA_ERR_TYPE);
-            }
-            if (!monga_ast_typedesc_equal(exp1->typedesc,
-                                          exp2->typedesc)) {
+            
+            if (!monga_ast_typedesc_sibling(exp1->typedesc, exp2->typedesc)) {
                 fprintf(stderr, "Binary operation condition between ");
                 monga_ast_typedesc_write(stderr, exp1->typedesc);
                 fprintf(stderr, " and ");
@@ -653,7 +652,7 @@ void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_
     struct monga_ast_def_function_t* def_function = call->function.u.def_function;
     if (parameter && expression) {
         struct monga_ast_reference_t* parameter_type = &parameter->type;
-        if (!monga_ast_typedesc_equal(parameter_type->u.def_type->typedesc, expression->typedesc)) {
+        if (!monga_ast_typedesc_assignable(parameter_type->u.def_type->typedesc, expression->typedesc)) {
             fprintf(stderr, "Expected argument \"%s\" to be of type \"%s\" in call to function \"%s\" (line %zu)\n",
                 parameter->id, parameter->type.u.def_type->id, def_function->id, expression->line);
             exit(MONGA_ERR_TYPE);

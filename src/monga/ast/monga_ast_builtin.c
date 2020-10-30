@@ -62,11 +62,11 @@ struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_
     return monga_ast_builtin_def_types[builtin];
 }
 
-bool monga_ast_builtin_castable(enum monga_ast_typedesc_builtin_t from, enum monga_ast_typedesc_builtin_t to)
+bool monga_ast_builtin_castable(enum monga_ast_typedesc_builtin_t to, enum monga_ast_typedesc_builtin_t from)
 {
-    monga_assert(from >= 0 && from < MONGA_AST_TYPEDESC_BUILTIN_CNT);
     monga_assert(to >= 0 && to < MONGA_AST_TYPEDESC_BUILTIN_CNT);
-    return monga_ast_builtin_typedesc_cast_matrix[from][to];
+    monga_assert(from >= 0 && from < MONGA_AST_TYPEDESC_BUILTIN_CNT);
+    return monga_ast_builtin_typedesc_cast_matrix[to][from];
 }
 
 void monga_ast_builtin_init()

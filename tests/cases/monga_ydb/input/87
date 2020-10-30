@@ -1,0 +1,3 @@
+function f(a : int) {
+    if a ~= null {}
+}

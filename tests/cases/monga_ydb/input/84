@@ -1,0 +1,3 @@
+function checknull(a : float) {
+    if a == null {}
+}

@@ -1,0 +1,3 @@
+function f(a: int, b: float): int {
+    return a > b ? a : b;
+}

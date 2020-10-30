@@ -47,7 +47,7 @@ struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_type
     return typedesc;
 }
 
-bool monga_ast_typedesc_is_numeric(struct monga_ast_typedesc_t* typedesc)
+bool monga_ast_typedesc_numeric(struct monga_ast_typedesc_t* typedesc)
 {
     typedesc = monga_ast_typedesc_resolve_id(typedesc);
     if (typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN) {
@@ -101,27 +101,27 @@ void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t* typede
     }
 }
 
-bool monga_ast_typedesc_castable(struct monga_ast_typedesc_t *from, struct monga_ast_typedesc_t *to)
+bool monga_ast_typedesc_castable(struct monga_ast_typedesc_t *totypedesc, struct monga_ast_typedesc_t *fromtypedesc)
 {
-    from = monga_ast_typedesc_resolve_id(from);
-    to = monga_ast_typedesc_resolve_id(to);
-    if (from->tag == to->tag) {
-        switch (from->tag) {
-        case MONGA_AST_TYPEDESC_BUILTIN:
-            return monga_ast_builtin_castable(from->builtin_typedesc, to->builtin_typedesc);
-        case MONGA_AST_TYPEDESC_ID:
-            monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
-            break;
-        case MONGA_AST_TYPEDESC_ARRAY:
-            return monga_ast_typedesc_equal(from->array_typedesc, to->array_typedesc); /* sizeof(float) != sizeof(int) */
-        case MONGA_AST_TYPEDESC_RECORD:
-            return from == to; /* same type definition */
-        default:
-            monga_unreachable();
-        }
-    } else {
-        return false;
-    }
+    fromtypedesc = monga_ast_typedesc_resolve_id(fromtypedesc);
+    totypedesc = monga_ast_typedesc_resolve_id(totypedesc);
+
+    if (monga_ast_typedesc_assignable(totypedesc, fromtypedesc))
+        return true;
+
+    if (fromtypedesc->tag == totypedesc->tag && fromtypedesc->tag == MONGA_AST_TYPEDESC_BUILTIN)
+        return monga_ast_builtin_castable(totypedesc->builtin_typedesc, fromtypedesc->builtin_typedesc);
+    
+    return false;
+}
+
+bool monga_ast_typedesc_sibling(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2)
+{
+    typedesc1 = monga_ast_typedesc_resolve_id(typedesc1);
+    typedesc2 = monga_ast_typedesc_resolve_id(typedesc2);
+
+    return monga_ast_typedesc_assignable(typedesc1, typedesc2) ||
+           monga_ast_typedesc_assignable(typedesc2, typedesc1);
 }
 
 bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2)
@@ -133,7 +133,7 @@ bool monga_ast_typedesc_equal(struct monga_ast_typedesc_t *typedesc1, struct mon
            monga_ast_typedesc_assignable(typedesc2, typedesc1);
 }
 
-struct monga_ast_typedesc_t* monga_ast_typedesc_base(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2)
+struct monga_ast_typedesc_t* monga_ast_typedesc_parent(struct monga_ast_typedesc_t *typedesc1, struct monga_ast_typedesc_t *typedesc2)
 {
     typedesc1 = monga_ast_typedesc_resolve_id(typedesc1);
     typedesc2 = monga_ast_typedesc_resolve_id(typedesc2);

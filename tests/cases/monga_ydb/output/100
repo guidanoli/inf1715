@@ -1,0 +1,46 @@
+(program
+	(def_type id="x"
+		(typedesc array
+			(typedesc id
+				(reference id="int" kind="type" line=0)
+			)
+		)
+	)
+	(def_function id="f"
+		(reference id="x" kind="type" line=1)
+		(parameter id="a"
+			(reference id="x" kind="type" line=1)
+		)
+		(parameter id="b"
+			(reference id="x" kind="type" line=1)
+		)
+		(block
+			(statement return
+				(expression ?:
+					(condition >
+						(expression variable
+							(variable id
+								(reference id="a" kind="parameter" line=2)
+							)
+						)
+						(expression variable
+							(variable id
+								(reference id="b" kind="parameter" line=2)
+							)
+						)
+					)
+					(expression variable
+						(variable id
+							(reference id="a" kind="parameter" line=2)
+						)
+					)
+					(expression variable
+						(variable id
+							(reference id="b" kind="parameter" line=2)
+						)
+					)
+				)
+			)
+		)
+	)
+)

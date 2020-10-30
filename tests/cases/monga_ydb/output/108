@@ -1,0 +1,25 @@
+(program
+	(def_type id="y"
+		(typedesc record
+			(field id="a"
+				(reference id="int" kind="type" line=0)
+			)
+		)
+	)
+	(def_function id="f"
+		(parameter id="a"
+			(reference id="y" kind="type" line=1)
+		)
+		(block
+			(statement =
+				(variable id
+					(reference id="a" kind="parameter" line=2)
+				)
+				(expression cast
+					(reference id="y" kind="type" line=1)
+					(expression null)
+				)
+			)
+		)
+	)
+)

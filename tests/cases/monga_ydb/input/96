@@ -1,0 +1,4 @@
+type y = {a:int;};
+function f(a: y, b: float): int {
+    return a > b ? a : b;
+}
