@@ -308,7 +308,7 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
     switch (ast->tag) {
         case MONGA_AST_VARIABLE_ID:
         {
-            struct monga_ast_reference_t* type;
+            struct monga_ast_reference_t* type = NULL;
             struct monga_ast_reference_t* id_var = &ast->u.id_var;
             monga_ast_bind_stack_get_name(stack, id_var, ast->line);
             switch (ast->u.id_var.tag) {
@@ -327,6 +327,7 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             default:
                 /* For the user, parameters are just local variables */
                 monga_ast_reference_check_kind(&ast->u.id_var, MONGA_AST_REFERENCE_VARIABLE, ast->line);
+                monga_unreachable();
             }
             monga_assert(type->tag == MONGA_AST_REFERENCE_TYPE);
             ast->typedesc = type->u.def_type->typedesc;
