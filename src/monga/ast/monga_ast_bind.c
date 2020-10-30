@@ -29,7 +29,8 @@ void monga_ast_program_bind(struct monga_ast_program_t* ast)
 {
     if (ast->definitions) {
         struct monga_ast_bind_stack_t* stack = monga_ast_bind_stack_create();
-        for (int i = 0; i < sizeofv(visible_builtin_types); ++i) {
+        /* TODO: move visible builtin types logic to monga_ast_builtin.c */
+        for (size_t i = 0; i < sizeofv(visible_builtin_types); ++i) {
             enum monga_ast_typedesc_builtin_t builtin = visible_builtin_types[i];
             struct monga_ast_def_type_t* def_type = monga_ast_builtin_def_type(builtin);
             struct monga_ast_reference_t* reference = construct(reference);
@@ -47,13 +48,13 @@ void monga_ast_definition_bind(struct monga_ast_definition_t* ast, struct monga_
 {
     switch (ast->tag) {
         case MONGA_AST_DEFINITION_VARIABLE:
-            monga_ast_def_variable_bind(ast->def_variable, stack);
+            monga_ast_def_variable_bind(ast->u.def_variable, stack);
             break;
         case MONGA_AST_DEFINITION_TYPE:
-            monga_ast_def_type_bind(ast->def_type, stack);
+            monga_ast_def_type_bind(ast->u.def_type, stack);
             break;
         case MONGA_AST_DEFINITION_FUNCTION:
-            monga_ast_def_function_bind(ast->def_function, stack);
+            monga_ast_def_function_bind(ast->u.def_function, stack);
             break;
         default:
             monga_unreachable();
@@ -95,8 +96,8 @@ void monga_ast_check_function_statements(struct monga_ast_statement_t* statement
     switch (statement->tag) {
     case MONGA_AST_STATEMENT_IF:
     {
-        struct monga_ast_block_t* then_block = statement->if_stmt.then_block;
-        struct monga_ast_block_t* else_block = statement->if_stmt.else_block;
+        struct monga_ast_block_t* then_block = statement->u.if_stmt.then_block;
+        struct monga_ast_block_t* else_block = statement->u.if_stmt.else_block;
         if (then_block->statements)
             monga_ast_check_function_statements(then_block->statements->first, typedesc, stack, function);
         if (else_block && else_block->statements)
@@ -105,7 +106,7 @@ void monga_ast_check_function_statements(struct monga_ast_statement_t* statement
     }
     case MONGA_AST_STATEMENT_WHILE:
     {
-        struct monga_ast_block_t* loop = statement->while_stmt.loop;
+        struct monga_ast_block_t* loop = statement->u.while_stmt.loop;
         if (loop->statements)
             monga_ast_check_function_statements(loop->statements->first, typedesc, stack, function);
         break;
@@ -114,7 +115,7 @@ void monga_ast_check_function_statements(struct monga_ast_statement_t* statement
         break;
     case MONGA_AST_STATEMENT_RETURN:
     {
-        struct monga_ast_expression_t* exp = statement->return_stmt.exp;
+        struct monga_ast_expression_t* exp = statement->u.return_stmt.exp;
         if (exp) {
             if (typedesc) {
                 /* implicit assignment to eax register in assembler language */
@@ -147,7 +148,7 @@ void monga_ast_check_function_statements(struct monga_ast_statement_t* statement
         break;
     case MONGA_AST_STATEMENT_BLOCK:
     {
-        struct monga_ast_block_t* block = statement->block_stmt.block;
+        struct monga_ast_block_t* block = statement->u.block_stmt.block;
         if (block->statements)
             monga_ast_check_function_statements(block->statements->first, typedesc, stack, function);
         break;
@@ -197,16 +198,16 @@ void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_
 {
     switch (ast->tag) {
         case MONGA_AST_TYPEDESC_ID:
-            monga_ast_bind_stack_get_name(stack, &ast->id_typedesc, ast->line);
-            monga_ast_reference_check_kind(&ast->id_typedesc, MONGA_AST_REFERENCE_TYPE, ast->line);
+            monga_ast_bind_stack_get_name(stack, &ast->u.id_typedesc, ast->line);
+            monga_ast_reference_check_kind(&ast->u.id_typedesc, MONGA_AST_REFERENCE_TYPE, ast->line);
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
-            monga_ast_typedesc_bind(ast->array_typedesc, stack);
+            monga_ast_typedesc_bind(ast->u.array_typedesc, stack);
             break;
         case MONGA_AST_TYPEDESC_RECORD:
             monga_ast_bind_stack_block_enter(stack);
-            monga_ast_repeated_field_check(ast->record_typedesc->first);
-            monga_ast_field_bind(ast->record_typedesc->first, stack);
+            monga_ast_repeated_field_check(ast->u.record_typedesc->first);
+            monga_ast_field_bind(ast->u.record_typedesc->first, stack);
             monga_ast_bind_stack_block_exit(stack);
             break;
         default:
@@ -247,54 +248,52 @@ void monga_ast_statement_bind(struct monga_ast_statement_t* ast, struct monga_as
 {
     switch (ast->tag) {
         case MONGA_AST_STATEMENT_IF:
-            monga_ast_condition_bind(ast->if_stmt.cond, stack);
+            monga_ast_condition_bind(ast->u.if_stmt.cond, stack);
             monga_ast_bind_stack_block_enter(stack);
-            monga_ast_block_bind(ast->if_stmt.then_block, stack);
+            monga_ast_block_bind(ast->u.if_stmt.then_block, stack);
             monga_ast_bind_stack_block_exit(stack);
-            if (ast->if_stmt.else_block) {
+            if (ast->u.if_stmt.else_block) {
                 monga_ast_bind_stack_block_enter(stack);
-                monga_ast_block_bind(ast->if_stmt.else_block, stack);
+                monga_ast_block_bind(ast->u.if_stmt.else_block, stack);
                 monga_ast_bind_stack_block_exit(stack);
             }
             break;
         case MONGA_AST_STATEMENT_WHILE:
-            monga_ast_condition_bind(ast->while_stmt.cond, stack);
+            monga_ast_condition_bind(ast->u.while_stmt.cond, stack);
             monga_ast_bind_stack_block_enter(stack);
-            monga_ast_block_bind(ast->while_stmt.loop, stack);
+            monga_ast_block_bind(ast->u.while_stmt.loop, stack);
             monga_ast_bind_stack_block_exit(stack);
             break;
         case MONGA_AST_STATEMENT_ASSIGN:
-            monga_ast_variable_bind(ast->assign_stmt.var, stack);
-            monga_ast_expression_bind(ast->assign_stmt.exp, stack);
-            if (!monga_ast_typedesc_assignable(ast->assign_stmt.var->typedesc, ast->assign_stmt.exp->typedesc)) {
+            monga_ast_variable_bind(ast->u.assign_stmt.var, stack);
+            monga_ast_expression_bind(ast->u.assign_stmt.exp, stack);
+            if (!monga_ast_typedesc_assignable(ast->u.assign_stmt.var->typedesc, ast->u.assign_stmt.exp->typedesc)) {
                 fprintf(stderr, "Expected expression type ");
-                monga_ast_typedesc_write(stderr, ast->assign_stmt.var->typedesc);
+                monga_ast_typedesc_write(stderr, ast->u.assign_stmt.var->typedesc);
                 fprintf(stderr, " instead of ");
-                monga_ast_typedesc_write(stderr, ast->assign_stmt.exp->typedesc);
+                monga_ast_typedesc_write(stderr, ast->u.assign_stmt.exp->typedesc);
                 fprintf(stderr, " (line %zu)\n", ast->line);
                 exit(MONGA_ERR_TYPE);
             }
             break;
         case MONGA_AST_STATEMENT_RETURN:
-            if (ast->return_stmt.exp)
-                monga_ast_expression_bind(ast->return_stmt.exp, stack);
+            if (ast->u.return_stmt.exp)
+                monga_ast_expression_bind(ast->u.return_stmt.exp, stack);
             break;
         case MONGA_AST_STATEMENT_CALL:
         {
-            struct monga_ast_call_t* call = ast->call_stmt.call;
+            struct monga_ast_call_t* call = ast->u.call_stmt.call;
             struct monga_ast_reference_t* function = &call->function;
-            struct monga_ast_def_function_t* def_function;
             monga_ast_call_bind(call, stack);
             monga_assert(function->tag == MONGA_AST_REFERENCE_FUNCTION);
-            def_function = function->u.def_function;
             break;
         }
         case MONGA_AST_STATEMENT_PRINT:
-            monga_ast_expression_bind(ast->print_stmt.exp, stack);
+            monga_ast_expression_bind(ast->u.print_stmt.exp, stack);
             break;
         case MONGA_AST_STATEMENT_BLOCK:
             monga_ast_bind_stack_block_enter(stack);
-            monga_ast_block_bind(ast->block_stmt.block, stack);
+            monga_ast_block_bind(ast->u.block_stmt.block, stack);
             monga_ast_bind_stack_block_exit(stack);
             break;
         default:
@@ -310,9 +309,9 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
         case MONGA_AST_VARIABLE_ID:
         {
             struct monga_ast_reference_t* type;
-            struct monga_ast_reference_t* id_var = &ast->id_var;
+            struct monga_ast_reference_t* id_var = &ast->u.id_var;
             monga_ast_bind_stack_get_name(stack, id_var, ast->line);
-            switch (ast->id_var.tag) {
+            switch (ast->u.id_var.tag) {
             case MONGA_AST_REFERENCE_VARIABLE:
             {
                 struct monga_ast_def_variable_t* def_variable = id_var->u.def_variable;
@@ -327,7 +326,7 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             }
             default:
                 /* For the user, parameters are just local variables */
-                monga_ast_reference_check_kind(&ast->id_var, MONGA_AST_REFERENCE_VARIABLE, ast->line);
+                monga_ast_reference_check_kind(&ast->u.id_var, MONGA_AST_REFERENCE_VARIABLE, ast->line);
             }
             monga_assert(type->tag == MONGA_AST_REFERENCE_TYPE);
             ast->typedesc = type->u.def_type->typedesc;
@@ -338,19 +337,19 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             /* array */
             {
                 struct monga_ast_typedesc_t* typedesc;
-                monga_ast_expression_bind(ast->array_var.array, stack);
-                typedesc = monga_ast_typedesc_resolve_id(ast->array_var.array->typedesc);
+                monga_ast_expression_bind(ast->u.array_var.array, stack);
+                typedesc = monga_ast_typedesc_resolve_id(ast->u.array_var.array->typedesc);
                 switch (typedesc->tag) {
                 case MONGA_AST_TYPEDESC_BUILTIN:
                     fprintf(stderr, "Expected expression to be of array type and not \"%s\" (line %zu)\n",
-                        monga_ast_builtin_typedesc_id(typedesc->builtin_typedesc), ast->line);
+                        monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc), ast->line);
                     exit(MONGA_ERR_TYPE);
                     break;
                 case MONGA_AST_TYPEDESC_ID:
                     monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
                     break;
                 case MONGA_AST_TYPEDESC_ARRAY:
-                    typedesc = typedesc->array_typedesc;
+                    typedesc = typedesc->u.array_typedesc;
                     break;
                 case MONGA_AST_TYPEDESC_RECORD:
                     fprintf(stderr, "Expected expression to be of array type and not record (line %zu)\n",
@@ -365,13 +364,13 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             /* index */
             {
                 struct monga_ast_typedesc_t* typedesc;
-                monga_ast_expression_bind(ast->array_var.index, stack);
-                typedesc = monga_ast_typedesc_resolve_id(ast->array_var.index->typedesc);
+                monga_ast_expression_bind(ast->u.array_var.index, stack);
+                typedesc = monga_ast_typedesc_resolve_id(ast->u.array_var.index->typedesc);
                 switch (typedesc->tag) {
                 case MONGA_AST_TYPEDESC_BUILTIN:
-                    if (typedesc->builtin_typedesc != MONGA_AST_TYPEDESC_BUILTIN_INT) {
+                    if (typedesc->u.builtin_typedesc != MONGA_AST_TYPEDESC_BUILTIN_INT) {
                         fprintf(stderr, "Expected index to be of \"int\" type and not \"%s\" (line %zu)\n",
-                            monga_ast_builtin_typedesc_id(typedesc->builtin_typedesc), ast->line);
+                            monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc), ast->line);
                         exit(MONGA_ERR_TYPE);
                     }
                     break;
@@ -397,12 +396,12 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
         case MONGA_AST_VARIABLE_RECORD:
         {
             struct monga_ast_typedesc_t* typedesc;
-            monga_ast_expression_bind(ast->record_var.record, stack);
-            typedesc = monga_ast_typedesc_resolve_id(ast->record_var.record->typedesc);
+            monga_ast_expression_bind(ast->u.record_var.record, stack);
+            typedesc = monga_ast_typedesc_resolve_id(ast->u.record_var.record->typedesc);
             switch (typedesc->tag) {
             case MONGA_AST_TYPEDESC_BUILTIN:
                 fprintf(stderr, "Expected expression to be of record type and not \"%s\" (line %zu)\n",
-                    monga_ast_builtin_typedesc_id(typedesc->builtin_typedesc), ast->line);
+                    monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc), ast->line);
                 exit(MONGA_ERR_TYPE);
                 break;
             case MONGA_AST_TYPEDESC_ID:
@@ -417,11 +416,11 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             {
                 struct monga_ast_field_t* field;
                 bool found_field = false;
-                for (field = typedesc->record_typedesc->first; field; field = field->next) {
-                    if (strcmp(field->id, ast->record_var.field.id) == 0) {
+                for (field = typedesc->u.record_typedesc->first; field; field = field->next) {
+                    if (strcmp(field->id, ast->u.record_var.field.id) == 0) {
                         struct monga_ast_reference_t* reference = &field->type;
-                        ast->record_var.field.tag = MONGA_AST_REFERENCE_FIELD;
-                        ast->record_var.field.u.field = field;
+                        ast->u.record_var.field.tag = MONGA_AST_REFERENCE_FIELD;
+                        ast->u.record_var.field.u.field = field;
                         ast->typedesc = reference->u.def_type->typedesc;
                         found_field = true;
                         break;
@@ -429,7 +428,7 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
                 }
                 if (!found_field) {
                     fprintf(stderr, "Could not find field \"%s\" in record (line %zu)\n",
-                        ast->record_var.field.id, ast->line);
+                        ast->u.record_var.field.id, ast->line);
                     exit(MONGA_ERR_UNDECLARED);
                 }
                 break;
@@ -457,15 +456,15 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             ast->typedesc = monga_ast_builtin_typedesc(MONGA_AST_TYPEDESC_BUILTIN_NULL);
             break;
         case MONGA_AST_EXPRESSION_VAR:
-            monga_ast_variable_bind(ast->var_exp.var, stack);
-            ast->typedesc = ast->var_exp.var->typedesc;
+            monga_ast_variable_bind(ast->u.var_exp.var, stack);
+            ast->typedesc = ast->u.var_exp.var->typedesc;
             break;
         case MONGA_AST_EXPRESSION_CALL:
         {
             struct monga_ast_reference_t *reference;
             struct monga_ast_def_function_t *def_function;
-            monga_ast_call_bind(ast->call_exp.call, stack);
-            reference = &ast->call_exp.call->function;
+            monga_ast_call_bind(ast->u.call_exp.call, stack);
+            reference = &ast->u.call_exp.call->function;
             def_function = reference->u.def_function;
             if (def_function->type.id == NULL) {
                 fprintf(stderr, "Cannot use call to function \"%s\" as an expression, "
@@ -478,12 +477,12 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
         }
         case MONGA_AST_EXPRESSION_CAST:
         {
-            struct monga_ast_expression_t* exp = ast->cast_exp.exp;
+            struct monga_ast_expression_t* exp = ast->u.cast_exp.exp;
             struct monga_ast_typedesc_t* cast_typedesc;
             monga_ast_expression_bind(exp, stack);
-            monga_ast_bind_stack_get_name(stack, &ast->cast_exp.type, ast->line);
-            monga_ast_reference_check_kind(&ast->cast_exp.type, MONGA_AST_REFERENCE_TYPE, ast->line);
-            cast_typedesc = ast->cast_exp.type.u.def_type->typedesc;
+            monga_ast_bind_stack_get_name(stack, &ast->u.cast_exp.type, ast->line);
+            monga_ast_reference_check_kind(&ast->u.cast_exp.type, MONGA_AST_REFERENCE_TYPE, ast->line);
+            cast_typedesc = ast->u.cast_exp.type.u.def_type->typedesc;
             if (!monga_ast_typedesc_castable(cast_typedesc, exp->typedesc)) {
                 fprintf(stderr, "Cannot cast expression of type ");
                 monga_ast_typedesc_write(stderr, exp->typedesc);
@@ -498,18 +497,18 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
         case MONGA_AST_EXPRESSION_NEW:
         {
             struct monga_ast_typedesc_t* new_typedesc;
-            monga_ast_bind_stack_get_name(stack, &ast->new_exp.type, ast->line);
-            monga_ast_reference_check_kind(&ast->new_exp.type, MONGA_AST_REFERENCE_TYPE, ast->line);
-            new_typedesc = ast->new_exp.type.u.def_type->typedesc;
-            if (ast->new_exp.exp) {
+            monga_ast_bind_stack_get_name(stack, &ast->u.new_exp.type, ast->line);
+            monga_ast_reference_check_kind(&ast->u.new_exp.type, MONGA_AST_REFERENCE_TYPE, ast->line);
+            new_typedesc = ast->u.new_exp.type.u.def_type->typedesc;
+            if (ast->u.new_exp.exp) {
                 /* exp */
                 {
-                    struct monga_ast_expression_t* exp = ast->new_exp.exp;
+                    struct monga_ast_expression_t* exp = ast->u.new_exp.exp;
                     struct monga_ast_typedesc_t* typedesc;
                     monga_ast_expression_bind(exp, stack);
                     typedesc = exp->typedesc;
                     if (typedesc->tag != MONGA_AST_TYPEDESC_BUILTIN ||
-                        typedesc->builtin_typedesc != MONGA_AST_TYPEDESC_BUILTIN_INT) {
+                        typedesc->u.builtin_typedesc != MONGA_AST_TYPEDESC_BUILTIN_INT) {
                         fprintf(stderr, "Expected size to be of type \"int\" instead of ");
                         monga_ast_typedesc_write(stderr, typedesc);
                         fprintf(stderr, " (line %zu)\n", ast->line);
@@ -520,7 +519,7 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
                 {
                     ast->typedesc = construct(typedesc);
                     ast->typedesc->tag = MONGA_AST_TYPEDESC_ARRAY;
-                    ast->typedesc->array_typedesc = new_typedesc;
+                    ast->typedesc->u.array_typedesc = new_typedesc;
                 }
             } else {
                 ast->typedesc = new_typedesc;
@@ -529,7 +528,7 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
         }
         case MONGA_AST_EXPRESSION_NEGATIVE:
         {
-            struct monga_ast_expression_t* exp = ast->negative_exp.exp;
+            struct monga_ast_expression_t* exp = ast->u.negative_exp.exp;
             monga_ast_expression_bind(exp, stack);
             if (!monga_ast_typedesc_numeric(exp->typedesc)) {
                 fprintf(stderr, "Type ");
@@ -545,8 +544,8 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
         case MONGA_AST_EXPRESSION_MULTIPLICATION:
         case MONGA_AST_EXPRESSION_DIVISION:
         {
-            struct monga_ast_expression_t* exp1 = ast->binop_exp.exp1;
-            struct monga_ast_expression_t* exp2 = ast->binop_exp.exp2;
+            struct monga_ast_expression_t* exp1 = ast->u.binop_exp.exp1;
+            struct monga_ast_expression_t* exp2 = ast->u.binop_exp.exp2;
             monga_ast_expression_bind(exp1, stack);
             monga_ast_expression_bind(exp2, stack);
             if (!monga_ast_typedesc_numeric(exp1->typedesc)) {
@@ -580,12 +579,12 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             struct monga_ast_typedesc_t* false_typedesc;
             struct monga_ast_typedesc_t* parent_typedesc;
 
-            monga_ast_condition_bind(ast->conditional_exp.cond, stack);
-            monga_ast_expression_bind(ast->conditional_exp.true_exp, stack);
-            monga_ast_expression_bind(ast->conditional_exp.false_exp, stack);
+            monga_ast_condition_bind(ast->u.conditional_exp.cond, stack);
+            monga_ast_expression_bind(ast->u.conditional_exp.true_exp, stack);
+            monga_ast_expression_bind(ast->u.conditional_exp.false_exp, stack);
             
-            true_typedesc = ast->conditional_exp.true_exp->typedesc;
-            false_typedesc = ast->conditional_exp.false_exp->typedesc;
+            true_typedesc = ast->u.conditional_exp.true_exp->typedesc;
+            false_typedesc = ast->u.conditional_exp.false_exp->typedesc;
             parent_typedesc = monga_ast_typedesc_parent(true_typedesc, false_typedesc);
             
             if (parent_typedesc != NULL) {
@@ -617,8 +616,8 @@ void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_as
         case MONGA_AST_CONDITION_LT:
         case MONGA_AST_CONDITION_GT:
         {
-            struct monga_ast_expression_t* exp1 = ast->exp_binop_cond.exp1;
-            struct monga_ast_expression_t* exp2 = ast->exp_binop_cond.exp2;
+            struct monga_ast_expression_t* exp1 = ast->u.exp_binop_cond.exp1;
+            struct monga_ast_expression_t* exp2 = ast->u.exp_binop_cond.exp2;
 
             monga_ast_expression_bind(exp1, stack);
             monga_ast_expression_bind(exp2, stack);
@@ -635,11 +634,11 @@ void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_as
         }
         case MONGA_AST_CONDITION_AND:
         case MONGA_AST_CONDITION_OR:
-            monga_ast_condition_bind(ast->cond_binop_cond.cond1, stack);
-            monga_ast_condition_bind(ast->cond_binop_cond.cond2, stack);
+            monga_ast_condition_bind(ast->u.cond_binop_cond.cond1, stack);
+            monga_ast_condition_bind(ast->u.cond_binop_cond.cond2, stack);
             break;
         case MONGA_AST_CONDITION_NOT:
-            monga_ast_condition_bind(ast->cond_unop_cond.cond, stack);
+            monga_ast_condition_bind(ast->u.cond_unop_cond.cond, stack);
             break;
         default:
             monga_unreachable();

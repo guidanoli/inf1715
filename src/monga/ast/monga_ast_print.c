@@ -24,13 +24,13 @@ void monga_ast_definition_print(struct monga_ast_definition_t* ast, int identati
 {
     switch (ast->tag) {
         case MONGA_AST_DEFINITION_VARIABLE:
-            monga_ast_def_variable_print(ast->def_variable, identation);
+            monga_ast_def_variable_print(ast->u.def_variable, identation);
             break;
         case MONGA_AST_DEFINITION_TYPE:
-            monga_ast_def_type_print(ast->def_type, identation);
+            monga_ast_def_type_print(ast->u.def_type, identation);
             break;
         case MONGA_AST_DEFINITION_FUNCTION:
-            monga_ast_def_function_print(ast->def_function, identation);
+            monga_ast_def_function_print(ast->u.def_function, identation);
             break;
         default:
             monga_unreachable();
@@ -79,15 +79,15 @@ void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation)
     switch (ast->tag) {
         case MONGA_AST_TYPEDESC_ID:
             printf("id\n");
-            monga_ast_reference_print(&ast->id_typedesc, identation+1);
+            monga_ast_reference_print(&ast->u.id_typedesc, identation+1);
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
             printf("array\n");
-            monga_ast_typedesc_print(ast->array_typedesc, identation+1);
+            monga_ast_typedesc_print(ast->u.array_typedesc, identation+1);
             break;
         case MONGA_AST_TYPEDESC_RECORD:
             printf("record\n");
-            monga_ast_field_print(ast->record_typedesc->first, identation+1);
+            monga_ast_field_print(ast->u.record_typedesc->first, identation+1);
             break;
         default:
             monga_unreachable();
@@ -141,25 +141,25 @@ void monga_ast_statement_print(struct monga_ast_statement_t* ast, int identation
     switch (ast->tag) {
         case MONGA_AST_STATEMENT_IF:
             printf("if\n");
-            monga_ast_condition_print(ast->if_stmt.cond, identation+1);
-            monga_ast_block_print(ast->if_stmt.then_block, identation+1);
-            if (ast->if_stmt.else_block)
-                monga_ast_block_print(ast->if_stmt.else_block, identation+1);
+            monga_ast_condition_print(ast->u.if_stmt.cond, identation+1);
+            monga_ast_block_print(ast->u.if_stmt.then_block, identation+1);
+            if (ast->u.if_stmt.else_block)
+                monga_ast_block_print(ast->u.if_stmt.else_block, identation+1);
             break;
         case MONGA_AST_STATEMENT_WHILE:
             printf("while\n");
-            monga_ast_condition_print(ast->while_stmt.cond, identation+1);
-            monga_ast_block_print(ast->while_stmt.loop, identation+1);
+            monga_ast_condition_print(ast->u.while_stmt.cond, identation+1);
+            monga_ast_block_print(ast->u.while_stmt.loop, identation+1);
             break;
         case MONGA_AST_STATEMENT_ASSIGN:
             printf("=\n");
-            monga_ast_variable_print(ast->assign_stmt.var, identation+1);
-            monga_ast_expression_print(ast->assign_stmt.exp, identation+1);
+            monga_ast_variable_print(ast->u.assign_stmt.var, identation+1);
+            monga_ast_expression_print(ast->u.assign_stmt.exp, identation+1);
             break;
         case MONGA_AST_STATEMENT_RETURN:
-            if (ast->return_stmt.exp) {
+            if (ast->u.return_stmt.exp) {
                 printf("return\n");
-                monga_ast_expression_print(ast->return_stmt.exp, identation+1);
+                monga_ast_expression_print(ast->u.return_stmt.exp, identation+1);
             } else {
                 printf("return)\n");
                 return;
@@ -167,15 +167,15 @@ void monga_ast_statement_print(struct monga_ast_statement_t* ast, int identation
             break;
         case MONGA_AST_STATEMENT_CALL:
             printf("call\n");
-            monga_ast_call_print(ast->call_stmt.call, identation+1);
+            monga_ast_call_print(ast->u.call_stmt.call, identation+1);
             break;
         case MONGA_AST_STATEMENT_PRINT:
             printf("print\n");
-            monga_ast_expression_print(ast->print_stmt.exp, identation+1);
+            monga_ast_expression_print(ast->u.print_stmt.exp, identation+1);
             break;
         case MONGA_AST_STATEMENT_BLOCK:
             printf("block\n");
-            monga_ast_block_print(ast->block_stmt.block, identation+1);
+            monga_ast_block_print(ast->u.block_stmt.block, identation+1);
             break;
         default:
             monga_unreachable();
@@ -193,17 +193,17 @@ void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation)
     switch (ast->tag) {
         case MONGA_AST_VARIABLE_ID:
             printf("id\n");
-            monga_ast_reference_print(&ast->id_var, identation+1);
+            monga_ast_reference_print(&ast->u.id_var, identation+1);
             break;
         case MONGA_AST_VARIABLE_ARRAY:
             printf("array\n");
-            monga_ast_expression_print(ast->array_var.array, identation+1);
-            monga_ast_expression_print(ast->array_var.index, identation+1);
+            monga_ast_expression_print(ast->u.array_var.array, identation+1);
+            monga_ast_expression_print(ast->u.array_var.index, identation+1);
             break;
         case MONGA_AST_VARIABLE_RECORD:
             printf("record\n");
-            monga_ast_reference_print(&ast->record_var.field, identation+1);
-            monga_ast_expression_print(ast->record_var.record, identation+1);
+            monga_ast_reference_print(&ast->u.record_var.field, identation+1);
+            monga_ast_expression_print(ast->u.record_var.record, identation+1);
             break;
         default:
             monga_unreachable();
@@ -218,10 +218,10 @@ void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identati
     printf("(expression ");
     switch (ast->tag) {
         case MONGA_AST_EXPRESSION_INTEGER:
-            printf("integer \"%d\")\n", ast->integer_exp.integer);
+            printf("integer \"%d\")\n", ast->u.integer_exp.integer);
             return;
         case MONGA_AST_EXPRESSION_REAL:
-            printf("real \"%g\")\n", ast->real_exp.real);
+            printf("real \"%g\")\n", ast->u.real_exp.real);
             return;
         case MONGA_AST_EXPRESSION_NULL:
             printf("null)\n");
@@ -261,34 +261,34 @@ void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identati
     }
     switch (ast->tag) {
         case MONGA_AST_EXPRESSION_VAR:
-            monga_ast_variable_print(ast->var_exp.var, identation+1);
+            monga_ast_variable_print(ast->u.var_exp.var, identation+1);
             break;
         case MONGA_AST_EXPRESSION_CALL:
-            monga_ast_call_print(ast->call_exp.call, identation+1);
+            monga_ast_call_print(ast->u.call_exp.call, identation+1);
             break;
         case MONGA_AST_EXPRESSION_CAST:
-            monga_ast_reference_print(&ast->cast_exp.type, identation+1);
-            monga_ast_expression_print(ast->cast_exp.exp, identation+1);
+            monga_ast_reference_print(&ast->u.cast_exp.type, identation+1);
+            monga_ast_expression_print(ast->u.cast_exp.exp, identation+1);
             break;
         case MONGA_AST_EXPRESSION_NEW:
-            monga_ast_reference_print(&ast->new_exp.type, identation+1);
-            if (ast->new_exp.exp)
-                monga_ast_expression_print(ast->new_exp.exp, identation+1);
+            monga_ast_reference_print(&ast->u.new_exp.type, identation+1);
+            if (ast->u.new_exp.exp)
+                monga_ast_expression_print(ast->u.new_exp.exp, identation+1);
             break;
         case MONGA_AST_EXPRESSION_NEGATIVE:
-            monga_ast_expression_print(ast->negative_exp.exp, identation+1);
+            monga_ast_expression_print(ast->u.negative_exp.exp, identation+1);
             break;
         case MONGA_AST_EXPRESSION_ADDITION:
         case MONGA_AST_EXPRESSION_SUBTRACTION:
         case MONGA_AST_EXPRESSION_MULTIPLICATION:
         case MONGA_AST_EXPRESSION_DIVISION:
-            monga_ast_expression_print(ast->binop_exp.exp1, identation+1);
-            monga_ast_expression_print(ast->binop_exp.exp2, identation+1);
+            monga_ast_expression_print(ast->u.binop_exp.exp1, identation+1);
+            monga_ast_expression_print(ast->u.binop_exp.exp2, identation+1);
             break;
         case MONGA_AST_EXPRESSION_CONDITIONAL:
-            monga_ast_condition_print(ast->conditional_exp.cond, identation+1);
-            monga_ast_expression_print(ast->conditional_exp.true_exp, identation+1);
-            monga_ast_expression_print(ast->conditional_exp.false_exp, identation+1);
+            monga_ast_condition_print(ast->u.conditional_exp.cond, identation+1);
+            monga_ast_expression_print(ast->u.conditional_exp.true_exp, identation+1);
+            monga_ast_expression_print(ast->u.conditional_exp.false_exp, identation+1);
             break;
         default:
             monga_unreachable();
@@ -341,16 +341,16 @@ void monga_ast_condition_print(struct monga_ast_condition_t* ast, int identation
         case MONGA_AST_CONDITION_GE:
         case MONGA_AST_CONDITION_LT:
         case MONGA_AST_CONDITION_GT:
-            monga_ast_expression_print(ast->exp_binop_cond.exp1, identation+1);
-            monga_ast_expression_print(ast->exp_binop_cond.exp2, identation+1);
+            monga_ast_expression_print(ast->u.exp_binop_cond.exp1, identation+1);
+            monga_ast_expression_print(ast->u.exp_binop_cond.exp2, identation+1);
             break;
         case MONGA_AST_CONDITION_AND:
         case MONGA_AST_CONDITION_OR:
-            monga_ast_condition_print(ast->cond_binop_cond.cond1, identation+1);
-            monga_ast_condition_print(ast->cond_binop_cond.cond2, identation+1);
+            monga_ast_condition_print(ast->u.cond_binop_cond.cond1, identation+1);
+            monga_ast_condition_print(ast->u.cond_binop_cond.cond2, identation+1);
             break;
         case MONGA_AST_CONDITION_NOT:
-            monga_ast_condition_print(ast->cond_unop_cond.cond, identation+1);
+            monga_ast_condition_print(ast->u.cond_unop_cond.cond, identation+1);
             break;
         default:
             monga_unreachable();

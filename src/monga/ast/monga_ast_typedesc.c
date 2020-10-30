@@ -8,21 +8,21 @@ void monga_ast_typedesc_write(FILE* f, struct monga_ast_typedesc_t* typedesc)
 {
     switch (typedesc->tag) {
     case MONGA_AST_TYPEDESC_BUILTIN:
-        fprintf(f, "%s", monga_ast_builtin_typedesc_id(typedesc->builtin_typedesc));
+        fprintf(f, "%s", monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc));
         break;
     case MONGA_AST_TYPEDESC_ID:
-        fprintf(f, "%s", typedesc->id_typedesc.id);
+        fprintf(f, "%s", typedesc->u.id_typedesc.id);
         break;
     case MONGA_AST_TYPEDESC_ARRAY:
         fprintf(f, "[");
-        monga_ast_typedesc_write(f, typedesc->array_typedesc);
+        monga_ast_typedesc_write(f, typedesc->u.array_typedesc);
         fprintf(f, "]");
         break;
     case MONGA_AST_TYPEDESC_RECORD:
         fprintf(f, "{");
         {
             struct monga_ast_field_t* field;
-            for (field = typedesc->record_typedesc->first; field; field = field->next) {
+            for (field = typedesc->u.record_typedesc->first; field; field = field->next) {
                 fprintf(f, "%s : ", field->id);
                 monga_ast_typedesc_write(f, field->type.u.def_type->typedesc);
                 if (field->next)
@@ -40,7 +40,7 @@ void monga_ast_typedesc_write(FILE* f, struct monga_ast_typedesc_t* typedesc)
 struct monga_ast_typedesc_t* monga_ast_typedesc_resolve_id(struct monga_ast_typedesc_t *typedesc)
 {
     while (typedesc->tag == MONGA_AST_TYPEDESC_ID) {
-        struct monga_ast_reference_t* id_typedesc = &typedesc->id_typedesc;
+        struct monga_ast_reference_t* id_typedesc = &typedesc->u.id_typedesc;
         monga_assert(id_typedesc->tag == MONGA_AST_REFERENCE_TYPE);
         typedesc = id_typedesc->u.def_type->typedesc;
     }
@@ -51,7 +51,7 @@ bool monga_ast_typedesc_numeric(struct monga_ast_typedesc_t* typedesc)
 {
     typedesc = monga_ast_typedesc_resolve_id(typedesc);
     if (typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN) {
-        enum monga_ast_typedesc_builtin_t builtin = typedesc->builtin_typedesc;
+        enum monga_ast_typedesc_builtin_t builtin = typedesc->u.builtin_typedesc;
         return builtin == MONGA_AST_TYPEDESC_BUILTIN_INT || builtin == MONGA_AST_TYPEDESC_BUILTIN_FLOAT;
     } else {
         return false; /* all the other kinds of type descriptors aren't numeric */
@@ -67,7 +67,7 @@ void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t* typede
         break; /* built-in types never reference each other */
     case MONGA_AST_TYPEDESC_ID:
     {
-        struct monga_ast_reference_t* reference = &typedesc->id_typedesc;
+        struct monga_ast_reference_t* reference = &typedesc->u.id_typedesc;
         monga_assert(reference->tag == MONGA_AST_REFERENCE_TYPE);
 
         def_type = reference->u.def_type;
@@ -79,11 +79,11 @@ void monga_ast_typedesc_check_self_reference(struct monga_ast_typedesc_t* typede
         
         /* get array first non-array typedesc */
         while (array_type->tag == MONGA_AST_TYPEDESC_ARRAY) {
-            array_type = array_type->array_typedesc;
+            array_type = array_type->u.array_typedesc;
         }
         
         if (array_type->tag == MONGA_AST_TYPEDESC_ID) {
-            struct monga_ast_reference_t* reference = &array_type->id_typedesc;
+            struct monga_ast_reference_t* reference = &array_type->u.id_typedesc;
             monga_assert(reference->tag == MONGA_AST_REFERENCE_TYPE);
             def_type = reference->u.def_type;
         }
@@ -110,7 +110,7 @@ bool monga_ast_typedesc_castable(struct monga_ast_typedesc_t *totypedesc, struct
         return true;
 
     if (fromtypedesc->tag == totypedesc->tag && fromtypedesc->tag == MONGA_AST_TYPEDESC_BUILTIN)
-        return monga_ast_builtin_castable(totypedesc->builtin_typedesc, fromtypedesc->builtin_typedesc);
+        return monga_ast_builtin_castable(totypedesc->u.builtin_typedesc, fromtypedesc->u.builtin_typedesc);
     
     return false;
 }
@@ -154,12 +154,12 @@ bool monga_ast_typedesc_assignable(struct monga_ast_typedesc_t *vartypedesc, str
     if (vartypedesc->tag == exptypedesc->tag) {
         switch (vartypedesc->tag) {
         case MONGA_AST_TYPEDESC_BUILTIN:
-            return vartypedesc->builtin_typedesc == exptypedesc->builtin_typedesc; /* same built-in type */
+            return vartypedesc->u.builtin_typedesc == exptypedesc->u.builtin_typedesc; /* same built-in type */
         case MONGA_AST_TYPEDESC_ID:
             monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
-            return monga_ast_typedesc_equal(vartypedesc->array_typedesc, exptypedesc->array_typedesc); /* propagate to subtype */
+            return monga_ast_typedesc_equal(vartypedesc->u.array_typedesc, exptypedesc->u.array_typedesc); /* propagate to subtype */
         case MONGA_AST_TYPEDESC_RECORD:
             return vartypedesc == exptypedesc; /* same type definition */
         default:
@@ -167,6 +167,8 @@ bool monga_ast_typedesc_assignable(struct monga_ast_typedesc_t *vartypedesc, str
         }
     } else {
         return (vartypedesc->tag == MONGA_AST_TYPEDESC_ARRAY || vartypedesc->tag == MONGA_AST_TYPEDESC_RECORD) &&
-               (exptypedesc->tag == MONGA_AST_TYPEDESC_BUILTIN && exptypedesc->builtin_typedesc == MONGA_AST_TYPEDESC_BUILTIN_NULL);
+               (exptypedesc->tag == MONGA_AST_TYPEDESC_BUILTIN && exptypedesc->u.builtin_typedesc == MONGA_AST_TYPEDESC_BUILTIN_NULL);
     }
+    
+    return false;
 }

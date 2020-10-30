@@ -60,7 +60,7 @@ struct monga_ast_typedesc_t
         struct monga_ast_reference_t id_typedesc;
         struct monga_ast_typedesc_t* array_typedesc;
         struct monga_ast_field_list_t* record_typedesc;
-    };
+    } u;
     size_t line;
 };
 
@@ -102,7 +102,7 @@ struct monga_ast_condition_t
         struct {
             struct monga_ast_condition_t *cond;
         } cond_unop_cond;
-    };
+    } u;
     size_t line;
 };
 
@@ -158,7 +158,7 @@ struct monga_ast_expression_t
             struct monga_ast_expression_t *true_exp;
             struct monga_ast_expression_t *false_exp;
         } conditional_exp;
-    };
+    } u;
     struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_expression_t *next; /* nullable */
     size_t line;
@@ -181,7 +181,7 @@ struct monga_ast_variable_t
             struct monga_ast_expression_t *record;
             struct monga_ast_reference_t field;
         } record_var;
-    };
+    } u;
     struct monga_ast_typedesc_t *typedesc;
     size_t line;
 };
@@ -223,7 +223,7 @@ struct monga_ast_statement_t
         struct {
             struct monga_ast_block_t* block;
         } block_stmt;
-    };
+    } u;
     struct monga_ast_statement_t *next; /* nullable */
     size_t line;
 };
@@ -310,7 +310,7 @@ struct monga_ast_definition_t
         struct monga_ast_def_variable_t *def_variable;
         struct monga_ast_def_type_t *def_type;
         struct monga_ast_def_function_t *def_function;
-    };
+    } u;
     struct monga_ast_definition_t *next; /* nullable */
 };
 

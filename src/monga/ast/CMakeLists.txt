@@ -10,3 +10,7 @@ add_library(monga_ast STATIC
 target_link_libraries(monga_ast monga_utils)
 target_include_directories(monga_ast PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_options(monga_ast PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>
+)

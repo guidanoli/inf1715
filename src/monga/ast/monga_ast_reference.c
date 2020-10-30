@@ -26,6 +26,7 @@ size_t monga_ast_reference_line(struct monga_ast_reference_t* reference)
         return reference->u.field->line;
     default:
         monga_unreachable();
+        return 0;
     }
 }
 

@@ -53,7 +53,8 @@ struct monga_ast_bind_stack_name_t* monga_ast_bind_stack_get_name_in_current_blo
 void monga_ast_bind_stack_insert_name(struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* reference)
 {
     struct monga_ast_bind_stack_name_t* name;
-    if (name = monga_ast_bind_stack_get_name_in_current_block(stack, reference->id)) {
+    name = monga_ast_bind_stack_get_name_in_current_block(stack, reference->id);
+    if (name != NULL) {
         size_t defined_line = monga_ast_reference_line(name->reference);
         size_t redefined_line = monga_ast_reference_line(reference);
         const char* defined_kind = monga_ast_reference_kind_name(name->reference->tag);
