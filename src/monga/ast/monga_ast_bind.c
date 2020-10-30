@@ -9,14 +9,6 @@
 #include "monga_ast_typedesc.h"
 #include "monga_ast_reference.h"
 
-/* Static variables */
-
-/* Built-in type descriptors that can be referenced */
-static enum monga_ast_typedesc_builtin_t visible_builtin_types[] = {
-    MONGA_AST_TYPEDESC_BUILTIN_INT,
-    MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
-};
-
 /* Function declarations */
 
 static void monga_ast_repeated_field_check(struct monga_ast_field_t* field);
@@ -29,15 +21,15 @@ void monga_ast_program_bind(struct monga_ast_program_t* ast)
 {
     if (ast->definitions) {
         struct monga_ast_bind_stack_t* stack = monga_ast_bind_stack_create();
-        /* TODO: move visible builtin types logic to monga_ast_builtin.c */
-        for (size_t i = 0; i < sizeofv(visible_builtin_types); ++i) {
-            enum monga_ast_typedesc_builtin_t builtin = visible_builtin_types[i];
-            struct monga_ast_def_type_t* def_type = monga_ast_builtin_def_type(builtin);
-            struct monga_ast_reference_t* reference = construct(reference);
-            reference->tag = MONGA_AST_REFERENCE_TYPE;
-            reference->u.def_type = def_type;
-            reference->id = def_type->id;
-            monga_ast_bind_stack_insert_name(stack, reference);
+        for (enum monga_ast_typedesc_builtin_t builtin = 0; builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT; ++builtin) {
+            if (monga_ast_builtin_visible(builtin)) {
+                struct monga_ast_def_type_t* def_type = monga_ast_builtin_def_type(builtin);
+                struct monga_ast_reference_t* reference = construct(reference);
+                reference->tag = MONGA_AST_REFERENCE_TYPE;
+                reference->u.def_type = def_type;
+                reference->id = def_type->id;
+                monga_ast_bind_stack_insert_name(stack, reference);
+            }
         }
         monga_ast_definition_bind(ast->definitions->first, stack);
         monga_ast_bind_stack_destroy(stack);

@@ -329,11 +329,6 @@ struct monga_ast_program_t
 
 extern struct monga_ast_program_t *root;
 
-/* Module initializing and closing */
-
-void monga_ast_init();
-void monga_ast_close();
-
 /* Constructors */
 
 #define construct(type) \
