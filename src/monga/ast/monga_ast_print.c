@@ -223,6 +223,9 @@ void monga_ast_expression_print(struct monga_ast_expression_t* ast, int identati
         case MONGA_AST_EXPRESSION_REAL:
             printf("real \"%g\")\n", ast->real_exp.real);
             return;
+        case MONGA_AST_EXPRESSION_NULL:
+            printf("null)\n");
+            return;
         case MONGA_AST_EXPRESSION_VAR:
             printf("variable\n");
             break;

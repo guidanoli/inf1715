@@ -1,0 +1,17 @@
+(program
+	(def_type id="x"
+		(typedesc array
+			(typedesc id
+				(reference id="int" kind="type" line=0)
+			)
+		)
+	)
+	(def_function id="getnull"
+		(reference id="x" kind="type" line=1)
+		(block
+			(statement return
+				(expression null)
+			)
+		)
+	)
+)

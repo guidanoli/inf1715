@@ -133,6 +133,7 @@ It has become quite apparent that it is not possible to obtain the type of some 
 | :-: | :-: |
 | integer_exp | *built-in* int |
 | real_exp | *built-in* float |
+| null_exp | *built-in* null |
 | var_exp | type(.var) |
 | call_exp | type(.call) [2] |
 | cast_exp | .type |

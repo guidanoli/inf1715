@@ -1,0 +1,4 @@
+type x = [int];
+function f(a : x) {
+    a = null * null;
+}

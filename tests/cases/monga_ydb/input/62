@@ -1,0 +1,4 @@
+type x = { v : int; };
+function getnull() : x {
+    return null;
+}

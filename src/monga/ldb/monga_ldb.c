@@ -23,6 +23,9 @@ int main(int argc, char** argv)
 			case MONGA_TK_REAL:
 				printf("REAL %g\n", yylval.terminal.real);
 				break;
+			case MONGA_TK_NULL:
+				printf("NULL\n");
+				break;
 			case MONGA_TK_AS:
 				printf("AS\n");
 				break;

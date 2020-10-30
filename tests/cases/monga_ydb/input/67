@@ -1,0 +1,4 @@
+type Integer = { v : int; };
+function f(i : Integer) {
+    i = null;
+}

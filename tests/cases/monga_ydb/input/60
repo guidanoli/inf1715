@@ -1,0 +1,3 @@
+function f(a : int) {
+    a = null as int;
+}

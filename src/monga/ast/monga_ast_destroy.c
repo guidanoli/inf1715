@@ -175,6 +175,8 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             break;
         case MONGA_AST_EXPRESSION_REAL:
             break;
+        case MONGA_AST_EXPRESSION_NULL:
+            break;
         case MONGA_AST_EXPRESSION_VAR:
             monga_ast_variable_destroy(ast->var_exp.var);
             break;

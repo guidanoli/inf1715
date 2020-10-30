@@ -9,14 +9,37 @@ static struct monga_ast_typedesc_t monga_ast_builtin_int_typedesc = {
 static struct monga_ast_typedesc_t monga_ast_builtin_float_typedesc = {
     MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_FLOAT, 0 };
 
+static struct monga_ast_typedesc_t monga_ast_builtin_null_typedesc = {
+    MONGA_AST_TYPEDESC_BUILTIN, MONGA_AST_TYPEDESC_BUILTIN_NULL, 0 };
+
 static struct monga_ast_typedesc_t* monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
     [MONGA_AST_TYPEDESC_BUILTIN_INT] = &monga_ast_builtin_int_typedesc,
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = &monga_ast_builtin_float_typedesc,
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = &monga_ast_builtin_null_typedesc,
 };
 
 static const char* monga_ast_builtin_typedesc_ids[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
     [MONGA_AST_TYPEDESC_BUILTIN_INT] = "int",
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "float",
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = "null",
+};
+
+static bool monga_ast_builtin_typedesc_cast_matrix[][MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = {
+        [MONGA_AST_TYPEDESC_BUILTIN_INT] = true,
+        [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = true,
+        [MONGA_AST_TYPEDESC_BUILTIN_NULL] = false,
+    },
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = {
+        [MONGA_AST_TYPEDESC_BUILTIN_INT] = true,
+        [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = true,
+        [MONGA_AST_TYPEDESC_BUILTIN_NULL] = false,
+    },
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = {
+        [MONGA_AST_TYPEDESC_BUILTIN_INT] = false,
+        [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = false,
+        [MONGA_AST_TYPEDESC_BUILTIN_NULL] = true,
+    },
 };
 
 static struct monga_ast_def_type_t* monga_ast_builtin_def_types[MONGA_AST_TYPEDESC_BUILTIN_CNT];
@@ -37,6 +60,13 @@ struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_
 {
     monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
     return monga_ast_builtin_def_types[builtin];
+}
+
+bool monga_ast_builtin_castable(enum monga_ast_typedesc_builtin_t from, enum monga_ast_typedesc_builtin_t to)
+{
+    monga_assert(from >= 0 && from < MONGA_AST_TYPEDESC_BUILTIN_CNT);
+    monga_assert(to >= 0 && to < MONGA_AST_TYPEDESC_BUILTIN_CNT);
+    return monga_ast_builtin_typedesc_cast_matrix[from][to];
 }
 
 void monga_ast_builtin_init()

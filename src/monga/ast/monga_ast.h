@@ -43,6 +43,7 @@ struct monga_ast_reference_t
 enum monga_ast_typedesc_builtin_t {
     MONGA_AST_TYPEDESC_BUILTIN_INT,
     MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
+    MONGA_AST_TYPEDESC_BUILTIN_NULL,
     MONGA_AST_TYPEDESC_BUILTIN_CNT, /* pseudo value */
 };
 
@@ -110,6 +111,7 @@ struct monga_ast_expression_t
     enum {
         MONGA_AST_EXPRESSION_INTEGER,
         MONGA_AST_EXPRESSION_REAL,
+        MONGA_AST_EXPRESSION_NULL,
         MONGA_AST_EXPRESSION_VAR,
         MONGA_AST_EXPRESSION_CALL,
         MONGA_AST_EXPRESSION_CAST,
@@ -128,6 +130,8 @@ struct monga_ast_expression_t
         struct {
             double real;
         } real_exp;
+        /* null_exp doesn't exist because it
+           needs no more information */
         struct {
             struct monga_ast_variable_t *var;
         } var_exp;

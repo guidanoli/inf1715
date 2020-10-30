@@ -11,4 +11,6 @@ const char* monga_ast_builtin_typedesc_id(enum monga_ast_typedesc_builtin_t buil
 
 struct monga_ast_def_type_t* monga_ast_builtin_def_type(enum monga_ast_typedesc_builtin_t builtin);
 
+bool monga_ast_builtin_castable(enum monga_ast_typedesc_builtin_t from, enum monga_ast_typedesc_builtin_t to);
+
 #endif

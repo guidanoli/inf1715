@@ -61,6 +61,7 @@ record_var = (exp, id: string)
 
 exp : integer_exp
     | real_exp
+    | null_exp
     | var_exp
     | call_exp
     | cast_exp
@@ -75,6 +76,8 @@ exp : integer_exp
 integer_exp = (val: integer)
 
 real_exp = (val: real)
+
+null_exp = ()
 
 var_exp = (var)
 

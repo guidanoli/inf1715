@@ -1,0 +1,22 @@
+(program
+	(def_type id="Integer"
+		(typedesc record
+			(field id="v"
+				(reference id="int" kind="type" line=0)
+			)
+		)
+	)
+	(def_function id="f"
+		(parameter id="i"
+			(reference id="Integer" kind="type" line=1)
+		)
+		(block
+			(statement =
+				(variable id
+					(reference id="i" kind="parameter" line=2)
+				)
+				(expression null)
+			)
+		)
+	)
+)
