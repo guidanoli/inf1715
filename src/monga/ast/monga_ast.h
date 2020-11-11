@@ -159,7 +159,7 @@ struct monga_ast_expression_t
             struct monga_ast_expression_t *false_exp;
         } conditional_exp;
     } u;
-    struct monga_ast_typedesc_t *typedesc;
+    struct monga_ast_def_type_t *def_type;
     struct monga_ast_expression_t *next; /* nullable */
     size_t line;
 };
@@ -182,7 +182,7 @@ struct monga_ast_variable_t
             struct monga_ast_reference_t field;
         } record_var;
     } u;
-    struct monga_ast_typedesc_t *typedesc;
+    struct monga_ast_def_type_t *def_type;
     size_t line;
 };
 

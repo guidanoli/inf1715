@@ -39,10 +39,22 @@ static bool monga_ast_builtin_typedesc_visible_array[MONGA_AST_TYPEDESC_BUILTIN_
     [MONGA_AST_TYPEDESC_BUILTIN_NULL] = false,
 };
 
+static const char* monga_ast_builtin_llvm_equivalents[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "int32",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "float",
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = "opaque",
+};
+
 const char* monga_ast_builtin_typedesc_id(enum monga_ast_typedesc_builtin_t builtin)
 {
     monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
     return monga_ast_builtin_def_types[builtin].id;
+}
+
+const char* monga_ast_builtin_typedesc_llvm(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
+    return monga_ast_builtin_llvm_equivalents[builtin];
 }
 
 struct monga_ast_typedesc_t* monga_ast_builtin_typedesc(enum monga_ast_typedesc_builtin_t builtin)

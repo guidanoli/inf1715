@@ -3,7 +3,7 @@
 #include "monga.y.h"
 #include "monga_ast.h"
 #include "monga_ast_bind.h"
-#include "monga_ast_print.h"
+#include "monga_ast_llvm.h"
 #include "monga_ast_destroy.h"
 
 void yyerror(const char* err)
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     int res = yyparse();
     if (!res) {
         monga_ast_program_bind(root);
-        /*monga_ast_program_llvm(root);*/
+        monga_ast_program_llvm(root);
         monga_ast_program_destroy(root);
 
         if (monga_get_allocated_cnt() != 0) {

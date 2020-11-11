@@ -1,4 +1,4 @@
-# AST code generation
+# AST LLVM code generation
 
 Based on the Abstract Syntactic Tree, LLVM code will be generated so that it can be compiled to assembly and then, to machine code. The development process will follow a strategic bottom up approach so that partial results can be effectively tested and validated.
 
@@ -40,6 +40,9 @@ The mapping between Monga and LLVM built-in types is described in the following 
 | :-: | :-: |
 | `int` | `int32` |
 | `float` | `float` |
+| `null` | `opaque` |
+
+But `null` will never be used because it is internal.
 
 ### `id_typedesc`
 
