@@ -47,3 +47,4 @@ include(AddTester) # add_tester
 
 add_subdirectory(ldb)
 add_subdirectory(ydb)
+add_subdirectory(llvmdb)
