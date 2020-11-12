@@ -1,0 +1,12 @@
+type t = float;
+type a = [int];
+type b = [float];
+type c = {
+    a : a;
+    b : b;
+};
+var x : int;
+var y : t;
+var z : a;
+var w : b;
+var k : c;

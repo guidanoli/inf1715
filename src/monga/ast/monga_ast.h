@@ -257,6 +257,7 @@ struct monga_ast_parameter_t
     struct monga_ast_reference_t type;
     struct monga_ast_parameter_t *next; /* nullable */
     size_t line;
+    size_t llvm_var_id; /* unique per function */
 };
 
 struct monga_ast_field_t

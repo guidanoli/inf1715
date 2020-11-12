@@ -38,7 +38,7 @@ The mapping between Monga and LLVM built-in types is described in the following 
 
 | Monga | LLVM |
 | :-: | :-: |
-| `int` | `int32` |
+| `int` | `i32` |
 | `float` | `float` |
 | `null` | `opaque` |
 

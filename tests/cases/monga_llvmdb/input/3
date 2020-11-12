@@ -1,0 +1,8 @@
+type x = float;
+type y = [x];
+type z = { v : int; };
+
+function f1() : int {}
+function f2(a : int) : x {}
+function f3(a : x, b : y) : y {}
+function f4(a : x, b : y, c : z) : z {}

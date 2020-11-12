@@ -1,0 +1,13 @@
+%S0 = type { i32 }
+define i32 @f1() {
+	ret i32 undef
+}
+define float @f2(i32 %t0) {
+	ret float undef
+}
+define float* @f3(float %t0, float* %t1) {
+	ret float* undef
+}
+define %S0* @f4(float %t0, float* %t1, %S0* %t2) {
+	ret %S0* undef
+}
