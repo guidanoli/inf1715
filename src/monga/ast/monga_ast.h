@@ -62,6 +62,15 @@ struct monga_ast_typedesc_t
         struct monga_ast_field_list_t* record_typedesc;
     } u;
     size_t line;
+
+    /* For recursive type descriptors, it might be necessary to construct
+       an annonymous type definition if the underlying type is structured.
+       For example, an array of records.
+       type t = [{ i : int; }];
+       In this case, the record annonymous_def_type will points to an
+       annonymous type definition.
+    */
+    struct monga_ast_def_type_t* annonymous_def_type; /* nullable */
 };
 
 struct monga_ast_expression_list_t
@@ -288,6 +297,7 @@ struct monga_ast_def_type_t
 {
     char *id;
     struct monga_ast_typedesc_t *typedesc;
+    size_t llvm_id;
     size_t line;
 };
 

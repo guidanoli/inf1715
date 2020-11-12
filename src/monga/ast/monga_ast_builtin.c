@@ -4,15 +4,15 @@
 #include <string.h>
 
 static struct monga_ast_typedesc_t monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
-    [MONGA_AST_TYPEDESC_BUILTIN_INT] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_INT }, 0 },
-    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_FLOAT }, 0 },
-    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_NULL }, 0 },
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_INT }, 0, NULL },
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_FLOAT }, 0, NULL },
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = { MONGA_AST_TYPEDESC_BUILTIN, { MONGA_AST_TYPEDESC_BUILTIN_NULL }, 0, NULL },
 };
 
 static struct monga_ast_def_type_t monga_ast_builtin_def_types[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
-    [MONGA_AST_TYPEDESC_BUILTIN_INT] = { "int", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_INT], 0 },
-    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = { "float", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_FLOAT], 0 },
-    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = { "null", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_NULL], 0 },
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = { "int", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_INT], 0, 0 },
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = { "float", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_FLOAT], 0, 0 },
+    [MONGA_AST_TYPEDESC_BUILTIN_NULL] = { "null", &monga_ast_builtin_typedescs[MONGA_AST_TYPEDESC_BUILTIN_NULL], 0, 0 },
 };
 
 static bool monga_ast_builtin_typedesc_cast_matrix[][MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
@@ -40,7 +40,7 @@ static bool monga_ast_builtin_typedesc_visible_array[MONGA_AST_TYPEDESC_BUILTIN_
 };
 
 static const char* monga_ast_builtin_llvm_equivalents[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
-    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "int32",
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "i32",
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "float",
     [MONGA_AST_TYPEDESC_BUILTIN_NULL] = "opaque",
 };

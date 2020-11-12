@@ -181,6 +181,7 @@ typedesc :
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ID;
         $$->u.id_typedesc.id = $<terminal.id>1;
+        $$->annonymous_def_type = NULL;
         $$->line = $<terminal.line>1;
     }
     | '[' typedesc ']'
@@ -188,6 +189,7 @@ typedesc :
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_ARRAY;
         $$->u.array_typedesc = $2;
+        $$->annonymous_def_type = NULL;
         $$->line = $<terminal.line>1;
     }
     | '{' field_list '}'
@@ -195,6 +197,7 @@ typedesc :
         $$ = construct(typedesc);
         $$->tag = MONGA_AST_TYPEDESC_RECORD;
         $$->u.record_typedesc = $2;
+        $$->annonymous_def_type = NULL;
         $$->line = $<terminal.line>1;
     }
 

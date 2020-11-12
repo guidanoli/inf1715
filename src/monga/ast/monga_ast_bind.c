@@ -77,7 +77,7 @@ void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_
     reference->u.def_type = ast;
     reference->id = ast->id;
     monga_ast_bind_stack_insert_name(stack, reference);
-    monga_ast_typedesc_bind(ast->typedesc, stack);
+    monga_ast_typedesc_bind(ast->typedesc, stack, false);
     monga_ast_typedesc_check_self_reference(ast->typedesc);
 }
 
@@ -188,7 +188,7 @@ void monga_ast_repeated_field_check(struct monga_ast_field_t* field)
     }
 }
 
-void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_bind_stack_t* stack)
+void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_bind_stack_t* stack, bool annonymous)
 {
     switch (ast->tag) {
         case MONGA_AST_TYPEDESC_ID:
@@ -196,7 +196,7 @@ void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_
             monga_ast_reference_check_kind(&ast->u.id_typedesc, MONGA_AST_REFERENCE_TYPE, ast->line);
             break;
         case MONGA_AST_TYPEDESC_ARRAY:
-            monga_ast_typedesc_bind(ast->u.array_typedesc, stack);
+            monga_ast_typedesc_bind(ast->u.array_typedesc, stack, true);
             break;
         case MONGA_AST_TYPEDESC_RECORD:
             monga_ast_bind_stack_block_enter(stack);
@@ -207,6 +207,8 @@ void monga_ast_typedesc_bind(struct monga_ast_typedesc_t* ast, struct monga_ast_
         default:
             monga_unreachable();
     }
+    if (annonymous)
+        ast->annonymous_def_type = monga_ast_construct_annonymous_def_type(ast);
 }
 
 void monga_ast_field_bind(struct monga_ast_field_t* ast, struct monga_ast_bind_stack_t* stack)
@@ -300,7 +302,24 @@ void monga_ast_statement_bind(struct monga_ast_statement_t* ast, struct monga_as
 struct monga_ast_def_type_t* monga_ast_construct_annonymous_def_type(struct monga_ast_typedesc_t* typedesc)
 {
     struct monga_ast_def_type_t *type = construct(def_type);
-    type->id = "(annonymous)";
+    char const* id;
+    switch (typedesc->tag) {
+    case MONGA_AST_TYPEDESC_BUILTIN:
+        id = monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc);
+        break;
+    case MONGA_AST_TYPEDESC_ID:
+        id = typedesc->u.id_typedesc.id;
+        break;
+    case MONGA_AST_TYPEDESC_ARRAY:
+        id = "(annonymous array)";
+        break;
+    case MONGA_AST_TYPEDESC_RECORD:
+        id = "(annonymous record)";
+        break;
+    default:
+        monga_unreachable();
+    }
+    type->id = monga_memdup(id, strlen(id)+1);
     type->typedesc = typedesc;
     type->line = typedesc->line;
     return type;
@@ -362,7 +381,7 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
                     monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
                     break;
                 case MONGA_AST_TYPEDESC_ARRAY:
-                    typedesc = typedesc->u.array_typedesc;
+                    ast->def_type = typedesc->u.array_typedesc->annonymous_def_type;
                     break;
                 case MONGA_AST_TYPEDESC_RECORD:
                     fprintf(stderr, "Expected expression to be of array type and not record (line %zu)\n",
@@ -372,7 +391,6 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
                 default:
                     monga_unreachable();
                 }
-                ast->def_type = monga_ast_construct_annonymous_def_type(typedesc);
             }
             /* index */
             {

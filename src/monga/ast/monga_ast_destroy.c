@@ -76,6 +76,10 @@ void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast)
         default:
             monga_unreachable();
     }
+    if (ast->annonymous_def_type) {
+        monga_free(ast->annonymous_def_type->id);
+        monga_free(ast->annonymous_def_type);
+    }
     monga_free(ast);
 }
 
@@ -157,7 +161,6 @@ void monga_ast_variable_destroy(struct monga_ast_variable_t* ast)
         case MONGA_AST_VARIABLE_ARRAY:
             monga_ast_expression_destroy(ast->u.array_var.array);
             monga_ast_expression_destroy(ast->u.array_var.index);
-            monga_free(ast->def_type); /* annonymous */
             break;
         case MONGA_AST_VARIABLE_RECORD:
             monga_ast_expression_destroy(ast->u.record_var.record);
@@ -193,6 +196,7 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             if (ast->u.new_exp.exp) {
                 monga_ast_expression_destroy(ast->u.new_exp.exp);
                 monga_free(ast->def_type->typedesc); /* annonymous */
+                monga_free(ast->def_type->id); /* annonymous */
                 monga_free(ast->def_type); /* annonymous */
             }
             break;
