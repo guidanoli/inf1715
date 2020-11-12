@@ -17,7 +17,7 @@ static void* field_next_getter(void *field);
 
 static struct monga_ast_typedesc_t* parameter_typedesc_getter(void* parameter);
 static void* parameter_next_getter(void *parameter);
-void parameter_visit_after(void* parameter, void* arg);
+static void parameter_visit_after(void* parameter, void* arg);
 
 void monga_ast_program_llvm(struct monga_ast_program_t* ast)
 {
@@ -51,7 +51,7 @@ void monga_ast_def_variable_llvm(struct monga_ast_def_variable_t* ast)
     printf(" undef\n");
 }
 
-static void monga_ast_typedesc_reference_list_llvm(void* node, typedesc_getter get_node_typedesc,
+void monga_ast_typedesc_reference_list_llvm(void* node, typedesc_getter get_node_typedesc,
     next_getter get_next_node, visiter visit_before, visiter visit_after, void* visit_arg)
 {
     struct monga_ast_typedesc_t* typedesc;
