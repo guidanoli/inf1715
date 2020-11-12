@@ -22,7 +22,7 @@ void monga_ast_typedesc_write(FILE* f, struct monga_ast_typedesc_t* typedesc)
         fprintf(f, "{");
         {
             struct monga_ast_field_t* field;
-            for (field = typedesc->u.record_typedesc->first; field; field = field->next) {
+            for (field = typedesc->u.record_typedesc.field_list->first; field; field = field->next) {
                 fprintf(f, "%s : ", field->id);
                 monga_ast_typedesc_write(f, field->type.u.def_type->typedesc);
                 if (field->next)

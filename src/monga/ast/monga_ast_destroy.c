@@ -70,15 +70,11 @@ void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast)
             monga_ast_typedesc_destroy(ast->u.array_typedesc);
             break;
         case MONGA_AST_TYPEDESC_RECORD:
-            monga_ast_field_destroy(ast->u.record_typedesc->first);
-            monga_free(ast->u.record_typedesc);
+            monga_ast_field_destroy(ast->u.record_typedesc.field_list->first);
+            monga_free(ast->u.record_typedesc.field_list);
             break;
         default:
             monga_unreachable();
-    }
-    if (ast->annonymous_def_type) {
-        monga_free(ast->annonymous_def_type->id);
-        monga_free(ast->annonymous_def_type);
     }
     monga_free(ast);
 }
@@ -195,9 +191,7 @@ void monga_ast_expression_destroy(struct monga_ast_expression_t* ast)
             monga_free(ast->u.new_exp.type.id);
             if (ast->u.new_exp.exp) {
                 monga_ast_expression_destroy(ast->u.new_exp.exp);
-                monga_free(ast->def_type->typedesc); /* annonymous */
-                monga_free(ast->def_type->id); /* annonymous */
-                monga_free(ast->def_type); /* annonymous */
+                monga_free(ast->typedesc); /* annonymous */
             }
             break;
         case MONGA_AST_EXPRESSION_NEGATIVE:

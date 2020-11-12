@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+static void monga_ast_typedesc_reference_llvm(struct monga_ast_typedesc_t* ast);
+
 void monga_ast_program_llvm(struct monga_ast_program_t* ast)
 {
     if (ast->definitions)
@@ -31,23 +33,22 @@ void monga_ast_definition_llvm(struct monga_ast_definition_t* ast, size_t struct
 
 void monga_ast_def_variable_llvm(struct monga_ast_def_variable_t* ast) { (void) ast; }
 
-static void monga_ast_def_type_reference_llvm(struct monga_ast_def_type_t* ast)
+void monga_ast_typedesc_reference_llvm(struct monga_ast_typedesc_t* ast)
 {
-    struct monga_ast_typedesc_t* typedesc = ast->typedesc;
-    typedesc = monga_ast_typedesc_resolve_id(typedesc);
-    switch (typedesc->tag) {
+    ast = monga_ast_typedesc_resolve_id(ast);
+    switch (ast->tag) {
     case MONGA_AST_TYPEDESC_BUILTIN:
-        printf("%s", monga_ast_builtin_typedesc_llvm(typedesc->u.builtin_typedesc));
+        printf("%s", monga_ast_builtin_typedesc_llvm(ast->u.builtin_typedesc));
         break;
     case MONGA_AST_TYPEDESC_ID:
         monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
         break;
     case MONGA_AST_TYPEDESC_ARRAY:
-        monga_ast_def_type_reference_llvm(typedesc->u.array_typedesc->annonymous_def_type);
+        monga_ast_typedesc_reference_llvm(ast->u.array_typedesc);
         putc('*', stdout);
         break;
     case MONGA_AST_TYPEDESC_RECORD:
-        printf("%%S%zu*", ast->llvm_id);
+        printf("%%S%zu*", ast->u.record_typedesc.llvm_struct_id);
         break;
     default:
         monga_unreachable();
@@ -56,23 +57,27 @@ static void monga_ast_def_type_reference_llvm(struct monga_ast_def_type_t* ast)
 
 void monga_ast_def_type_llvm(struct monga_ast_def_type_t* ast, size_t* struct_count_ptr)
 {
-    switch (ast->typedesc->tag) {
+    monga_ast_typedesc_llvm(ast->typedesc, struct_count_ptr);
+}
+
+void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast) { (void) ast; }
+
+void monga_ast_typedesc_llvm(struct monga_ast_typedesc_t* ast, size_t* struct_count_ptr)
+{
+    switch (ast->tag) {
     case MONGA_AST_TYPEDESC_ID:
         break;
     case MONGA_AST_TYPEDESC_ARRAY:
-    {
-        struct monga_ast_typedesc_t* subtypedesc = ast->typedesc->u.array_typedesc;
-        monga_ast_def_type_llvm(subtypedesc->annonymous_def_type, struct_count_ptr);
+        monga_ast_typedesc_llvm(ast->u.array_typedesc, struct_count_ptr);
         break;
-    }
     case MONGA_AST_TYPEDESC_RECORD:
     {
-        struct monga_ast_field_list_t* fieldlist;
-        ast->llvm_id = *struct_count_ptr;
-        printf("%%S%zu = type { ", ast->llvm_id);
-        fieldlist = ast->typedesc->u.record_typedesc;
-        for (struct monga_ast_field_t* field = fieldlist->first; field; field = field->next) {
-            monga_ast_def_type_reference_llvm(field->type.u.def_type);
+        struct monga_ast_field_list_t* field_list;
+        ast->u.record_typedesc.llvm_struct_id = *struct_count_ptr;
+        printf("%%S%zu = type { ", ast->u.record_typedesc.llvm_struct_id);
+        field_list = ast->u.record_typedesc.field_list;
+        for (struct monga_ast_field_t* field = field_list->first; field; field = field->next) {
+            monga_ast_typedesc_reference_llvm(field->type.u.def_type->typedesc);
             if (field->next)
                 printf(", ");
         }
@@ -84,8 +89,6 @@ void monga_ast_def_type_llvm(struct monga_ast_def_type_t* ast, size_t* struct_co
         monga_unreachable();
     }
 }
-
-void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast) { (void) ast; }
 
 // void monga_ast_field_llvm(struct monga_ast_field_t* ast) {}
 

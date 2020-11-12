@@ -59,18 +59,12 @@ struct monga_ast_typedesc_t
         enum monga_ast_typedesc_builtin_t builtin_typedesc;
         struct monga_ast_reference_t id_typedesc;
         struct monga_ast_typedesc_t* array_typedesc;
-        struct monga_ast_field_list_t* record_typedesc;
+        struct {
+            struct monga_ast_field_list_t* field_list;
+            size_t llvm_struct_id; /* unique */
+        } record_typedesc;
     } u;
     size_t line;
-
-    /* For recursive type descriptors, it might be necessary to construct
-       an annonymous type definition if the underlying type is structured.
-       For example, an array of records.
-       type t = [{ i : int; }];
-       In this case, the record annonymous_def_type will points to an
-       annonymous type definition.
-    */
-    struct monga_ast_def_type_t* annonymous_def_type; /* nullable */
 };
 
 struct monga_ast_expression_list_t
@@ -153,6 +147,7 @@ struct monga_ast_expression_t
         } cast_exp;
         struct {
             struct monga_ast_reference_t type;
+            /* If exp isn't null, typedesc is annonymous */
             struct monga_ast_expression_t *exp; /* nullable */
         } new_exp;
         struct {
@@ -168,7 +163,7 @@ struct monga_ast_expression_t
             struct monga_ast_expression_t *false_exp;
         } conditional_exp;
     } u;
-    struct monga_ast_def_type_t *def_type;
+    struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_expression_t *next; /* nullable */
     size_t line;
 };
@@ -191,7 +186,7 @@ struct monga_ast_variable_t
             struct monga_ast_reference_t field;
         } record_var;
     } u;
-    struct monga_ast_def_type_t *def_type;
+    struct monga_ast_typedesc_t *typedesc;
     size_t line;
 };
 
@@ -297,7 +292,6 @@ struct monga_ast_def_type_t
 {
     char *id;
     struct monga_ast_typedesc_t *typedesc;
-    size_t llvm_id;
     size_t line;
 };
 

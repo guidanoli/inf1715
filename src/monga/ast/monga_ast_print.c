@@ -87,7 +87,7 @@ void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation)
             break;
         case MONGA_AST_TYPEDESC_RECORD:
             printf("record\n");
-            monga_ast_field_print(ast->u.record_typedesc->first, identation+1);
+            monga_ast_field_print(ast->u.record_typedesc.field_list->first, identation+1);
             break;
         default:
             monga_unreachable();
