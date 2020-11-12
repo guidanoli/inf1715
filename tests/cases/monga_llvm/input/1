@@ -1,0 +1,18 @@
+type x = int;
+type y = float;
+type z = [int];
+type w = [float];
+type st = {
+    v : int;
+};
+type k = [{
+    a : int;
+    b : x;
+    c : y;
+    d : z;
+    e : w;
+    f : st;
+}];
+type v = {
+    x : k;
+};

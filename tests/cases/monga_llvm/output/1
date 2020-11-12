@@ -1,0 +1,3 @@
+%S0 = type { i32 }
+%S1 = type { i32, i32, float, i32*, float*, %S0* }
+%S2 = type { %S1** }

@@ -20,6 +20,7 @@ mkdir -p $candidatesdir
 # Test cases directories
 inputdir=tests/cases/$tester/input
 outputdir=tests/cases/$tester/output
+mkdir -p $outputdir
 
 # generatedcount is the number of generated files
 generatedcnt=0

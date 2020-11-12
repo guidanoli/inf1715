@@ -302,7 +302,7 @@ void monga_ast_statement_bind(struct monga_ast_statement_t* ast, struct monga_as
 struct monga_ast_def_type_t* monga_ast_construct_annonymous_def_type(struct monga_ast_typedesc_t* typedesc)
 {
     struct monga_ast_def_type_t *type = construct(def_type);
-    char const* id;
+    char const* id = NULL;
     switch (typedesc->tag) {
     case MONGA_AST_TYPEDESC_BUILTIN:
         id = monga_ast_builtin_typedesc_id(typedesc->u.builtin_typedesc);

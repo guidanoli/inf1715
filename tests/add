@@ -19,6 +19,7 @@ file=$(tests/count "$tester")
 
 # Input directory
 inputdir=tests/cases/$tester/input
+mkdir -p $inputdir
 
 # For each new test case, open editor
 while [[ $n -gt 0 ]] ;

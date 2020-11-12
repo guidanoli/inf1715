@@ -60,7 +60,11 @@ void monga_ast_def_type_llvm(struct monga_ast_def_type_t* ast, size_t* struct_co
     case MONGA_AST_TYPEDESC_ID:
         break;
     case MONGA_AST_TYPEDESC_ARRAY:
+    {
+        struct monga_ast_typedesc_t* subtypedesc = ast->typedesc->u.array_typedesc;
+        monga_ast_def_type_llvm(subtypedesc->annonymous_def_type, struct_count_ptr);
         break;
+    }
     case MONGA_AST_TYPEDESC_RECORD:
     {
         struct monga_ast_field_list_t* fieldlist;
