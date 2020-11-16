@@ -19,6 +19,9 @@ static struct monga_ast_typedesc_t* parameter_typedesc_getter(void* parameter);
 static void* parameter_next_getter(void *parameter);
 static void parameter_visit_after(void* parameter, void* arg);
 
+static void monga_ast_parameter_allocation_llvm(struct monga_ast_parameter_t* parameter, size_t* var_count_ptr);
+static void monga_ast_parameter_store_llvm(struct monga_ast_parameter_t* parameter, size_t parameter_count);
+
 void monga_ast_program_llvm(struct monga_ast_program_t* ast)
 {
     if (ast->definitions)
@@ -110,7 +113,7 @@ void monga_ast_def_function_return_llvm(struct monga_ast_def_function_t* ast)
 
 void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast)
 {
-    size_t var_count = 0;
+    size_t var_count = 0, parameter_count;
 
     printf("define ");
     monga_ast_def_function_return_llvm(ast);
@@ -122,13 +125,52 @@ void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast)
             parameter_visit_after, &var_count);
     }
 
-    printf(") {\n\tret ");
+    /* monga_ast_typedesc_reference_list_llvm increased var_count
+       for every parameter in the parameter list */
+    parameter_count = var_count;
+
+    printf(") {\n");
+
+    if (ast->parameters != NULL) {
+        monga_ast_parameter_allocation_llvm(ast->parameters->first, &var_count);
+        monga_ast_parameter_store_llvm(ast->parameters->first, parameter_count);
+    }
+
+    printf("\tret ");
     monga_ast_def_function_return_llvm(ast);
 
     if (ast->type.id)
         printf(" undef");
     
     printf("\n}\n");
+}
+
+void monga_ast_parameter_allocation_llvm(struct monga_ast_parameter_t* parameter, size_t* var_count_ptr)
+{
+    struct monga_ast_typedesc_t* typedesc = parameter_typedesc_getter(parameter);
+
+    printf("\t%%t%zu = alloca ", *var_count_ptr);
+    monga_ast_typedesc_reference_llvm(typedesc);
+    putc('\n', stdout);
+
+    *var_count_ptr += 1;
+
+    if (parameter->next)
+        monga_ast_parameter_allocation_llvm(parameter->next, var_count_ptr);
+}
+
+void monga_ast_parameter_store_llvm(struct monga_ast_parameter_t* parameter, size_t parameter_count)
+{
+    struct monga_ast_typedesc_t* typedesc = parameter_typedesc_getter(parameter);
+
+    printf("\tstore ");
+    monga_ast_typedesc_reference_llvm(typedesc);
+    printf(" %%t%zu, ", parameter->llvm_var_id);
+    monga_ast_typedesc_reference_llvm(typedesc);
+    printf("* %%t%zu\n", parameter->llvm_var_id + parameter_count);
+
+    if (parameter->next)
+        monga_ast_parameter_store_llvm(parameter->next, parameter_count);
 }
 
 struct monga_ast_typedesc_t* field_typedesc_getter(void* field)

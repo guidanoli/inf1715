@@ -84,6 +84,15 @@ void monga_assert_func(
 #define monga_assert(cond) monga_assert_func(cond, #cond)
 #endif
 
+/* Use this for unused arguments in a function definition to silence compiler
+ * warnings. For example:
+ * int func(int a, int monga_unused(b)) { return a; } */
+#if defined(__GNUC__) || defined(__clang__)
+#  define monga_unused(name) _unused_ ## name __attribute__((unused))
+#else
+#  define monga_unused(name) _unused_ ## name
+#endif
+
 /* Scanner */
 size_t monga_get_lineno();
 
