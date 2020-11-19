@@ -1,7 +1,7 @@
 (program
 	(def_function id="ap"
 		(reference id="int" kind="type" line=0)
-		(parameter id="n"
+		(def_variable id="n"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -18,7 +18,7 @@
 				(condition >
 					(expression variable
 						(variable id
-							(reference id="n" kind="parameter" line=1)
+							(reference id="n" kind="variable" line=1)
 						)
 					)
 					(expression integer "0")
@@ -36,19 +36,19 @@
 							)
 							(expression variable
 								(variable id
-									(reference id="n" kind="parameter" line=1)
+									(reference id="n" kind="variable" line=1)
 								)
 							)
 						)
 					)
 					(statement =
 						(variable id
-							(reference id="n" kind="parameter" line=1)
+							(reference id="n" kind="variable" line=1)
 						)
 						(expression -
 							(expression variable
 								(variable id
-									(reference id="n" kind="parameter" line=1)
+									(reference id="n" kind="variable" line=1)
 								)
 							)
 							(expression integer "1")

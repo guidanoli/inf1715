@@ -1,21 +1,21 @@
 (program
 	(def_function id="f"
-		(parameter id="x"
+		(def_variable id="x"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="y"
+		(def_variable id="y"
 			(reference id="float" kind="type" line=0)
 		)
 		(block
 			(statement =
 				(variable id
-					(reference id="y" kind="parameter" line=1)
+					(reference id="y" kind="variable" line=1)
 				)
 				(expression cast
 					(reference id="float" kind="type" line=0)
 					(expression variable
 						(variable id
-							(reference id="x" kind="parameter" line=1)
+							(reference id="x" kind="variable" line=1)
 						)
 					)
 				)

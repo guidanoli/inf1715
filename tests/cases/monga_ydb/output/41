@@ -3,14 +3,14 @@
 		(reference id="int" kind="type" line=0)
 	)
 	(def_function id="f"
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="float" kind="type" line=0)
 		)
 		(block
 			(statement print
 				(expression variable
 					(variable id
-						(reference id="a" kind="parameter" line=2)
+						(reference id="a" kind="variable" line=2)
 					)
 				)
 			)
@@ -18,7 +18,7 @@
 				(condition >
 					(expression variable
 						(variable id
-							(reference id="a" kind="parameter" line=2)
+							(reference id="a" kind="variable" line=2)
 						)
 					)
 					(expression real "0")

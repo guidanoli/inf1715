@@ -13,7 +13,7 @@
 
 static struct monga_ast_typedesc_t* monga_ast_construct_annonymous_array_typedesc(struct monga_ast_typedesc_t* typedesc);
 static void monga_ast_repeated_field_check(struct monga_ast_field_t* field);
-static void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_ast_parameter_t* parameter, struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack);
+static void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_ast_def_variable_t* parameter, struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack);
 static void monga_ast_check_function_statements(struct monga_ast_statement_t* statement, struct monga_ast_typedesc_t* typedesc, struct monga_ast_bind_stack_t* stack, struct monga_ast_reference_t* function);
 
 /* Function definitions */
@@ -167,7 +167,7 @@ void monga_ast_def_function_bind(struct monga_ast_def_function_t* ast, struct mo
     }
     monga_ast_bind_stack_block_enter(stack);
     if (ast->parameters)
-        monga_ast_parameter_bind(ast->parameters->first, stack);
+        monga_ast_def_variable_bind(ast->parameters->first, stack, false);
     monga_ast_block_bind(ast->block, stack);
     if (ast->block->statements) {
         struct monga_ast_typedesc_t* typedesc = ast->type.id ? ast->type.u.def_type->typedesc : NULL;
@@ -215,19 +215,6 @@ void monga_ast_field_bind(struct monga_ast_field_t* ast, struct monga_ast_bind_s
     monga_ast_reference_check_kind(&ast->type, MONGA_AST_REFERENCE_TYPE, ast->line);
     if (ast->next)
         monga_ast_field_bind(ast->next, stack);
-}
-
-void monga_ast_parameter_bind(struct monga_ast_parameter_t* ast, struct monga_ast_bind_stack_t* stack)
-{
-    struct monga_ast_reference_t* reference = construct(reference);
-    reference->tag = MONGA_AST_REFERENCE_PARAMETER;
-    reference->u.parameter = ast;
-    reference->id = ast->id;
-    monga_ast_bind_stack_insert_name(stack, reference);
-    monga_ast_bind_stack_get_name(stack, &ast->type, ast->line);
-    monga_ast_reference_check_kind(&ast->type, MONGA_AST_REFERENCE_TYPE, ast->line);
-    if (ast->next)
-        monga_ast_parameter_bind(ast->next, stack);
 }
 
 void monga_ast_block_bind(struct monga_ast_block_t* ast, struct monga_ast_bind_stack_t* stack)
@@ -314,24 +301,8 @@ void monga_ast_variable_bind(struct monga_ast_variable_t* ast, struct monga_ast_
             struct monga_ast_reference_t* type = NULL;
             struct monga_ast_reference_t* id_var = &ast->u.id_var;
             monga_ast_bind_stack_get_name(stack, id_var, ast->line);
-            switch (ast->u.id_var.tag) {
-            case MONGA_AST_REFERENCE_VARIABLE:
-            {
-                struct monga_ast_def_variable_t* def_variable = id_var->u.def_variable;
-                type = &def_variable->type;
-                break;
-            }
-            case MONGA_AST_REFERENCE_PARAMETER:
-            {
-                struct monga_ast_parameter_t* parameter = id_var->u.parameter;
-                type = &parameter->type;
-                break;
-            }
-            default:
-                /* For the user, parameters are just local variables */
-                monga_ast_reference_check_kind(&ast->u.id_var, MONGA_AST_REFERENCE_VARIABLE, ast->line);
-                monga_unreachable();
-            }
+            monga_ast_reference_check_kind(&ast->u.id_var, MONGA_AST_REFERENCE_VARIABLE, ast->line);
+            type = &id_var->u.def_variable->type;
             monga_assert(type->tag == MONGA_AST_REFERENCE_TYPE);
             ast->typedesc = type->u.def_type->typedesc;
             break;
@@ -644,7 +615,7 @@ void monga_ast_condition_bind(struct monga_ast_condition_t* ast, struct monga_as
     }
 }
 
-void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_ast_parameter_t* parameter,
+void monga_ast_call_parameters_bind(struct monga_ast_call_t* call, struct monga_ast_def_variable_t* parameter,
     struct monga_ast_expression_t* expression, struct monga_ast_bind_stack_t* stack)
 {
     struct monga_ast_def_function_t* def_function = call->function.u.def_function;
@@ -674,7 +645,7 @@ void monga_ast_call_bind(struct monga_ast_call_t* ast, struct monga_ast_bind_sta
     struct monga_ast_reference_t* function;
     struct monga_ast_def_function_t* def_function;
     struct monga_ast_expression_t* expressions;
-    struct monga_ast_parameter_t* parameters;
+    struct monga_ast_def_variable_t* parameters;
 
     function = &ast->function;
 

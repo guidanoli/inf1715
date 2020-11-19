@@ -1,7 +1,7 @@
 (program
 	(def_function id="norm"
 		(reference id="int" kind="type" line=0)
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -9,7 +9,7 @@
 				(condition ==
 					(expression variable
 						(variable id
-							(reference id="a" kind="parameter" line=1)
+							(reference id="a" kind="variable" line=1)
 						)
 					)
 					(expression integer "0")
@@ -24,7 +24,7 @@
 						(condition >
 							(expression variable
 								(variable id
-									(reference id="a" kind="parameter" line=1)
+									(reference id="a" kind="variable" line=1)
 								)
 							)
 							(expression integer "0")

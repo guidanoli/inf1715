@@ -3,25 +3,25 @@
 		(block)
 	)
 	(def_function id="f2"
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
 		(block)
 	)
 	(def_function id="f3"
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="b"
+		(def_variable id="b"
 			(reference id="int" kind="type" line=0)
 		)
 		(block)
 	)
 	(def_function id="f4"
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="b"
+		(def_variable id="b"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -30,10 +30,10 @@
 	)
 	(def_function id="f5"
 		(reference id="int" kind="type" line=0)
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="b"
+		(def_variable id="b"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -44,10 +44,10 @@
 	)
 	(def_function id="f6"
 		(reference id="int" kind="type" line=0)
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="b"
+		(def_variable id="b"
 			(reference id="int" kind="type" line=0)
 		)
 		(block

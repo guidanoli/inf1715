@@ -7,7 +7,7 @@
 		)
 	)
 	(def_function id="f"
-		(parameter id="x"
+		(def_variable id="x"
 			(reference id="t" kind="type" line=1)
 		)
 		(block
@@ -16,7 +16,7 @@
 					(variable array
 						(expression variable
 							(variable id
-								(reference id="x" kind="parameter" line=2)
+								(reference id="x" kind="variable" line=2)
 							)
 						)
 						(expression integer "0")

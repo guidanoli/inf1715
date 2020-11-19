@@ -49,7 +49,6 @@
     struct monga_ast_statement_t *statement;
     struct monga_ast_statement_list_t *statement_list;
     struct monga_ast_block_t *block;
-    struct monga_ast_parameter_t *parameter;
     struct monga_ast_parameter_list_t *parameter_list;
     struct monga_ast_field_t *field;
     struct monga_ast_field_list_t *field_list;
@@ -66,16 +65,14 @@
 %type <program> program
 %type <definition_list> definition_list opt_definition_list
 %type <definition> definition
-%type <def_variable_list> def_variable_list opt_def_variable_list
-%type <def_variable> def_variable
+%type <def_variable_list> def_variable_list opt_def_variable_list parameter_list opt_parameter_list
+%type <def_variable> def_variable parameter
 %type <terminal> type opt_def_function_type
 %type <def_type> def_type
 %type <typedesc> typedesc
 %type <field_list> field_list
 %type <field> field
 %type <def_function> def_function
-%type <parameter_list> parameter_list opt_parameter_list
-%type <parameter> parameter
 %type <block> block opt_else_block
 %type <statement_list> statement_list opt_statement_list
 %type <statement> statement
@@ -267,7 +264,7 @@ parameter_list :
     }
     | parameter
     {
-        $$ = construct(parameter_list);
+        $$ = construct(def_variable_list);
         $$->first = $$->last = $1;
     }
 
@@ -275,10 +272,11 @@ parameter :
 
     MONGA_TK_ID ':' type
     {
-        $$ = construct(parameter);
+        $$ = construct(def_variable);
         $$->id = $<terminal.id>1;
         $$->type.id = $3.id;
         $$->line = $<terminal.line>1;
+        $$->next = NULL;
     }
 
 block :

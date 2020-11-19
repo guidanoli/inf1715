@@ -51,7 +51,7 @@ void monga_ast_def_function_destroy(struct monga_ast_def_function_t* ast)
 {
     monga_free(ast->id);
     if (ast->parameters) {
-        monga_ast_parameter_destroy(ast->parameters->first);
+        monga_ast_def_variable_destroy(ast->parameters->first);
         monga_free(ast->parameters);
     }
     if (ast->type.id)
@@ -85,15 +85,6 @@ void monga_ast_field_destroy(struct monga_ast_field_t* ast)
     monga_free(ast->type.id);
     if (ast->next)
         monga_ast_field_destroy(ast->next);
-    monga_free(ast);
-}
-
-void monga_ast_parameter_destroy(struct monga_ast_parameter_t* ast)
-{
-    monga_free(ast->id);
-    monga_free(ast->type.id);
-    if (ast->next)
-        monga_ast_parameter_destroy(ast->next);
     monga_free(ast);
 }
 

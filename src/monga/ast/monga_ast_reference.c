@@ -7,7 +7,6 @@ static const char* reference_kind_names[] = {
     [MONGA_AST_REFERENCE_VARIABLE] = "variable",
     [MONGA_AST_REFERENCE_TYPE] = "type",
     [MONGA_AST_REFERENCE_FUNCTION] = "function",
-    [MONGA_AST_REFERENCE_PARAMETER] = "parameter",
     [MONGA_AST_REFERENCE_FIELD] = "field",
 };
 
@@ -20,8 +19,6 @@ size_t monga_ast_reference_line(struct monga_ast_reference_t* reference)
         return reference->u.def_type->line;
     case MONGA_AST_REFERENCE_FUNCTION:
         return reference->u.def_function->line;
-    case MONGA_AST_REFERENCE_PARAMETER:
-        return reference->u.parameter->line;
     case MONGA_AST_REFERENCE_FIELD:
         return reference->u.field->line;
     default:

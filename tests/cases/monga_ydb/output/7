@@ -18,7 +18,7 @@
 	)
 	(def_function id="ivec_new"
 		(reference id="ivec" kind="type" line=2)
-		(parameter id="n"
+		(def_variable id="n"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -44,7 +44,7 @@
 				)
 				(expression variable
 					(variable id
-						(reference id="n" kind="parameter" line=7)
+						(reference id="n" kind="variable" line=7)
 					)
 				)
 			)
@@ -61,7 +61,7 @@
 					(reference id="int" kind="type" line=0)
 					(expression variable
 						(variable id
-							(reference id="n" kind="parameter" line=7)
+							(reference id="n" kind="variable" line=7)
 						)
 					)
 				)

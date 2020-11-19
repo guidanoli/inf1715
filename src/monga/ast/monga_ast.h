@@ -9,7 +9,6 @@ struct monga_ast_definition_t;
 struct monga_ast_def_variable_t;
 struct monga_ast_def_type_t;
 struct monga_ast_def_function_t;
-struct monga_ast_parameter_t;
 struct monga_ast_field_t;
 struct monga_ast_field_list_t;
 struct monga_ast_block_t;
@@ -22,7 +21,6 @@ enum monga_ast_reference_tag_t
     MONGA_AST_REFERENCE_VARIABLE,
     MONGA_AST_REFERENCE_TYPE,
     MONGA_AST_REFERENCE_FUNCTION,
-    MONGA_AST_REFERENCE_PARAMETER,
     MONGA_AST_REFERENCE_FIELD,
     MONGA_AST_REFERENCE_CNT /* pseudo value */
 };
@@ -34,7 +32,6 @@ struct monga_ast_reference_t
         struct monga_ast_def_variable_t *def_variable; /* reference */
         struct monga_ast_def_type_t *def_type; /* reference */
         struct monga_ast_def_function_t *def_function; /* reference */
-        struct monga_ast_parameter_t *parameter; /* reference */
         struct monga_ast_field_t *field; /* reference */
     } u;
     char *id;
@@ -249,15 +246,6 @@ struct monga_ast_block_t
     size_t line;
 };
 
-struct monga_ast_parameter_t
-{
-    char *id;
-    struct monga_ast_reference_t type;
-    struct monga_ast_parameter_t *next; /* nullable */
-    size_t line;
-    size_t llvm_var_id; /* unique per function */
-};
-
 struct monga_ast_field_t
 {
     char *id;
@@ -272,16 +260,10 @@ struct monga_ast_field_list_t
     struct monga_ast_field_t *last;
 };
 
-struct monga_ast_parameter_list_t
-{
-    struct monga_ast_parameter_t *first;
-    struct monga_ast_parameter_t *last;
-};
-
 struct monga_ast_def_function_t
 {
     char *id;
-    struct monga_ast_parameter_list_t *parameters; /* nullable */
+    struct monga_ast_def_variable_list_t *parameters; /* nullable */
     struct monga_ast_reference_t type; /* nullable */
     struct monga_ast_block_t *block;
     size_t line;

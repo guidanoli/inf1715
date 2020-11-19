@@ -10,7 +10,6 @@ void monga_ast_def_type_print(struct monga_ast_def_type_t* ast, int identation);
 void monga_ast_def_function_print(struct monga_ast_def_function_t* ast, int identation);
 void monga_ast_typedesc_print(struct monga_ast_typedesc_t* ast, int identation);
 void monga_ast_field_print(struct monga_ast_field_t* ast, int identation);
-void monga_ast_parameter_print(struct monga_ast_parameter_t* ast, int identation);
 void monga_ast_block_print(struct monga_ast_block_t* ast, int identation);
 void monga_ast_statement_print(struct monga_ast_statement_t* ast, int identation);
 void monga_ast_variable_print(struct monga_ast_variable_t* ast, int identation);

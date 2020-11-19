@@ -66,7 +66,7 @@ void monga_ast_def_function_print(struct monga_ast_def_function_t* ast, int iden
     if (ast->type.id)
         monga_ast_reference_print(&ast->type, identation+1);
     if (ast->parameters)
-        monga_ast_parameter_print(ast->parameters->first, identation+1);
+        monga_ast_def_variable_print(ast->parameters->first, identation+1);
     monga_ast_block_print(ast->block, identation+1);
     monga_ast_print_identation(identation);
     printf(")\n");
@@ -105,17 +105,6 @@ void monga_ast_field_print(struct monga_ast_field_t* ast, int identation)
     printf(")\n");
     if (ast->next)
         monga_ast_field_print(ast->next, identation);
-}
-
-void monga_ast_parameter_print(struct monga_ast_parameter_t* ast, int identation)
-{
-    monga_ast_print_identation(identation);
-    printf("(parameter id=\"%s\"\n", ast->id);
-    monga_ast_reference_print(&ast->type, identation+1);
-    monga_ast_print_identation(identation);
-    printf(")\n");
-    if (ast->next)
-        monga_ast_parameter_print(ast->next, identation);
 }
 
 void monga_ast_block_print(struct monga_ast_block_t* ast, int identation)

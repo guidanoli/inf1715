@@ -10,7 +10,6 @@ void monga_ast_def_type_destroy(struct monga_ast_def_type_t* ast);
 void monga_ast_def_function_destroy(struct monga_ast_def_function_t* ast);
 void monga_ast_typedesc_destroy(struct monga_ast_typedesc_t* ast);
 void monga_ast_field_destroy(struct monga_ast_field_t* ast);
-void monga_ast_parameter_destroy(struct monga_ast_parameter_t* ast);
 void monga_ast_block_destroy(struct monga_ast_block_t* ast);
 void monga_ast_statement_destroy(struct monga_ast_statement_t* ast);
 void monga_ast_variable_destroy(struct monga_ast_variable_t* ast);

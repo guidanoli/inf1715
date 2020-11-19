@@ -1,10 +1,10 @@
 (program
 	(def_function id="f"
 		(reference id="int" kind="type" line=0)
-		(parameter id="a"
+		(def_variable id="a"
 			(reference id="int" kind="type" line=0)
 		)
-		(parameter id="b"
+		(def_variable id="b"
 			(reference id="int" kind="type" line=0)
 		)
 		(block
@@ -13,23 +13,23 @@
 					(condition >
 						(expression variable
 							(variable id
-								(reference id="a" kind="parameter" line=1)
+								(reference id="a" kind="variable" line=1)
 							)
 						)
 						(expression variable
 							(variable id
-								(reference id="b" kind="parameter" line=1)
+								(reference id="b" kind="variable" line=1)
 							)
 						)
 					)
 					(expression variable
 						(variable id
-							(reference id="a" kind="parameter" line=1)
+							(reference id="a" kind="variable" line=1)
 						)
 					)
 					(expression variable
 						(variable id
-							(reference id="b" kind="parameter" line=1)
+							(reference id="b" kind="variable" line=1)
 						)
 					)
 				)
