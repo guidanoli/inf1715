@@ -40,9 +40,6 @@ The mapping between Monga and LLVM built-in types is described in the following 
 | :-: | :-: |
 | `int` | `i32` |
 | `float` | `float` |
-| `null` | `opaque` |
-
-But `null` will never be used because it is internally used only for typing the null expression and never for variables.
 
 ### `id_typedesc`
 

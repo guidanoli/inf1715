@@ -43,7 +43,6 @@ There are some predicates that formalize the process of typing the tree.
 | :-: | :-: | :-: | :-: |
 | integer_exp | | | `integer` |
 | real_exp | | | `float` |
-| null_exp | | | `null` |
 | var_exp | `variable` | | `type(variable)` |
 | call_exp | `call` | | `type(call.f)` |
 | cast_exp | `exp`, `t` | `castable(type(exp),t)` | `t` |
