@@ -1,0 +1,5 @@
+define float @f() {
+	%t0 = fadd float 1.015625, 0.0
+	ret float %t0
+	ret float undef
+}

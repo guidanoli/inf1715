@@ -9,6 +9,16 @@
 typedef struct monga_ast_typedesc_t* (typedesc_getter)(void*);
 typedef void* (next_getter)(void*);
 typedef void (visiter)(void*, void*);
+typedef const char* (*builtin_instruction_getter)(enum monga_ast_typedesc_builtin_t);
+
+/* Static mappings */
+
+static builtin_instruction_getter binary_instruction_getters[MONGA_AST_EXPRESSION_CNT] = {
+    [MONGA_AST_EXPRESSION_ADDITION] = monga_ast_builtin_llvm_add_instruction,
+    [MONGA_AST_EXPRESSION_SUBTRACTION] = monga_ast_builtin_llvm_sub_instruction,
+    [MONGA_AST_EXPRESSION_MULTIPLICATION] = monga_ast_builtin_llvm_mul_instruction,
+    [MONGA_AST_EXPRESSION_DIVISION] = monga_ast_builtin_llvm_div_instruction
+};
 
 /* Static function prototypes */
 
@@ -310,20 +320,39 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
     /* TODO -- set llvm_var_id in every expression */
     switch (ast->tag) {
         case MONGA_AST_EXPRESSION_INTEGER:
+        {
+            int integer = ast->u.integer_exp.integer;
+            const char *zero;
+            
+            zero = monga_ast_builtin_typedesc_zero_llvm(MONGA_AST_TYPEDESC_BUILTIN_INT);
+            monga_assert(zero != NULL);
+
             ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
             printf("add ");
             monga_ast_typedesc_reference_llvm(ast->typedesc);
-            printf(" %d, 0\n", ast->u.integer_exp.integer);
+            printf(" %d, %s\n", integer, zero);
+            
             break;
+        }
         case MONGA_AST_EXPRESSION_REAL:
+        {
+            float real = ast->u.real_exp.real;
+            const char *zero;
+            
+            zero = monga_ast_builtin_typedesc_zero_llvm(MONGA_AST_TYPEDESC_BUILTIN_FLOAT);
+            monga_assert(zero != NULL);
+
             ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
             printf("fadd ");
             monga_ast_typedesc_reference_llvm(ast->typedesc);
-            printf(" %.6f, 0.0\n", ast->u.real_exp.real);
+            printf(" %f, %s\n", real, zero);
+
             break;
+        }
         case MONGA_AST_EXPRESSION_VAR:
         {
             struct monga_ast_variable_t* var = ast->u.var_exp.var;
+
             monga_ast_variable_llvm(var, var_count_ptr);
 
             ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
@@ -340,6 +369,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
         case MONGA_AST_EXPRESSION_CALL:
         {
             struct monga_ast_call_t* call = ast->u.call_exp.call;
+
             monga_ast_call_llvm(call, var_count_ptr);
 
             monga_assert(call->function.tag == MONGA_AST_REFERENCE_FUNCTION);
@@ -349,16 +379,124 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             break;
         }
         case MONGA_AST_EXPRESSION_CAST:
+        {
+            struct monga_ast_expression_t* exp = ast->u.cast_exp.exp;
+            struct monga_ast_reference_t* type_ref = &ast->u.cast_exp.type;
+            struct monga_ast_typedesc_t* typedesc;
+
+            monga_ast_expression_llvm(exp, var_count_ptr);
+
+            monga_assert(type_ref->tag == MONGA_AST_REFERENCE_TYPE);
+            typedesc = monga_ast_typedesc_resolve_id(type_ref->u.def_type->typedesc);
+
+            switch (typedesc->tag) {
+            case MONGA_AST_TYPEDESC_BUILTIN:
+            {
+                enum monga_ast_typedesc_builtin_t from, to;
+
+                monga_assert(exp->typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN);
+                from = exp->typedesc->u.builtin_typedesc;
+                to = typedesc->u.builtin_typedesc;
+
+                if (from == to)
+                {
+                    ast->llvm_var_id = exp->llvm_var_id; /* no conversion */
+                }
+                else
+                {
+                    const char* instruction = monga_ast_builtin_llvm_cast_instruction(to, from);
+                    monga_assert(instruction != NULL);
+                    ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
+                    printf("%s %s ", instruction, monga_ast_builtin_typedesc_llvm(from));
+                    monga_ast_expression_value_reference_llvm(exp);
+                    printf(" to %s\n", monga_ast_builtin_typedesc_llvm(to));
+                }
+                break;
+            }
+            case MONGA_AST_TYPEDESC_ID:
+                monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
+                break;
+            case MONGA_AST_TYPEDESC_ARRAY:
+                ast->llvm_var_id = exp->llvm_var_id; /* no conversion */
+                break;
+            case MONGA_AST_TYPEDESC_RECORD:
+                ast->llvm_var_id = exp->llvm_var_id; /* no conversion */
+                break;
+            default:
+                monga_unreachable();
+            }
+
             break;
+        }
         case MONGA_AST_EXPRESSION_NEW:
             break;
         case MONGA_AST_EXPRESSION_NEGATIVE:
+        {
+            struct monga_ast_expression_t* exp = ast->u.negative_exp.exp;
+            struct monga_ast_typedesc_t* typedesc = exp->typedesc;
+            enum monga_ast_typedesc_builtin_t builtin_typedesc;
+            builtin_instruction_getter instruction_getter;
+            const char* instruction;
+            const char* zero;
+            
+            monga_ast_expression_llvm(exp, var_count_ptr);
+
+            typedesc = monga_ast_typedesc_resolve_id(typedesc);
+
+            monga_assert(typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN);
+            builtin_typedesc = typedesc->u.builtin_typedesc;
+
+            instruction_getter = binary_instruction_getters[MONGA_AST_EXPRESSION_SUBTRACTION];
+            monga_assert(instruction_getter != NULL);
+
+            instruction = instruction_getter(builtin_typedesc);
+            monga_assert(instruction != NULL);
+
+            zero = monga_ast_builtin_typedesc_zero_llvm(builtin_typedesc);
+            monga_assert(zero != NULL);
+
+            ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
+            printf("%s %s %s, ", instruction, monga_ast_builtin_typedesc_llvm(builtin_typedesc), zero);
+            monga_ast_expression_value_reference_llvm(exp);
+            printf("\n");
+
             break;
+        }
         case MONGA_AST_EXPRESSION_ADDITION:
         case MONGA_AST_EXPRESSION_SUBTRACTION:
         case MONGA_AST_EXPRESSION_MULTIPLICATION:
         case MONGA_AST_EXPRESSION_DIVISION:
+        {
+            struct monga_ast_expression_t* exp1 = ast->u.binop_exp.exp1;
+            struct monga_ast_expression_t* exp2 = ast->u.binop_exp.exp2;
+            struct monga_ast_typedesc_t* typedesc = exp1->typedesc;
+            enum monga_ast_typedesc_builtin_t builtin_typedesc;
+            builtin_instruction_getter instruction_getter;
+            const char* instruction;
+            
+            monga_ast_expression_llvm(exp1, var_count_ptr);
+            monga_ast_expression_llvm(exp2, var_count_ptr);
+
+            typedesc = monga_ast_typedesc_resolve_id(typedesc);
+
+            monga_assert(typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN);
+            builtin_typedesc = typedesc->u.builtin_typedesc;
+
+            instruction_getter = binary_instruction_getters[ast->tag];
+            monga_assert(instruction_getter != NULL);
+
+            instruction = instruction_getter(builtin_typedesc);
+            monga_assert(instruction != NULL);
+
+            ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
+            printf("%s %s ", instruction, monga_ast_builtin_typedesc_llvm(builtin_typedesc));
+            monga_ast_expression_value_reference_llvm(exp1);
+            printf(", ");
+            monga_ast_expression_value_reference_llvm(exp2);
+            printf("\n");
+
             break;
+        }
         case MONGA_AST_EXPRESSION_CONDITIONAL:
             break;
         default:

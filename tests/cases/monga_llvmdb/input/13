@@ -1,0 +1,7 @@
+function tofloat(a : int) : float {
+	return a as float;
+}
+
+function toint(a : float) : int {
+	return a as int;
+}

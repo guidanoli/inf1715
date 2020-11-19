@@ -61,7 +61,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 	return MONGA_TK_INTEGER;
 }
 {REAL_DECIMAL} {
-	yylval.terminal.real = strtod(yytext, NULL);
+	yylval.terminal.real = strtof(yytext, NULL);
 	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_REAL;
 }
@@ -71,7 +71,7 @@ REAL_HEXADECIMAL {REAL_HEXADECIMAL_BASE}{REAL_HEXADECIMAL_EXPONENT}[lLfF]?
 	return MONGA_TK_INTEGER;
 }
 {REAL_HEXADECIMAL} {
-	yylval.terminal.real = strtod(yytext, NULL);
+	yylval.terminal.real = strtof(yytext, NULL);
 	yylval.terminal.line = monga_lineno;
 	return MONGA_TK_REAL;
 }

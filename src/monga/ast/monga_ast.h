@@ -121,13 +121,14 @@ struct monga_ast_expression_t
         MONGA_AST_EXPRESSION_MULTIPLICATION,
         MONGA_AST_EXPRESSION_DIVISION,
         MONGA_AST_EXPRESSION_CONDITIONAL,
+        MONGA_AST_EXPRESSION_CNT, /* pseudo value */
     } tag;
     union {
         struct {
             int integer;
         } integer_exp;
         struct {
-            double real;
+            float real;
         } real_exp;
         struct {
             struct monga_ast_variable_t *var;

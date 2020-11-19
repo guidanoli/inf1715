@@ -36,7 +36,7 @@
         union {
             char *id;
             int integer;
-            double real;
+            float real;
         };
         size_t line;
     } terminal;

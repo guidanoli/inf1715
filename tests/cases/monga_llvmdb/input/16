@@ -1,0 +1,2 @@
+function iadd(a : int, b : int) : int { return a + b; }
+function fadd(a : float, b : float) : float { return a + b; }
