@@ -1,0 +1,4 @@
+type Rational = { n : int; d : int; };
+var q : Rational;
+function getn(): int { return q.n; }
+function getd(): int { return q.d; }
