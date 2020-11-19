@@ -1,14 +1,16 @@
 define i32 @ineg(i32 %t0) {
 	%t1 = alloca i32
 	store i32 %t0, i32* %t1
-	%t2 = sub nsw i32 0, %t0
-	ret i32 %t2
+	%t2 = load i32, i32* %t1
+	%t3 = sub nsw i32 0, %t2
+	ret i32 %t3
 	ret i32 undef
 }
 define float @fneg(float %t0) {
 	%t1 = alloca float
 	store float %t0, float* %t1
-	%t2 = fsub float 0.0, %t0
-	ret float %t2
+	%t2 = load float, float* %t1
+	%t3 = fsub float 0.0, %t2
+	ret float %t3
 	ret float undef
 }
