@@ -1,4 +1,0 @@
-type t = [int];
-function f(x : t) {
-    @x[0];
-}

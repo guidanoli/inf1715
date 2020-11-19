@@ -43,7 +43,6 @@ struct monga_ast_reference_t
 enum monga_ast_typedesc_builtin_t {
     MONGA_AST_TYPEDESC_BUILTIN_INT,
     MONGA_AST_TYPEDESC_BUILTIN_FLOAT,
-    MONGA_AST_TYPEDESC_BUILTIN_NULL,
     MONGA_AST_TYPEDESC_BUILTIN_CNT, /* pseudo value */
 };
 
@@ -114,7 +113,6 @@ struct monga_ast_expression_t
     enum {
         MONGA_AST_EXPRESSION_INTEGER,
         MONGA_AST_EXPRESSION_REAL,
-        MONGA_AST_EXPRESSION_NULL,
         MONGA_AST_EXPRESSION_VAR,
         MONGA_AST_EXPRESSION_CALL,
         MONGA_AST_EXPRESSION_CAST,
@@ -133,8 +131,6 @@ struct monga_ast_expression_t
         struct {
             double real;
         } real_exp;
-        /* null_exp doesn't exist because it
-           needs no more information */
         struct {
             struct monga_ast_variable_t *var;
         } var_exp;
@@ -166,6 +162,7 @@ struct monga_ast_expression_t
     struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_expression_t *next; /* nullable */
     size_t line;
+    size_t llvm_var_id; /* unique per function */
 };
 
 struct monga_ast_variable_t
@@ -188,6 +185,7 @@ struct monga_ast_variable_t
     } u;
     struct monga_ast_typedesc_t *typedesc;
     size_t line;
+    size_t llvm_var_id; /* unique per function */
 };
 
 struct monga_ast_statement_t
@@ -302,6 +300,8 @@ struct monga_ast_def_variable_t
     struct monga_ast_reference_t type;
     struct monga_ast_def_variable_t *next; /* nullable */
     size_t line;
+    bool is_global;
+    size_t llvm_var_id; /* unique per function, if is_global is false */
 };
 
 struct monga_ast_definition_t

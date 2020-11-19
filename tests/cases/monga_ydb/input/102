@@ -1,4 +1,0 @@
-type y = {a:int;};
-function f(a: int, b: y): int {
-    return a > b ? a : b;
-}

@@ -1,4 +1,0 @@
-type x = [int];
-function f(a: x, b: float): int {
-    return a > b ? a : b;
-}

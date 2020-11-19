@@ -41,7 +41,7 @@ void monga_ast_definition_bind(struct monga_ast_definition_t* ast, struct monga_
 {
     switch (ast->tag) {
         case MONGA_AST_DEFINITION_VARIABLE:
-            monga_ast_def_variable_bind(ast->u.def_variable, stack);
+            monga_ast_def_variable_bind(ast->u.def_variable, stack, true);
             break;
         case MONGA_AST_DEFINITION_TYPE:
             monga_ast_def_type_bind(ast->u.def_type, stack);
@@ -56,7 +56,7 @@ void monga_ast_definition_bind(struct monga_ast_definition_t* ast, struct monga_
         monga_ast_definition_bind(ast->next, stack);
 }
 
-void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast, struct monga_ast_bind_stack_t* stack)
+void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast, struct monga_ast_bind_stack_t* stack, bool is_global)
 {
     struct monga_ast_reference_t* reference = construct(reference);
     reference->tag = MONGA_AST_REFERENCE_VARIABLE;
@@ -65,8 +65,9 @@ void monga_ast_def_variable_bind(struct monga_ast_def_variable_t* ast, struct mo
     monga_ast_bind_stack_insert_name(stack, reference);
     monga_ast_bind_stack_get_name(stack, &ast->type, ast->line);
     monga_ast_reference_check_kind(&ast->type, MONGA_AST_REFERENCE_TYPE, ast->line);
+    ast->is_global = is_global;
     if (ast->next)
-        monga_ast_def_variable_bind(ast->next, stack);
+        monga_ast_def_variable_bind(ast->next, stack, is_global);
 }
 
 void monga_ast_def_type_bind(struct monga_ast_def_type_t* ast, struct monga_ast_bind_stack_t* stack)
@@ -232,7 +233,7 @@ void monga_ast_parameter_bind(struct monga_ast_parameter_t* ast, struct monga_as
 void monga_ast_block_bind(struct monga_ast_block_t* ast, struct monga_ast_bind_stack_t* stack)
 {
     if (ast->variables)
-        monga_ast_def_variable_bind(ast->variables->first, stack);
+        monga_ast_def_variable_bind(ast->variables->first, stack, false);
     if (ast->statements)
         monga_ast_statement_bind(ast->statements->first, stack);
 }
@@ -453,9 +454,6 @@ void monga_ast_expression_bind(struct monga_ast_expression_t* ast, struct monga_
             break;
         case MONGA_AST_EXPRESSION_REAL:
             ast->typedesc = monga_ast_builtin_typedesc(MONGA_AST_TYPEDESC_BUILTIN_FLOAT);
-            break;
-        case MONGA_AST_EXPRESSION_NULL:
-            ast->typedesc = monga_ast_builtin_typedesc(MONGA_AST_TYPEDESC_BUILTIN_NULL);
             break;
         case MONGA_AST_EXPRESSION_VAR:
             monga_ast_variable_bind(ast->u.var_exp.var, stack);

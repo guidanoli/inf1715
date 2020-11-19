@@ -1,4 +1,3 @@
-type x = [int];
-function getnull() : x {
-    return null;
+function f(a: float, b: float): float {
+    return a > b ? a : b;
 }

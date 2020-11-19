@@ -1,1 +1,28 @@
-Left operand is of type null which is not numeric (line 3)
+(program
+	(def_type id="t"
+		(typedesc array
+			(typedesc id
+				(reference id="int" kind="type" line=0)
+			)
+		)
+	)
+	(def_function id="f"
+		(parameter id="x"
+			(reference id="t" kind="type" line=1)
+		)
+		(block
+			(statement print
+				(expression variable
+					(variable array
+						(expression variable
+							(variable id
+								(reference id="x" kind="parameter" line=2)
+							)
+						)
+						(expression integer "0")
+					)
+				)
+			)
+		)
+	)
+)

@@ -1,1 +1,1 @@
-syntax error (line 1)
+Expected index to be of "int" type and not "float" (line 3)

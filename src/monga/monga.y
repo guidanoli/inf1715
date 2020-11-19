@@ -29,7 +29,6 @@
 %token MONGA_TK_AND
 %token MONGA_TK_OR
 %token MONGA_TK_TYPE
-%token MONGA_TK_NULL
 
 %union {
     /* Terminals */
@@ -468,13 +467,6 @@ primary_exp :
         $$ = construct(expression);
         $$->tag = MONGA_AST_EXPRESSION_REAL;
         $$->u.real_exp.real = $<terminal.real>1;
-        $$->line = $<terminal.line>1;
-        $$->next = NULL;
-    }
-    | MONGA_TK_NULL
-    {
-        $$ = construct(expression);
-        $$->tag = MONGA_AST_EXPRESSION_NULL;
         $$->line = $<terminal.line>1;
         $$->next = NULL;
     }

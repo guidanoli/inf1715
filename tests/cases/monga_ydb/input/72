@@ -1,4 +1,5 @@
 type x = [int];
-function f(a : x) {
-    a = -null;
+type y = {a:int;};
+function f(a: y, b: x): int {
+    return a > b ? a : b;
 }

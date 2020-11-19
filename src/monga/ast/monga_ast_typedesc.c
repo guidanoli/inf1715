@@ -165,9 +165,6 @@ bool monga_ast_typedesc_assignable(struct monga_ast_typedesc_t *vartypedesc, str
         default:
             monga_unreachable();
         }
-    } else {
-        return (vartypedesc->tag == MONGA_AST_TYPEDESC_ARRAY || vartypedesc->tag == MONGA_AST_TYPEDESC_RECORD) &&
-               (exptypedesc->tag == MONGA_AST_TYPEDESC_BUILTIN && exptypedesc->u.builtin_typedesc == MONGA_AST_TYPEDESC_BUILTIN_NULL);
     }
     
     return false;

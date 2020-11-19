@@ -1,4 +1,4 @@
 type x = [int];
-function f(a : x) {
-    a = null * null;
+function f(a: x, b: x): x {
+    return a > b ? a : b;
 }

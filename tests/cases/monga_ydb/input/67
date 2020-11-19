@@ -1,4 +1,4 @@
-type Integer = { v : int; };
-function f(i : Integer) {
-    i = null;
+type y = {a:int;};
+function f(a: y, b: float): int {
+    return a > b ? a : b;
 }

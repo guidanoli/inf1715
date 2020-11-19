@@ -1,1 +1,1 @@
-Expected index to be of "int" type and not "float" (line 3)
+Binary operation condition between int and float (line 2)

@@ -1,4 +1,4 @@
-type x = { v : int; };
-function getnull() : x {
-    return null;
+type x = [int];
+function f(a: x, b: int): int {
+    return a > b ? a : b;
 }

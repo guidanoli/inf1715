@@ -1,4 +1,0 @@
-type x = { a: int; };
-function checknotnull(a : x) {
-    if a ~= null {}
-}

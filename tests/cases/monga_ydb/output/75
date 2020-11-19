@@ -1,1 +1,1 @@
-Right operand is of type null which is not numeric (line 3)
+Binary operation condition between [int] and {a : int} (line 4)

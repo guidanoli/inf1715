@@ -1,17 +1,1 @@
-(program
-	(def_type id="x"
-		(typedesc record
-			(field id="v"
-				(reference id="int" kind="type" line=0)
-			)
-		)
-	)
-	(def_function id="getnull"
-		(reference id="x" kind="type" line=1)
-		(block
-			(statement return
-				(expression null)
-			)
-		)
-	)
-)
+Binary operation condition between [int] and int (line 3)

@@ -1,4 +1,0 @@
-type y = {a:int;};
-function f(a : y) : y {
-    return a == null ? a : null;
-}
