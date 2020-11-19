@@ -1,0 +1,6 @@
+@x = internal global i32 undef
+define i32 @f() {
+	%t0 = load i32, i32* @x
+	ret i32 %t0
+	ret i32 undef
+}

@@ -1,0 +1,7 @@
+define void @f(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = add i32 0, 0
+	store i32 %t2, i32* %t1
+	ret void
+}

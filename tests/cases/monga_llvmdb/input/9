@@ -1,0 +1,4 @@
+function f() { f(); }
+function f1() : int { return f1(); }
+function g(a : int) { g(a); }
+function g1(a : int) : int { return g1(a); }

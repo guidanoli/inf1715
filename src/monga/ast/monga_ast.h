@@ -74,6 +74,7 @@ struct monga_ast_call_t
     struct monga_ast_reference_t function;
     struct monga_ast_expression_list_t *expressions; /* nullable */
     size_t line;
+    size_t llvm_var_id; /* valid if function returns a value */
 };
 
 struct monga_ast_condition_t

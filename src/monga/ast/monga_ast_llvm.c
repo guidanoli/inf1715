@@ -39,11 +39,15 @@ static struct monga_ast_typedesc_t* def_variable_typedesc_getter(void* def_varia
 static void* def_variable_next_getter(void *def_variable);
 static void def_variable_visit_after(void* def_variable, void* arg);
 
+static struct monga_ast_typedesc_t* expression_typedesc_getter(void* expression);
+static void* expression_next_getter(void* expression);
+static void expression_visit_after(void* expression, void* arg);
+
 /* Extern functions definitions */
 
 void monga_ast_program_llvm(struct monga_ast_program_t* ast)
 {
-    if (ast->definitions)
+    if (ast->definitions != NULL)
         monga_ast_definition_llvm(ast->definitions->first, 0);
 }
 
@@ -62,7 +66,7 @@ void monga_ast_definition_llvm(struct monga_ast_definition_t* ast, size_t struct
         default:
             monga_unreachable();
     }
-    if (ast->next)
+    if (ast->next != NULL)
         monga_ast_definition_llvm(ast->next, struct_count);
 }
 
@@ -100,17 +104,19 @@ void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast)
         size_t parameter_id = 0;
 
         monga_ast_def_variable_list_allocation_llvm(ast->parameters, &var_count);
-        for (; parameter; ++parameter_id, parameter = parameter->next)
+        for (; parameter != NULL; ++parameter_id, parameter = parameter->next)
             monga_ast_def_variable_store_llvm(parameter, parameter_id);
     }
 
-    monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
-    monga_ast_block_llvm(ast->block, &var_count, ast->type.u.def_type->typedesc);
+    if (ast->type.id != NULL)
+        monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
+        
+    monga_ast_block_llvm(ast->block, &var_count, ast);
 
     printf("\tret ");
     monga_ast_def_function_return_llvm(ast);
 
-    if (ast->type.id)
+    if (ast->type.id != NULL)
         printf(" undef");
     
     printf("\n}\n");
@@ -143,15 +149,15 @@ void monga_ast_typedesc_llvm(struct monga_ast_typedesc_t* ast, size_t* struct_co
 
 // void monga_ast_field_llvm(struct monga_ast_field_t* ast) {}
 
-void monga_ast_block_llvm(struct monga_ast_block_t* ast, size_t* var_count_ptr, struct monga_ast_typedesc_t* ret_typedesc)
+void monga_ast_block_llvm(struct monga_ast_block_t* ast, size_t* var_count_ptr, struct monga_ast_def_function_t* def_function)
 {
-    if (ast->variables)
+    if (ast->variables != NULL)
         monga_ast_def_variable_list_allocation_llvm(ast->variables, var_count_ptr);
-    if (ast->statements)
-        monga_ast_statement_llvm(ast->statements->first, var_count_ptr, ret_typedesc);
+    if (ast->statements != NULL)
+        monga_ast_statement_llvm(ast->statements->first, var_count_ptr, def_function);
 }
 
-void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_count_ptr, struct monga_ast_typedesc_t* ret_typedesc)
+void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_count_ptr, struct monga_ast_def_function_t* def_function)
 {
     switch (ast->tag) {
         case MONGA_AST_STATEMENT_IF:
@@ -166,8 +172,10 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             monga_ast_variable_llvm(var, var_count_ptr);
             monga_ast_expression_llvm(exp, var_count_ptr);
 
-            printf("store ");
+            printf("\tstore ");
             monga_ast_typedesc_reference_llvm(var->typedesc);
+            printf(" ");
+            monga_ast_expression_value_reference_llvm(exp);
             printf(", ");
             monga_ast_typedesc_reference_llvm(var->typedesc);
             printf("* ");
@@ -180,32 +188,32 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
         {
             struct monga_ast_expression_t* exp = ast->u.return_stmt.exp;
 
-            if (exp != NULL) {
-                monga_ast_expression_llvm(ast->u.return_stmt.exp, var_count_ptr);
+            if (exp != NULL)
+                monga_ast_expression_llvm(exp, var_count_ptr);
 
-                printf("\tret ");
-                monga_ast_typedesc_reference_llvm(ret_typedesc);
+            printf("\tret ");
+            monga_ast_def_function_return_llvm(def_function);
+            if (exp != NULL) {
                 printf(" ");
                 monga_ast_expression_value_reference_llvm(exp);
-                printf("\n");
-            } else {
-                printf("\tret void\n");
             }
+            printf("\n");
             
             break;
         }
         case MONGA_AST_STATEMENT_CALL:
+            monga_ast_call_llvm(ast->u.call_stmt.call, var_count_ptr);
             break;
         case MONGA_AST_STATEMENT_PRINT:
             break;
         case MONGA_AST_STATEMENT_BLOCK:
-            monga_ast_block_llvm(ast->u.block_stmt.block, var_count_ptr, ret_typedesc);
+            monga_ast_block_llvm(ast->u.block_stmt.block, var_count_ptr, def_function);
             break;
         default:
             monga_unreachable();
     }
-    if (ast->next)
-        monga_ast_statement_llvm(ast->next, var_count_ptr, ret_typedesc);
+    if (ast->next != NULL)
+        monga_ast_statement_llvm(ast->next, var_count_ptr, def_function);
 }
 
 void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count_ptr)
@@ -330,7 +338,16 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             break;
         }
         case MONGA_AST_EXPRESSION_CALL:
+        {
+            struct monga_ast_call_t* call = ast->u.call_exp.call;
+            monga_ast_call_llvm(call, var_count_ptr);
+
+            monga_assert(call->function.tag == MONGA_AST_REFERENCE_FUNCTION);
+            monga_assert(call->function.u.def_function->type.id != NULL);
+            ast->llvm_var_id = call->llvm_var_id;
+
             break;
+        }
         case MONGA_AST_EXPRESSION_CAST:
             break;
         case MONGA_AST_EXPRESSION_NEW:
@@ -347,13 +364,40 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
         default:
             monga_unreachable();
     }
-    if (ast->next)
+    if (ast->next != NULL)
         monga_ast_expression_llvm(ast->next, var_count_ptr);
 }
 
 // void monga_ast_condition_llvm(struct monga_ast_condition_t* ast) {}
 
-// void monga_ast_call_llvm(struct monga_ast_call_t* ast) {}
+void monga_ast_call_llvm(struct monga_ast_call_t* ast, size_t* var_count_ptr)
+{
+    struct monga_ast_reference_t* def_function_ref;
+    struct monga_ast_def_function_t* def_function;
+
+    def_function_ref = &ast->function;
+    monga_assert(def_function_ref->tag == MONGA_AST_REFERENCE_FUNCTION);
+    def_function = def_function_ref->u.def_function;
+    
+    if (ast->expressions != NULL)
+        monga_ast_expression_llvm(ast->expressions->first, var_count_ptr);
+
+    if (def_function->type.id != NULL)
+        ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
+    else
+        printf("\t");
+    
+    printf("call ");
+    monga_ast_def_function_return_llvm(def_function);
+    printf(" @%s(", def_function->id);
+    
+    if (ast->expressions != NULL) {
+        monga_ast_typedesc_reference_list_llvm(ast->expressions->first,
+            expression_typedesc_getter, expression_next_getter, NULL, expression_visit_after, NULL);
+    }
+    
+    printf(")\n");
+}
 
 // void monga_ast_reference_llvm(struct monga_ast_reference_t* ast) {}
 
@@ -381,7 +425,10 @@ void monga_ast_def_variable_list_allocation_llvm(struct monga_ast_def_variable_l
 {
     struct monga_ast_def_variable_t* def_variable;
 
-    for (def_variable = def_variable_list->first; def_variable != NULL; def_variable = def_variable->next) {
+    for (def_variable = def_variable_list->first;
+        def_variable != NULL;
+        def_variable = def_variable->next) {
+        
         struct monga_ast_typedesc_t* typedesc;
 
         monga_assert(def_variable->type.tag == MONGA_AST_REFERENCE_TYPE);
@@ -544,4 +591,25 @@ void monga_ast_variable_reference_llvm(struct monga_ast_variable_t* variable)
     default:
         monga_unreachable();
     }
+}
+
+struct monga_ast_typedesc_t* expression_typedesc_getter(void* expression)
+{
+    struct monga_ast_expression_t* expression_ = (struct monga_ast_expression_t*) expression;
+    return expression_->typedesc;
+}
+
+void* expression_next_getter(void* expression)
+{
+    struct monga_ast_expression_t* expression_ = (struct monga_ast_expression_t*) expression;
+    return expression_->next;
+}
+
+void expression_visit_after(void* expression, void* monga_unused(arg))
+{
+    struct monga_ast_expression_t* expression_ = (struct monga_ast_expression_t*) expression;
+    printf(" ");
+    monga_ast_expression_value_reference_llvm(expression_);
+    if (expression_->next != NULL)
+        printf(", ");
 }

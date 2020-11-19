@@ -1,0 +1,24 @@
+define void @f() {
+	call void @f()
+	ret void
+}
+define i32 @f1() {
+	%t0 = call i32 @f1()
+	ret i32 %t0
+	ret i32 undef
+}
+define void @g(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = load i32, i32* %t1
+	call void @g(i32 %t2)
+	ret void
+}
+define i32 @g1(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = load i32, i32* %t1
+	%t3 = call i32 @g1(i32 %t2)
+	ret i32 %t3
+	ret i32 undef
+}

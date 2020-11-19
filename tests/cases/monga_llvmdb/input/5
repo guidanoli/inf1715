@@ -1,0 +1,4 @@
+var x : int;
+function f() {
+	x = 0;
+}
