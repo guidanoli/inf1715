@@ -169,7 +169,18 @@ The code for the call statement is the same as the one for the call itself.
 
 ### `print_stmt`
 
-*To be done.*
+Printing an expression is done by calling `printf` with the right format string and the expression value.
+
+```llvm
+%t<str> = getelementptr inbounds [<strsize> x i8], [<strsize> x i8]* @<strname>, i64 0, i64 0
+call i32 (i8*, ...) @printf(i8* %t<str>, <type> %t<exp-reg>)
+...
+@<strname> = constant [<strsize> x i8] c"..."
+```
+
+Even though `printf` returns an integer, this value won't be used in Monga because printing is a statement, and not an expression.
+
+The special characters are printed in hexadecimal as `\XX`, such as `\00` (null) and `\0A` (new line). Printable characters are displayed normally.
 
 ### `block_stmt`
 
