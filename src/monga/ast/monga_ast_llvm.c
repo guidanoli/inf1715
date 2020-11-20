@@ -52,6 +52,8 @@ static size_t monga_ast_new_struct_llvm(size_t* struct_count_ptr);
 static void monga_ast_temporary_reference_llvm(size_t var_id);
 static size_t monga_ast_new_temporary_llvm(size_t* var_count_ptr);
 
+static void monga_ast_unconditional_jump_llvm(size_t label_id);
+
 static void monga_ast_label_tag_llvm(size_t label_id);
 static void monga_ast_label_reference_llvm(size_t label_id);
 static size_t monga_ast_new_label_llvm(size_t* label_count_ptr);
@@ -249,8 +251,8 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             struct monga_ast_variable_t* var = ast->u.assign_stmt.var;
             struct monga_ast_expression_t* exp = ast->u.assign_stmt.exp;
 
-            monga_ast_variable_llvm(var, var_count_ptr);
-            monga_ast_expression_llvm(exp, var_count_ptr);
+            monga_ast_variable_llvm(var, var_count_ptr, label_count_ptr);
+            monga_ast_expression_llvm(exp, var_count_ptr, label_count_ptr);
 
             printf("\tstore ");
             monga_ast_typedesc_reference_llvm(var->typedesc);
@@ -269,7 +271,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             struct monga_ast_expression_t* exp = ast->u.return_stmt.exp;
 
             if (exp != NULL)
-                monga_ast_expression_llvm(exp, var_count_ptr);
+                monga_ast_expression_llvm(exp, var_count_ptr, label_count_ptr);
 
             printf("\tret ");
             monga_ast_def_function_return_llvm(def_function);
@@ -282,7 +284,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             break;
         }
         case MONGA_AST_STATEMENT_CALL:
-            monga_ast_call_llvm(ast->u.call_stmt.call, var_count_ptr);
+            monga_ast_call_llvm(ast->u.call_stmt.call, var_count_ptr, label_count_ptr);
             break;
         case MONGA_AST_STATEMENT_PRINT:
             /* TODO -- create calls to a printing function */
@@ -297,7 +299,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
         monga_ast_statement_llvm(ast->next, var_count_ptr, label_count_ptr, def_function);
 }
 
-void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count_ptr)
+void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count_ptr, size_t* label_count_ptr)
 {
     switch (ast->tag) {
         case MONGA_AST_VARIABLE_ID:
@@ -326,8 +328,8 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count
             array_exp = ast->u.array_var.array;
             index_exp = ast->u.array_var.index;
             
-            monga_ast_expression_llvm(array_exp, var_count_ptr);
-            monga_ast_expression_llvm(index_exp, var_count_ptr);
+            monga_ast_expression_llvm(array_exp, var_count_ptr, label_count_ptr);
+            monga_ast_expression_llvm(index_exp, var_count_ptr, label_count_ptr);
 
             index_i64_llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
             printf("sext i32 ");
@@ -359,7 +361,7 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count
             size_t struct_id;
 
             record_exp = ast->u.record_var.record;
-            monga_ast_expression_llvm(record_exp, var_count_ptr);
+            monga_ast_expression_llvm(record_exp, var_count_ptr, label_count_ptr);
             
             monga_assert(ast->u.record_var.field.tag == MONGA_AST_REFERENCE_FIELD);
             record_field = ast->u.record_var.field.u.field;
@@ -388,7 +390,7 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, size_t* var_count
     }
 }
 
-void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_count_ptr)
+void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_count_ptr, size_t* label_count_ptr)
 {
     /* TODO -- set llvm_var_id in every expression */
     switch (ast->tag) {
@@ -426,7 +428,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
         {
             struct monga_ast_variable_t* var = ast->u.var_exp.var;
 
-            monga_ast_variable_llvm(var, var_count_ptr);
+            monga_ast_variable_llvm(var, var_count_ptr, label_count_ptr);
 
             ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
             printf("load ");
@@ -443,7 +445,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
         {
             struct monga_ast_call_t* call = ast->u.call_exp.call;
 
-            monga_ast_call_llvm(call, var_count_ptr);
+            monga_ast_call_llvm(call, var_count_ptr, label_count_ptr);
 
             monga_assert(call->function.tag == MONGA_AST_REFERENCE_FUNCTION);
             monga_assert(call->function.u.def_function->type.id != NULL);
@@ -457,7 +459,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             struct monga_ast_reference_t* type_ref = &ast->u.cast_exp.type;
             struct monga_ast_typedesc_t* typedesc;
 
-            monga_ast_expression_llvm(exp, var_count_ptr);
+            monga_ast_expression_llvm(exp, var_count_ptr, label_count_ptr);
 
             monga_assert(type_ref->tag == MONGA_AST_REFERENCE_TYPE);
             typedesc = monga_ast_typedesc_resolve_id(type_ref->u.def_type->typedesc);
@@ -513,7 +515,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             const char* instruction;
             const char* zero;
             
-            monga_ast_expression_llvm(exp, var_count_ptr);
+            monga_ast_expression_llvm(exp, var_count_ptr, label_count_ptr);
 
             typedesc = monga_ast_typedesc_resolve_id(typedesc);
 
@@ -548,8 +550,8 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             builtin_instruction_getter instruction_getter;
             const char* instruction;
             
-            monga_ast_expression_llvm(exp1, var_count_ptr);
-            monga_ast_expression_llvm(exp2, var_count_ptr);
+            monga_ast_expression_llvm(exp1, var_count_ptr, label_count_ptr);
+            monga_ast_expression_llvm(exp2, var_count_ptr, label_count_ptr);
 
             typedesc = monga_ast_typedesc_resolve_id(typedesc);
 
@@ -572,16 +574,63 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             break;
         }
         case MONGA_AST_EXPRESSION_CONDITIONAL:
-            /* TODO -- generate code for condition, jumps and labels */
+        {
+            struct monga_ast_condition_t* cond = ast->u.conditional_exp.cond;
+            struct monga_ast_expression_t* true_exp = ast->u.conditional_exp.true_exp;
+            struct monga_ast_expression_t* false_exp = ast->u.conditional_exp.false_exp;
+            size_t true_label, true_end_label, false_label, false_end_label, eval_label;
+
+            true_label = monga_ast_new_label_llvm(label_count_ptr);
+            true_end_label = monga_ast_new_label_llvm(label_count_ptr);
+            false_label = monga_ast_new_label_llvm(label_count_ptr);
+            false_end_label = monga_ast_new_label_llvm(label_count_ptr);
+            eval_label = monga_ast_new_label_llvm(label_count_ptr);
+
+            monga_ast_condition_llvm(cond, var_count_ptr, label_count_ptr, true_label, false_label);
+
+            /* true: */
+            monga_ast_label_tag_llvm(true_label);
+            monga_ast_expression_llvm(true_exp, var_count_ptr, label_count_ptr);
+            monga_ast_unconditional_jump_llvm(true_end_label);
+
+            /* true_end: */
+            monga_ast_label_tag_llvm(true_end_label);
+            monga_ast_unconditional_jump_llvm(eval_label);
+
+            /* false: */
+            monga_ast_label_tag_llvm(false_label);
+            monga_ast_expression_llvm(false_exp, var_count_ptr, label_count_ptr);
+            monga_ast_unconditional_jump_llvm(false_end_label);
+
+            /* false_end: */
+            monga_ast_label_tag_llvm(false_end_label);
+            monga_ast_unconditional_jump_llvm(eval_label);
+
+            /* eval: */
+            monga_ast_label_tag_llvm(eval_label);
+            ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
+            printf("phi ");
+            monga_ast_typedesc_reference_llvm(true_exp->typedesc);
+            printf(" [ ");
+            monga_ast_expression_value_reference_llvm(true_exp);
+            printf(", ");
+            monga_ast_label_reference_llvm(true_end_label);
+            printf(" ], [ ");
+            monga_ast_expression_value_reference_llvm(false_exp);
+            printf(", ");
+            monga_ast_label_reference_llvm(false_end_label);
+            printf(" ]\n");
+
             break;
+        }
         default:
             monga_unreachable();
     }
     if (ast->next != NULL)
-        monga_ast_expression_llvm(ast->next, var_count_ptr);
+        monga_ast_expression_llvm(ast->next, var_count_ptr, label_count_ptr);
 }
 
-void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, size_t* var_count_ptr, size_t* label_count_ptr, size_t then_label, size_t else_label)
+void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, size_t* var_count_ptr, size_t* label_count_ptr, size_t true_label, size_t false_label)
 {
     switch (ast->tag) {
         case MONGA_AST_CONDITION_EQ:
@@ -614,8 +663,8 @@ void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, size_t* var_cou
             op = instruction_getter(builtin);
             monga_assert(op != NULL);
 
-            monga_ast_expression_llvm(exp1, var_count_ptr);
-            monga_ast_expression_llvm(exp2, var_count_ptr);
+            monga_ast_expression_llvm(exp1, var_count_ptr, label_count_ptr);
+            monga_ast_expression_llvm(exp2, var_count_ptr, label_count_ptr);
 
             result = monga_ast_new_temporary_llvm(var_count_ptr);
             printf("%s %s ", cmp, op);
@@ -629,9 +678,9 @@ void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, size_t* var_cou
             printf("\tbr i1 ");
             monga_ast_temporary_reference_llvm(result);
             printf(", label ");
-            monga_ast_label_reference_llvm(then_label);
+            monga_ast_label_reference_llvm(true_label);
             printf(", label ");
-            monga_ast_label_reference_llvm(else_label);
+            monga_ast_label_reference_llvm(false_label);
             printf("\n");
 
             break;
@@ -639,28 +688,28 @@ void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, size_t* var_cou
         case MONGA_AST_CONDITION_AND:
         {
             size_t mid_label = monga_ast_new_label_llvm(label_count_ptr);
-            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, var_count_ptr, label_count_ptr, mid_label, else_label);
+            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, var_count_ptr, label_count_ptr, mid_label, false_label);
             monga_ast_label_tag_llvm(mid_label);
-            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, var_count_ptr, label_count_ptr, then_label, else_label);
+            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, var_count_ptr, label_count_ptr, true_label, false_label);
             break;
         }
         case MONGA_AST_CONDITION_OR:
         {
             size_t mid_label = monga_ast_new_label_llvm(label_count_ptr);
-            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, var_count_ptr, label_count_ptr, then_label, mid_label);
+            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, var_count_ptr, label_count_ptr, true_label, mid_label);
             monga_ast_label_tag_llvm(mid_label);
-            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, var_count_ptr, label_count_ptr, then_label, else_label);
+            monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, var_count_ptr, label_count_ptr, true_label, false_label);
             break;
         }
         case MONGA_AST_CONDITION_NOT:
-            monga_ast_condition_llvm(ast->u.cond_unop_cond.cond, var_count_ptr, label_count_ptr, else_label, then_label);
+            monga_ast_condition_llvm(ast->u.cond_unop_cond.cond, var_count_ptr, label_count_ptr, false_label, true_label);
             break;
         default:
             monga_unreachable();
     }
 }
 
-void monga_ast_call_llvm(struct monga_ast_call_t* ast, size_t* var_count_ptr)
+void monga_ast_call_llvm(struct monga_ast_call_t* ast, size_t* var_count_ptr, size_t* label_count_ptr)
 {
     struct monga_ast_reference_t* def_function_ref;
     struct monga_ast_def_function_t* def_function;
@@ -670,7 +719,7 @@ void monga_ast_call_llvm(struct monga_ast_call_t* ast, size_t* var_count_ptr)
     def_function = def_function_ref->u.def_function;
     
     if (ast->expressions != NULL)
-        monga_ast_expression_llvm(ast->expressions->first, var_count_ptr);
+        monga_ast_expression_llvm(ast->expressions->first, var_count_ptr, label_count_ptr);
 
     if (def_function->type.id != NULL)
         ast->llvm_var_id = monga_ast_new_temporary_llvm(var_count_ptr);
@@ -932,4 +981,11 @@ size_t monga_ast_new_label_llvm(size_t* label_count_ptr)
     size_t label_id = *label_count_ptr;
     *label_count_ptr += 1;
     return label_id;
+}
+
+void monga_ast_unconditional_jump_llvm(size_t label_id)
+{
+    printf("\tbr label ");
+    monga_ast_label_reference_llvm(label_id);
+    printf("\n");
 }

@@ -98,24 +98,24 @@ The if statement can be generated using labels, conditional and unconditional ju
 With an else statement, the code looks like such:
 
 ```llvm
-{condition then=%l<new-id-1> else=%l<new-id-2>}
-l%<new-id-1>:
+{condition then=%l<then> else=%l<else>}
+l<then>:
 {then-block}
-br label $l<new-id-3>
-l%<new-id-2>:
+br label $l<endif>
+l<else>:
 {else-block}
-br label $l<new-id-3>
-l%<new-id-3>:
+br label $l<endif>
+l<endif>:
 ```
 
 And without an else statement, the code looks like such:
 
 ```llvm
-{condition then=%l<new-id-1> else=%l<new-id-2>}
-l%<new-id-1>:
+{condition then=%l<then> else=%l<endif>}
+l<then>:
 {then-block}
-br label $l<new-id-2>
-l%<new-id-2>:
+br label $l<endif>
+l<endif>:
 ```
 
 ### `while_stmt`
@@ -123,11 +123,11 @@ l%<new-id-2>:
 The while statement can be generated using labels and conditional jumps.
 
 ```llvm
-{condition then=%l<new-id-1> else=%l<new-id-2>}
-l%<new-id-1>:
+{condition then=%l<do> else=%l<done>}
+l<do>:
 {loop-block}
-{condition then=%l<new-id-1> else=%l<new-id-2>}
-l%<new-id-2>:
+{condition then=%l<do> else=%l<done>}
+l<done>:
 ```
 
 ### `assign_stmt`
@@ -212,11 +212,11 @@ Then, we need to calculate the pointer to the element that dists by the value ev
 ```llvm
 {array-expression}
 {index-expression}
-%t<new-id-1> = sext i32 %t<index-exp-reg> to i64
-%t<new-id-2> = getelementptr %<array-exp-type>, %<array-exp-type>* %<array-exp-reg>, i64 %t<new-id-1>
+%t<i64-idx> = sext i32 %t<index-exp-reg> to i64
+%t<exp> = getelementptr %<array-exp-type>, %<array-exp-type>* %<array-exp-reg>, i64 %t<i64-idx>
 ```
 
-The pointer that points to the desired element is `%t<new-id-2>`.
+The pointer that points to the desired element is `%t<exp>`.
 
 ### `record_var`
 
@@ -228,7 +228,7 @@ This instruction requires that first is passed the index of the variable as if t
 
 ```llvm
 {expression}
-%t<new-id> = getelementptr %<exp-type>, %<exp-type>* $<exp-reg>, i32 0, i32 <field-idx>
+%t<exp> = getelementptr %<exp-type>, %<exp-type>* $<exp-reg>, i32 0, i32 <field-idx>
 ```
 
 ## `expression`
@@ -240,7 +240,7 @@ There are plenty of types of expression. All of them have one thing in common: t
 Since you can't simply assign literals to temporary variables, this is achieved by a simple hack: add the literal with zero.
 
 ```llvm
-%t<new-id> = add i32 <literal>, 0
+%t<exp> = add i32 <literal>, 0
 ```
 
 ### `float_exp`
@@ -250,7 +250,7 @@ Similar to the integer expression, floating point literals can't be assigned to 
 Since the floating point type is always internally stored as an `float`, there are no casting problems. But values such as infinity and NAN will throw errors as they aren't contained in the LLVM grammar.
 
 ```llvm
-%t<new-id> = fadd float <literal>, 0.0
+%t<exp> = fadd float <literal>, 0.0
 ```
 
 ### `var_exp`
@@ -259,7 +259,7 @@ Since every variable has an address, the value stored there can be obtained by t
 
 ```llvm
 {variable}
-%t<new-id> = load %<var-type>, %<var-type>* %<var-reg>
+%t<exp> = load %<var-type>, %<var-type>* %<var-reg>
 ```
 
 ### `call_exp`
@@ -279,7 +279,7 @@ If the expression type is the same as the cast type, no code is generated. The v
 If not, then the conversion has the following pattern:
 
 ```llvm
-%t<new-id> = <cvt-instruction> <exp-type> %<exp-reg> to <cast-type>
+%t<exp> = <cvt-instruction> <exp-type> %<exp-reg> to <cast-type>
 ```
 
 The instruction for each pair of types is show in the table below.
@@ -311,7 +311,7 @@ The general layout of the code generated follows. Note that both expressions mus
 ```llvm
 {expression1}
 {expression2}
-%t<new-id> = <instruction> %<type> %<exp1-reg> %<exp2-reg>
+%t<exp> = <instruction> %<type> %<exp1-reg> %<exp2-reg>
 ```
 
 These are the corresponding instructions for each operation and type.
@@ -325,7 +325,23 @@ These are the corresponding instructions for each operation and type.
 
 ### `conditional_exp`
 
-*To be done.*
+A conditional expression is a bit tricky. We need first to evaluate the condition, and depending on the result, assign a different value to a temporary variable.
+
+```llvm
+{condition then=%l<true> end=%l<false>}
+l<true>:
+{expression-true}
+br label %l<true-end>
+l<false>:
+{expression false}
+br label %l<false-end>
+l<true-end>:
+br label %l<eval>
+l<false-end>:
+br label %l<eval>
+l<eval>:
+%t<exp> = phi <type> [ %l<true-end> %t<true-exp-reg> ] [ %l<false-end> %t<false-exp-reg> ]
+```
 
 ## `call`
 
@@ -335,7 +351,7 @@ If the function returns a value, then the code looks like the following.
 
 ```llvm
 [{expression}]
-%t<new-id> = call <ret-type> @<fname>([<exp-type> <exp-reg>])
+%t<exp> = call <ret-type> @<fname>([<exp-type> <exp-reg>])
 ```
 
 If not, then the code looks like the following. In this case, the call node does not point to any temporary variable. This can be checked only by checking whether the function returns or not.
@@ -356,8 +372,8 @@ The binary condition of expressions have all the same pattern, but differ of one
 ```llvm
 {expression1}
 {expression2}
-%t<new-id> = <type-cmp> <cmp> <type> %t<exp1> %t<exp2>
-br i1 %t<new-id>, label %l<then> %l<else>
+%t<result> = <type-cmp> <cmp> <type> %t<exp1> %t<exp2>
+br i1 %t<result>, label %l<then> %l<else>
 ```
 
 The `<type-cmp>` varies based on the type of the expressions:
