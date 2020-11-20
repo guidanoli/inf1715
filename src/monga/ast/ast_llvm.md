@@ -95,6 +95,8 @@ The code generated for a statement greatly differs by kind.
 
 The if statement can be generated using labels, conditional and unconditional jumps. The condition sets a boolean value in a temporary variable which is evaluated in the `br` instruction.
 
+With an else statement, the code looks like such:
+
 ```llvm
 {condition then=%l<new-id-1> else=%l<new-id-2>}
 l%<new-id-1>:
@@ -106,9 +108,27 @@ br label $l<new-id-3>
 l%<new-id-3>:
 ```
 
+And without an else statement, the code looks like such:
+
+```llvm
+{condition then=%l<new-id-1> else=%l<new-id-2>}
+l%<new-id-1>:
+{then-block}
+br label $l<new-id-2>
+l%<new-id-2>:
+```
+
 ### `while_stmt`
 
-*To be done.*
+The while statement can be generated using labels and conditional jumps.
+
+```llvm
+{condition then=%l<new-id-1> else=%l<new-id-2>}
+l%<new-id-1>:
+{loop-block}
+{condition then=%l<new-id-1> else=%l<new-id-2>}
+l%<new-id-2>:
+```
 
 ### `assign_stmt`
 

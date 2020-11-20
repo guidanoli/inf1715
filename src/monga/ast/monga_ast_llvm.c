@@ -184,30 +184,32 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
         case MONGA_AST_STATEMENT_IF:
         {
             size_t then_label, else_label, endif_label;
-            bool has_else_block = ast->u.if_stmt.else_block != NULL;
+            struct monga_ast_condition_t* cond = ast->u.if_stmt.cond;
+            struct monga_ast_block_t* then_block, *else_block;
+
+            then_block = ast->u.if_stmt.then_block;
+            else_block = ast->u.if_stmt.else_block;
 
             then_label = monga_ast_new_label_llvm(label_count_ptr);
-
             else_label = monga_ast_new_label_llvm(label_count_ptr);
-
-            if (has_else_block)
+            if (else_block != NULL)
                 endif_label = monga_ast_new_label_llvm(label_count_ptr);
             else
                 endif_label = else_label;
 
-            monga_ast_condition_llvm(ast->u.if_stmt.cond, var_count_ptr, label_count_ptr, then_label, else_label);
+            monga_ast_condition_llvm(cond, var_count_ptr, label_count_ptr, then_label, else_label);
 
             /* then: */
             monga_ast_label_tag_llvm(then_label);
-            monga_ast_block_llvm(ast->u.if_stmt.then_block, var_count_ptr, label_count_ptr, def_function);
+            monga_ast_block_llvm(then_block, var_count_ptr, label_count_ptr, def_function);
             printf("\tbr label ");
             monga_ast_label_reference_llvm(endif_label);
             printf("\n");
             
             /* else: */
-            if (has_else_block) {
+            if (else_block != NULL) {
                 monga_ast_label_tag_llvm(else_label);
-                monga_ast_block_llvm(ast->u.if_stmt.else_block, var_count_ptr, label_count_ptr, def_function);
+                monga_ast_block_llvm(else_block, var_count_ptr, label_count_ptr, def_function);
                 printf("\tbr label ");
                 monga_ast_label_reference_llvm(endif_label);
                 printf("\n");
@@ -219,8 +221,29 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             break;
         }
         case MONGA_AST_STATEMENT_WHILE:
-            /* TODO -- generate code for condition, jumps and labels */
+        {
+            size_t do_label, done_label;
+            struct monga_ast_condition_t* cond;
+            struct monga_ast_block_t* loop_block;
+
+            cond = ast->u.while_stmt.cond;
+            loop_block = ast->u.while_stmt.loop;
+
+            do_label = monga_ast_new_label_llvm(label_count_ptr);
+            done_label = monga_ast_new_label_llvm(label_count_ptr);
+
+            monga_ast_condition_llvm(cond, var_count_ptr, label_count_ptr, do_label, done_label);
+
+            /* do: */
+            monga_ast_label_tag_llvm(do_label);
+            monga_ast_block_llvm(loop_block, var_count_ptr, label_count_ptr, def_function);
+            monga_ast_condition_llvm(cond, var_count_ptr, label_count_ptr, do_label, done_label);
+
+            /* done: */
+            monga_ast_label_tag_llvm(done_label);
+
             break;
+        }
         case MONGA_AST_STATEMENT_ASSIGN:
         {
             struct monga_ast_variable_t* var = ast->u.assign_stmt.var;
