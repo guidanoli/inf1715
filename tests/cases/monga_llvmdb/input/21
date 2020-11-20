@@ -1,0 +1,6 @@
+function if1(a : int) : int {
+	if (a > 0) {
+		return a;
+	}
+	return 0;
+}

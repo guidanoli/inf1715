@@ -93,7 +93,18 @@ The code generated for a statement greatly differs by kind.
 
 ### `if_stmt`
 
-*To be done.*
+The if statement can be generated using labels, conditional and unconditional jumps. The condition sets a boolean value in a temporary variable which is evaluated in the `br` instruction.
+
+```llvm
+{condition then=%l<new-id-1> else=%l<new-id-2>}
+l%<new-id-1>:
+{then-block}
+br label $l<new-id-3>
+l%<new-id-2>:
+{else-block}
+br label $l<new-id-3>
+l%<new-id-3>:
+```
 
 ### `while_stmt`
 
@@ -313,3 +324,60 @@ If not, then the code looks like the following. In this case, the call node does
 [{expression}]
 call void @<fname>([<exp-type> <exp-reg>])
 ```
+
+## `condition`
+
+There are plenty of types of conditions. All of them have one thing in common: they evaluate detour the control flow to one of two labels. These labels are predetermined so that one label can be targeted by more than one block.
+
+### `exp_binop_cond`
+
+The binary condition of expressions have all the same pattern, but differ of one word only.
+
+```llvm
+{expression1}
+{expression2}
+%t<new-id> = <type-cmp> <cmp> <type> %t<exp1> %t<exp2>
+br i1 %t<new-id>, label %l<then> %l<else>
+```
+
+The `<type-cmp>` varies based on the type of the expressions:
+
+| type | `type-cmp` |
+| :- | :- |
+| `i32` | `icmp` |
+| `float` | `fcmp` |
+
+The `<cmp>` varies by comparison type:
+
+| comparison | `i32` | `float` |
+| :- | :- | :- |
+| == | `eq` | `oeq` |
+| ~= | `ne` | `one` |
+| <= | `sle` | `ole` |
+| >= | `sge` | `oge` |
+| < | `slt` | `olt` |
+| > | `sgt` | `ogt` |
+
+### `cond_binop_cond`
+
+The binary condition of conditions deal with short circuit evaluation. This means that you don't always need to evaluate both conditions to deduct its boolean value.
+
+The evaluation of a logical `OR` condition is as such:
+
+```llvm
+{condition1 then=%l<then> else=%l<new-id>}
+l<new-id>:
+{condition2 then=%l<then> else=%l<else>}
+```
+
+and the evaluation of a logical `AND` condition is as such:
+
+```llvm
+{condition1 then=%l<new-id> else=%l<else>}
+l<new-id>:
+{condition2 then=%l<then> else=%l<else>}
+```
+
+### `cond_unop_cond`
+
+The only type of unary condition is the `NOT` condition. This resolves down to simply swapping `%l<then>` and `%l<else>`. It doesn't get any simpler than that.

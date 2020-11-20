@@ -1,0 +1,28 @@
+define void @flt(float %t0, float %t1) {
+	%t2 = alloca float
+	%t3 = alloca float
+	store float %t0, float* %t2
+	store float %t1, float* %t3
+	%t4 = load float, float* %t2
+	%t5 = load float, float* %t3
+	%t6 = fcmp olt float %t4, %t5
+	br i1 %t6, label %l0, label %l1
+l0:
+	br label %l1
+l1:
+	ret void
+}
+define void @ilt(i32 %t0, i32 %t1) {
+	%t2 = alloca i32
+	%t3 = alloca i32
+	store i32 %t0, i32* %t2
+	store i32 %t1, i32* %t3
+	%t4 = load i32, i32* %t2
+	%t5 = load i32, i32* %t3
+	%t6 = icmp slt i32 %t4, %t5
+	br i1 %t6, label %l0, label %l1
+l0:
+	br label %l1
+l1:
+	ret void
+}

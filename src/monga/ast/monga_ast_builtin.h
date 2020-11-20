@@ -12,10 +12,21 @@ bool monga_ast_builtin_visible(enum monga_ast_typedesc_builtin_t builtin);
 
 const char* monga_ast_builtin_typedesc_llvm(enum monga_ast_typedesc_builtin_t builtin);
 const char* monga_ast_builtin_typedesc_zero_llvm(enum monga_ast_typedesc_builtin_t builtin);
+
 const char* monga_ast_builtin_llvm_add_instruction(enum monga_ast_typedesc_builtin_t builtin);
 const char* monga_ast_builtin_llvm_sub_instruction(enum monga_ast_typedesc_builtin_t builtin);
 const char* monga_ast_builtin_llvm_mul_instruction(enum monga_ast_typedesc_builtin_t builtin);
 const char* monga_ast_builtin_llvm_div_instruction(enum monga_ast_typedesc_builtin_t builtin);
+
 const char* monga_ast_builtin_llvm_cast_instruction(enum monga_ast_typedesc_builtin_t to, enum monga_ast_typedesc_builtin_t from);
+
+const char* monga_ast_builtin_llvm_cmp_instruction(enum monga_ast_typedesc_builtin_t builtin);
+
+const char* monga_ast_builtin_llvm_le_instruction(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_llvm_ge_instruction(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_llvm_lt_instruction(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_llvm_gt_instruction(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_llvm_eq_instruction(enum monga_ast_typedesc_builtin_t builtin);
+const char* monga_ast_builtin_llvm_ne_instruction(enum monga_ast_typedesc_builtin_t builtin);
 
 #endif

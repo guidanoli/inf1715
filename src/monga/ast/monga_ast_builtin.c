@@ -70,6 +70,41 @@ static const char* monga_ast_builtin_llvm_zeros[MONGA_AST_TYPEDESC_BUILTIN_CNT] 
     [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "0.0",
 };
 
+static const char* monga_ast_builtin_llvm_cmp_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "icmp",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "fcmp",
+};
+
+static const char* monga_ast_builtin_llvm_le_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "sle",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "ole",
+};
+
+static const char* monga_ast_builtin_llvm_ge_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "sge",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "oge",
+};
+
+static const char* monga_ast_builtin_llvm_lt_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "slt",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "olt",
+};
+
+static const char* monga_ast_builtin_llvm_gt_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "sgt",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "ogt",
+};
+
+static const char* monga_ast_builtin_llvm_eq_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "eq",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "oeq",
+};
+
+static const char* monga_ast_builtin_llvm_ne_instructions[MONGA_AST_TYPEDESC_BUILTIN_CNT] = {
+    [MONGA_AST_TYPEDESC_BUILTIN_INT] = "ne",
+    [MONGA_AST_TYPEDESC_BUILTIN_FLOAT] = "one",
+};
+
 void monga_ast_builtin_typedesc_check(enum monga_ast_typedesc_builtin_t builtin)
 {
     monga_assert(builtin >= 0 && builtin < MONGA_AST_TYPEDESC_BUILTIN_CNT);
@@ -147,4 +182,46 @@ const char* monga_ast_builtin_llvm_div_instruction(enum monga_ast_typedesc_built
 {
     monga_ast_builtin_typedesc_check(builtin);
     return monga_ast_builtin_llvm_div_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_cmp_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_cmp_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_le_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_le_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_ge_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_ge_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_lt_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_lt_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_gt_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_gt_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_eq_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_eq_instructions[builtin];
+}
+
+const char* monga_ast_builtin_llvm_ne_instruction(enum monga_ast_typedesc_builtin_t builtin)
+{
+    monga_ast_builtin_typedesc_check(builtin);
+    return monga_ast_builtin_llvm_ne_instructions[builtin];
 }

@@ -1,0 +1,3 @@
+function fne(a : float, b: float) { if (a ~= b) {} }
+function ine(a : int, b: int) { if (a ~= b) {} }
+

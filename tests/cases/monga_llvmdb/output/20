@@ -1,0 +1,20 @@
+define i32 @imax(i32 %t0, i32 %t1) {
+	%t2 = alloca i32
+	%t3 = alloca i32
+	store i32 %t0, i32* %t2
+	store i32 %t1, i32* %t3
+	%t4 = load i32, i32* %t2
+	%t5 = load i32, i32* %t3
+	%t6 = icmp sgt i32 %t4, %t5
+	br i1 %t6, label %l0, label %l1
+l0:
+	%t7 = load i32, i32* %t2
+	ret i32 %t7
+	br label %l2
+l1:
+	%t8 = load i32, i32* %t3
+	ret i32 %t8
+	br label %l2
+l2:
+	ret i32 undef
+}

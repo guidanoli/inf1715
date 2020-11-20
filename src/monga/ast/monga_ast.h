@@ -89,6 +89,7 @@ struct monga_ast_condition_t
         MONGA_AST_CONDITION_NOT,
         MONGA_AST_CONDITION_AND,
         MONGA_AST_CONDITION_OR,
+        MONGA_AST_CONDITION_CNT, /* pseudo value */
     } tag;
     union {
         struct {

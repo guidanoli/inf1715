@@ -1,0 +1,3 @@
+function flt(a : float, b: float) { if (a < b) {} }
+function ilt(a : int, b: int) { if (a < b) {} }
+

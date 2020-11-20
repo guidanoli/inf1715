@@ -1,0 +1,3 @@
+function feq(a : float, b: float) { if (a == b) {} }
+function ieq(a : int, b: int) { if (a == b) {} }
+

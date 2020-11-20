@@ -1,0 +1,16 @@
+define i32 @if1(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = load i32, i32* %t1
+	%t3 = add i32 0, 0
+	%t4 = icmp sgt i32 %t2, %t3
+	br i1 %t4, label %l0, label %l1
+l0:
+	%t5 = load i32, i32* %t1
+	ret i32 %t5
+	br label %l1
+l1:
+	%t6 = add i32 0, 0
+	ret i32 %t6
+	ret i32 undef
+}
