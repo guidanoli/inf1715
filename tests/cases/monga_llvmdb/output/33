@@ -1,0 +1,12 @@
+define i32** @f(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = load i32, i32* %t1
+	%t3 = getelementptr i32*, i32** null, i32 %t2
+	%t4 = ptrtoint i32** %t3 to i64
+	%t5 = call i8* @malloc(i64 %t4)
+	%t6 = bitcast i8* %t5 to i32**
+	ret i32** %t6
+	ret i32** undef
+}
+declare i8* @malloc(i64)

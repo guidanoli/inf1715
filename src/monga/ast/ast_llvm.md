@@ -291,7 +291,38 @@ The instruction for each pair of types is show in the table below.
 
 ### `new_exp`
 
-*To be done.*
+This instruction is equivalent to calling `malloc` with the size of the type. Since `malloc` returns an opaque pointer (in LLVM, `i8*`), it has to be cast to the desired type using `bitcast`.
+
+Allocating a structure containing a 32-bit integer in LLVM is like the following.
+
+```llvm
+%struct.X = type { i32 }
+define %struct.X* @f() {
+  %1 = call i8* @malloc(i64 4)
+  %2 = bitcast i8* %1 to %struct.X*
+  ret %struct.X* %2
+}
+```
+
+But we don't need to calculate the size occupied by the type. We can use a little hack with the `getelementptr` instruction.
+
+```llvm
+%Size = getelementptr %T, %T* null, i32 1
+%SizeI64 = ptrtoint %T* %Size to i64
+```
+
+A good compiler will hopefully optimize these through static analysis. Since the type is known for it was declared before, LLVM will easily figure out the appropriate value for `%SizeI64`. 
+
+In general the following code should be generated for a new expression.
+
+```llvm
+%t<size> = getelementptr <type>, <type>* null, i32 %t<size-exp-reg>
+%t<size-i64> = ptrtoint <type>* %t<size> to i64
+%t<ptr> = call i8* @malloc(i64 %t<size-i64>)
+%t<exp> = bitcast i8* %t<ptr> to <type>*
+```
+
+Note that for single allocations, `%t<size-exp-reg>` is 1.
 
 ### `negative_exp`
 

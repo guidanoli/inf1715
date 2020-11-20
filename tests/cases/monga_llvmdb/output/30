@@ -1,0 +1,19 @@
+%s0 = type { i32 }
+define %s0* @f(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = alloca %s0*
+	%t3 = getelementptr %s0, %s0* null, i32 1
+	%t4 = ptrtoint %s0* %t3 to i64
+	%t5 = call i8* @malloc(i64 %t4)
+	%t6 = bitcast i8* %t5 to %s0*
+	store %s0* %t6, %s0** %t2
+	%t7 = load %s0*, %s0** %t2
+	%t8 = getelementptr %s0, %s0* %t7, i32 0, i32 0
+	%t9 = load i32, i32* %t1
+	store i32 %t9, i32* %t8
+	%t10 = load %s0*, %s0** %t2
+	ret %s0* %t10
+	ret %s0* undef
+}
+declare i8* @malloc(i64)

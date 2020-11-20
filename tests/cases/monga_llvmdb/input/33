@@ -1,0 +1,5 @@
+type int_array = [int];
+type int_matrix = [int_array];
+function f(n : int) : int_matrix {
+	return new int_array[n];
+}

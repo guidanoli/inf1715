@@ -1,0 +1,5 @@
+type Integer = { a : int; };
+type IntVector = [Integer];
+function f(n : int) : IntVector {
+	return new Integer[n];
+}

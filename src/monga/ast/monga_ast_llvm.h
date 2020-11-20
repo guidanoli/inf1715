@@ -6,8 +6,10 @@
 struct monga_ast_llvm_context_t {
     struct monga_ast_def_function_t* def_function; /* nullable */
     size_t struct_count;
-    size_t variable_count;
+    size_t tempvar_count;
     size_t label_count;
+    bool referenced_malloc;
+    bool referenced_printf;
 };
 
 void monga_ast_program_llvm(struct monga_ast_program_t* ast);

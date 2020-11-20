@@ -1,0 +1,7 @@
+type Integer = { a : int; };
+function f(a : int) : Integer {
+	var i : Integer;
+	i = new Integer;
+	i.a = a;
+	return i;
+}

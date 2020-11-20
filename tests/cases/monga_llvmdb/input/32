@@ -1,0 +1,4 @@
+type int_array = [int];
+function f(n : int) : int_array {
+	return new int[n];
+}

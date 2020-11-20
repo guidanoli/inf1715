@@ -74,7 +74,7 @@ struct monga_ast_call_t
     struct monga_ast_reference_t function;
     struct monga_ast_expression_list_t *expressions; /* nullable */
     size_t line;
-    size_t llvm_var_id; /* valid if function returns a value */
+    size_t tempvar_id; /* valid if function returns a value */
 };
 
 struct monga_ast_condition_t
@@ -162,7 +162,7 @@ struct monga_ast_expression_t
     struct monga_ast_typedesc_t *typedesc;
     struct monga_ast_expression_t *next; /* nullable */
     size_t line;
-    size_t llvm_var_id; /* unique per function */
+    size_t tempvar_id; /* unique per function */
 };
 
 struct monga_ast_variable_t
@@ -185,7 +185,7 @@ struct monga_ast_variable_t
     } u;
     struct monga_ast_typedesc_t *typedesc;
     size_t line;
-    size_t llvm_var_id; /* unique per function */
+    size_t tempvar_id; /* unique per function */
 };
 
 struct monga_ast_statement_t
@@ -286,7 +286,7 @@ struct monga_ast_def_variable_t
     struct monga_ast_def_variable_t *next; /* nullable */
     size_t line;
     bool is_global;
-    size_t llvm_var_id; /* unique per function, if is_global is false */
+    size_t tempvar_id; /* unique per function, if is_global is false */
 };
 
 struct monga_ast_definition_t
