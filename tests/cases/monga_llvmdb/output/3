@@ -1,4 +1,4 @@
-%S0 = type { i32 }
+%s0 = type { i32 }
 define i32 @f1() {
 	ret i32 undef
 }
@@ -14,12 +14,12 @@ define float* @f3(float %t0, float* %t1) {
 	store float* %t1, float** %t3
 	ret float* undef
 }
-define %S0* @f4(float %t0, float* %t1, %S0* %t2) {
+define %s0* @f4(float %t0, float* %t1, %s0* %t2) {
 	%t3 = alloca float
 	%t4 = alloca float*
-	%t5 = alloca %S0*
+	%t5 = alloca %s0*
 	store float %t0, float* %t3
 	store float* %t1, float** %t4
-	store %S0* %t2, %S0** %t5
-	ret %S0* undef
+	store %s0* %t2, %s0** %t5
+	ret %s0* undef
 }

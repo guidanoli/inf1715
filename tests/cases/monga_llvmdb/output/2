@@ -1,6 +1,6 @@
-%S0 = type { i32*, float* }
+%s0 = type { i32*, float* }
 @x = internal global i32 undef
 @y = internal global float undef
 @z = internal global i32* undef
 @w = internal global float* undef
-@k = internal global %S0* undef
+@k = internal global %s0* undef

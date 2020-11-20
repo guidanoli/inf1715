@@ -11,53 +11,40 @@ typedef void* (next_getter)(void*);
 typedef void (visiter)(void*, void*);
 typedef const char* (*builtin_instruction_getter)(enum monga_ast_typedesc_builtin_t);
 
-/* Static mappings */
-
-static builtin_instruction_getter exp_binop_instruction_getters[MONGA_AST_EXPRESSION_CNT] = {
-    [MONGA_AST_EXPRESSION_ADDITION] = monga_ast_builtin_llvm_add_instruction,
-    [MONGA_AST_EXPRESSION_SUBTRACTION] = monga_ast_builtin_llvm_sub_instruction,
-    [MONGA_AST_EXPRESSION_MULTIPLICATION] = monga_ast_builtin_llvm_mul_instruction,
-    [MONGA_AST_EXPRESSION_DIVISION] = monga_ast_builtin_llvm_div_instruction
-};
-
-static builtin_instruction_getter cond_binop_instruction_getters[MONGA_AST_CONDITION_CNT] = {
-    [MONGA_AST_CONDITION_EQ] = monga_ast_builtin_llvm_eq_instruction,
-    [MONGA_AST_CONDITION_NE] = monga_ast_builtin_llvm_ne_instruction,
-    [MONGA_AST_CONDITION_GT] = monga_ast_builtin_llvm_gt_instruction,
-    [MONGA_AST_CONDITION_LT] = monga_ast_builtin_llvm_lt_instruction,
-    [MONGA_AST_CONDITION_GE] = monga_ast_builtin_llvm_ge_instruction,
-    [MONGA_AST_CONDITION_LE] = monga_ast_builtin_llvm_le_instruction,
+struct monga_ast_node_iter_t {
+    typedesc_getter* get_node_typedesc;
+    next_getter* get_next_node;
+    visiter* visit_before; /* nullabe */
+    visiter* visit_after; /* nullabe */
+    void* visit_arg; /* nullabe */
 };
 
 /* Static function prototypes */
 
 static void monga_ast_typedesc_reference_llvm(struct monga_ast_typedesc_t* ast);
-static void monga_ast_typedesc_reference_list_llvm(void* node, typedesc_getter get_node_typedesc, next_getter get_next_node, visiter visit_before, visiter visit_after, void* visit_arg);
-
-static void monga_ast_def_variable_store_llvm(struct monga_ast_def_variable_t* def_variable, size_t value_id);
-static void monga_ast_def_variable_list_allocation_llvm(struct monga_ast_def_variable_list_t* def_variable_list, struct monga_ast_llvm_context_t* ctx);
+static void monga_ast_typedesc_reference_iter_llvm(void* node, struct monga_ast_node_iter_t* iter);
 static void monga_ast_def_variable_reference_llvm(struct monga_ast_def_variable_t* def_variable);
-
 static void monga_ast_variable_reference_llvm(struct monga_ast_variable_t* variable);
+static void monga_ast_expression_reference_llvm(struct monga_ast_expression_t* expression);
 
-static void monga_ast_def_function_return_llvm(struct monga_ast_def_function_t* ast);
+static void monga_ast_llvm_struct_reference(size_t llvm_struct_id);
+static size_t monga_ast_llvm_struct_new(struct monga_ast_llvm_context_t* ctx);
+static size_t monga_ast_llvm_struct_new_define(struct monga_ast_llvm_context_t* ctx);
+
+static void monga_ast_llvm_variable_reference(size_t llvm_var_id);
+static size_t monga_ast_llvm_variable_new(struct monga_ast_llvm_context_t* ctx);
+static size_t monga_ast_llvm_variable_new_assign(struct monga_ast_llvm_context_t* ctx);
+
+static void monga_ast_llvm_label_reference(size_t llvm_label_id);
+static void monga_ast_llvm_label_definition(size_t llvm_label_id);
+static size_t monga_ast_llvm_label_new(struct monga_ast_llvm_context_t* ctx);
 
 static int monga_ast_get_field_index(struct monga_ast_field_list_t* field_list, struct monga_ast_field_t* field);
+static void monga_ast_def_function_return_llvm(struct monga_ast_def_function_t* ast);
+static void monga_ast_unconditional_jump_llvm(size_t llvm_label_id);
 
-static void monga_ast_expression_value_reference_llvm(struct monga_ast_expression_t* expression);
-
-/* todo: uniform temporary, struct and label creation and referencing */
-static void monga_ast_struct_reference_llvm(size_t struct_id);
-static size_t monga_ast_new_struct_llvm(struct monga_ast_llvm_context_t* ctx);
-
-static void monga_ast_temporary_reference_llvm(size_t var_id);
-static size_t monga_ast_new_temporary_llvm(struct monga_ast_llvm_context_t* ctx);
-
-static void monga_ast_unconditional_jump_llvm(size_t label_id);
-
-static void monga_ast_label_tag_llvm(size_t label_id);
-static void monga_ast_label_reference_llvm(size_t label_id);
-static size_t monga_ast_new_label_llvm(struct monga_ast_llvm_context_t* ctx);
+static builtin_instruction_getter monga_ast_expression_binop_instruction_getter(struct monga_ast_expression_t* ast);
+static builtin_instruction_getter monga_ast_condition_binop_instruction_getter(struct monga_ast_condition_t* ast);
 
 /* Callbacks */
 
@@ -107,12 +94,25 @@ void monga_ast_definition_llvm(struct monga_ast_definition_t* ast, struct monga_
         monga_ast_definition_llvm(ast->next, ctx);
 }
 
-void monga_ast_def_variable_llvm(struct monga_ast_def_variable_t* ast, struct monga_ast_llvm_context_t* monga_unused(ctx))
+void monga_ast_def_variable_llvm(struct monga_ast_def_variable_t* ast, struct monga_ast_llvm_context_t* ctx)
 {
-    printf("@%s = internal global ", ast->id);
-    monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
-    monga_ast_typedesc_reference_llvm(ast->type.u.def_type->typedesc);
-    printf(" undef\n");
+    if (ast->is_global) {
+        monga_assert(ctx->def_function == NULL);
+        printf("@%s = internal global ", ast->id);
+        monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
+        monga_ast_typedesc_reference_llvm(ast->type.u.def_type->typedesc);
+        printf(" undef\n");
+    } else {
+        monga_assert(ctx->def_function != NULL);
+        ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
+        printf("alloca ");
+        monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
+        monga_ast_typedesc_reference_llvm(ast->type.u.def_type->typedesc);
+        printf("\n");
+    }
+
+    if (ast->next != NULL)
+        monga_ast_def_variable_llvm(ast->next, ctx);
 }
 
 void monga_ast_def_type_llvm(struct monga_ast_def_type_t* ast, struct monga_ast_llvm_context_t* ctx)
@@ -131,20 +131,39 @@ void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast, struct mo
     printf(" @%s(", ast->id);
 
     if (ast->parameters != NULL) {
-        monga_ast_typedesc_reference_list_llvm(ast->parameters->first,
-            def_variable_typedesc_getter, def_variable_next_getter, NULL,
-            def_variable_visit_after, ctx);
+        struct monga_ast_node_iter_t iter = {
+            .get_node_typedesc = def_variable_typedesc_getter,
+            .get_next_node = def_variable_next_getter,
+            .visit_after = def_variable_visit_after,
+            .visit_arg = ctx,
+        };
+
+        monga_ast_typedesc_reference_iter_llvm(ast->parameters->first, &iter);
     }
 
     printf(") {\n");
 
     if (ast->parameters != NULL) {
         struct monga_ast_def_variable_t* parameter = ast->parameters->first;
-        size_t parameter_id = 0;
 
-        monga_ast_def_variable_list_allocation_llvm(ast->parameters, ctx);
-        for (; parameter != NULL; ++parameter_id, parameter = parameter->next)
-            monga_ast_def_variable_store_llvm(parameter, parameter_id);
+        monga_ast_def_variable_llvm(ast->parameters->first, ctx);
+
+        for (size_t llvm_var_id = 0; parameter != NULL; ++llvm_var_id, parameter = parameter->next) {
+            struct monga_ast_typedesc_t* typedesc;
+
+            monga_assert(parameter->type.tag == MONGA_AST_REFERENCE_TYPE);
+            typedesc = parameter->type.u.def_type->typedesc;
+
+            printf("\tstore ");
+            monga_ast_typedesc_reference_llvm(typedesc);
+            printf(" ");
+            monga_ast_llvm_variable_reference(llvm_var_id);
+            printf(", ");
+            monga_ast_typedesc_reference_llvm(typedesc);
+            printf("* ");
+            monga_ast_def_variable_reference_llvm(parameter);
+            printf("\n");
+        }
     }
 
     if (ast->type.id != NULL)
@@ -172,12 +191,19 @@ void monga_ast_typedesc_llvm(struct monga_ast_typedesc_t* ast, struct monga_ast_
         monga_ast_typedesc_llvm(ast->u.array_typedesc, ctx);
         break;
     case MONGA_AST_TYPEDESC_RECORD:
-        ast->u.record_typedesc.llvm_struct_id = monga_ast_new_struct_llvm(ctx);
+    {
+        struct monga_ast_field_t* field = ast->u.record_typedesc.field_list->first;
+        struct monga_ast_node_iter_t iter = {
+            .get_node_typedesc = field_typedesc_getter,
+            .get_next_node = field_next_getter,
+        };
+
+        ast->u.record_typedesc.llvm_struct_id = monga_ast_llvm_struct_new_define(ctx);
         printf("{ ");
-        monga_ast_typedesc_reference_list_llvm(ast->u.record_typedesc.field_list->first,
-            field_typedesc_getter, field_next_getter, NULL, NULL, NULL);
+        monga_ast_typedesc_reference_iter_llvm(field, &iter);
         printf(" }\n");
         break;
+    }
     default:
         monga_unreachable();
     }
@@ -186,7 +212,7 @@ void monga_ast_typedesc_llvm(struct monga_ast_typedesc_t* ast, struct monga_ast_
 void monga_ast_block_llvm(struct monga_ast_block_t* ast, struct monga_ast_llvm_context_t* ctx)
 {
     if (ast->variables != NULL)
-        monga_ast_def_variable_list_allocation_llvm(ast->variables, ctx);
+        monga_ast_def_variable_llvm(ast->variables->first, ctx);
     if (ast->statements != NULL)
         monga_ast_statement_llvm(ast->statements->first, ctx);
 }
@@ -203,33 +229,33 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             then_block = ast->u.if_stmt.then_block;
             else_block = ast->u.if_stmt.else_block;
 
-            then_label = monga_ast_new_label_llvm(ctx);
-            else_label = monga_ast_new_label_llvm(ctx);
+            then_label = monga_ast_llvm_label_new(ctx);
+            else_label = monga_ast_llvm_label_new(ctx);
             if (else_block != NULL)
-                endif_label = monga_ast_new_label_llvm(ctx);
+                endif_label = monga_ast_llvm_label_new(ctx);
             else
                 endif_label = else_label;
 
             monga_ast_condition_llvm(cond, ctx, then_label, else_label);
 
             /* then: */
-            monga_ast_label_tag_llvm(then_label);
+            monga_ast_llvm_label_definition(then_label);
             monga_ast_block_llvm(then_block, ctx);
             printf("\tbr label ");
-            monga_ast_label_reference_llvm(endif_label);
+            monga_ast_llvm_label_reference(endif_label);
             printf("\n");
             
             /* else: */
             if (else_block != NULL) {
-                monga_ast_label_tag_llvm(else_label);
+                monga_ast_llvm_label_definition(else_label);
                 monga_ast_block_llvm(else_block, ctx);
                 printf("\tbr label ");
-                monga_ast_label_reference_llvm(endif_label);
+                monga_ast_llvm_label_reference(endif_label);
                 printf("\n");
             }
 
             /* endif: */
-            monga_ast_label_tag_llvm(endif_label);
+            monga_ast_llvm_label_definition(endif_label);
 
             break;
         }
@@ -242,18 +268,18 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             cond = ast->u.while_stmt.cond;
             loop_block = ast->u.while_stmt.loop;
 
-            do_label = monga_ast_new_label_llvm(ctx);
-            done_label = monga_ast_new_label_llvm(ctx);
+            do_label = monga_ast_llvm_label_new(ctx);
+            done_label = monga_ast_llvm_label_new(ctx);
 
             monga_ast_condition_llvm(cond, ctx, do_label, done_label);
 
             /* do: */
-            monga_ast_label_tag_llvm(do_label);
+            monga_ast_llvm_label_definition(do_label);
             monga_ast_block_llvm(loop_block, ctx);
             monga_ast_condition_llvm(cond, ctx, do_label, done_label);
 
             /* done: */
-            monga_ast_label_tag_llvm(done_label);
+            monga_ast_llvm_label_definition(done_label);
 
             break;
         }
@@ -268,7 +294,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             printf("\tstore ");
             monga_ast_typedesc_reference_llvm(var->typedesc);
             printf(" ");
-            monga_ast_expression_value_reference_llvm(exp);
+            monga_ast_expression_reference_llvm(exp);
             printf(", ");
             monga_ast_typedesc_reference_llvm(var->typedesc);
             printf("* ");
@@ -288,7 +314,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             monga_ast_def_function_return_llvm(ctx->def_function);
             if (exp != NULL) {
                 printf(" ");
-                monga_ast_expression_value_reference_llvm(exp);
+                monga_ast_expression_reference_llvm(exp);
             }
             printf("\n");
             
@@ -342,23 +368,23 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, struct monga_ast_
             monga_ast_expression_llvm(array_exp, ctx);
             monga_ast_expression_llvm(index_exp, ctx);
 
-            index_i64_llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            index_i64_llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("sext i32 ");
-            monga_ast_expression_value_reference_llvm(index_exp);
+            monga_ast_expression_reference_llvm(index_exp);
             printf(" to i64\n");
             
             monga_assert(array_exp->typedesc->tag == MONGA_AST_TYPEDESC_ARRAY);
             typedesc = array_exp->typedesc->u.array_typedesc;
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("getelementptr ");
             monga_ast_typedesc_reference_llvm(typedesc);
             printf(", ");
             monga_ast_typedesc_reference_llvm(typedesc);
             printf("* ");
-            monga_ast_expression_value_reference_llvm(array_exp);
+            monga_ast_expression_reference_llvm(array_exp);
             printf(", i64 ");
-            monga_ast_temporary_reference_llvm(index_i64_llvm_var_id);
+            monga_ast_llvm_variable_reference(index_i64_llvm_var_id);
             printf("\n");
 
             break;
@@ -385,13 +411,13 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, struct monga_ast_
             monga_assert(record_exp->typedesc->tag == MONGA_AST_TYPEDESC_RECORD);
             struct_id = record_exp->typedesc->u.record_typedesc.llvm_struct_id;
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("getelementptr ");
-            monga_ast_struct_reference_llvm(struct_id);
+            monga_ast_llvm_struct_reference(struct_id);
             printf(", ");
-            monga_ast_struct_reference_llvm(struct_id);
+            monga_ast_llvm_struct_reference(struct_id);
             printf("* ");
-            monga_ast_expression_value_reference_llvm(record_exp);
+            monga_ast_expression_reference_llvm(record_exp);
             printf(", i32 0, i32 %d\n", field_index);
 
             break;
@@ -413,7 +439,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             zero = monga_ast_builtin_typedesc_zero_llvm(MONGA_AST_TYPEDESC_BUILTIN_INT);
             monga_assert(zero != NULL);
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("add ");
             monga_ast_typedesc_reference_llvm(ast->typedesc);
             printf(" %d, %s\n", integer, zero);
@@ -428,7 +454,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             zero = monga_ast_builtin_typedesc_zero_llvm(MONGA_AST_TYPEDESC_BUILTIN_FLOAT);
             monga_assert(zero != NULL);
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("fadd ");
             monga_ast_typedesc_reference_llvm(ast->typedesc);
             printf(" %f, %s\n", real, zero);
@@ -441,7 +467,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
 
             monga_ast_variable_llvm(var, ctx);
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("load ");
             monga_ast_typedesc_reference_llvm(ast->typedesc);
             printf(", ");
@@ -492,9 +518,9 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
                 {
                     const char* instruction = monga_ast_builtin_llvm_cast_instruction(to, from);
                     monga_assert(instruction != NULL);
-                    ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+                    ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
                     printf("%s %s ", instruction, monga_ast_builtin_typedesc_llvm(from));
-                    monga_ast_expression_value_reference_llvm(exp);
+                    monga_ast_expression_reference_llvm(exp);
                     printf(" to %s\n", monga_ast_builtin_typedesc_llvm(to));
                 }
                 break;
@@ -522,7 +548,6 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             struct monga_ast_expression_t* exp = ast->u.negative_exp.exp;
             struct monga_ast_typedesc_t* typedesc = exp->typedesc;
             enum monga_ast_typedesc_builtin_t builtin_typedesc;
-            builtin_instruction_getter instruction_getter;
             const char* instruction;
             const char* zero;
             
@@ -533,18 +558,15 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             monga_assert(typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN);
             builtin_typedesc = typedesc->u.builtin_typedesc;
 
-            instruction_getter = exp_binop_instruction_getters[MONGA_AST_EXPRESSION_SUBTRACTION];
-            monga_assert(instruction_getter != NULL);
-
-            instruction = instruction_getter(builtin_typedesc);
+            instruction = monga_ast_builtin_llvm_sub_instruction(builtin_typedesc);
             monga_assert(instruction != NULL);
 
             zero = monga_ast_builtin_typedesc_zero_llvm(builtin_typedesc);
             monga_assert(zero != NULL);
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("%s %s %s, ", instruction, monga_ast_builtin_typedesc_llvm(builtin_typedesc), zero);
-            monga_ast_expression_value_reference_llvm(exp);
+            monga_ast_expression_reference_llvm(exp);
             printf("\n");
 
             break;
@@ -569,17 +591,17 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             monga_assert(typedesc->tag == MONGA_AST_TYPEDESC_BUILTIN);
             builtin_typedesc = typedesc->u.builtin_typedesc;
 
-            instruction_getter = exp_binop_instruction_getters[ast->tag];
+            instruction_getter = monga_ast_expression_binop_instruction_getter(ast);
             monga_assert(instruction_getter != NULL);
 
             instruction = instruction_getter(builtin_typedesc);
             monga_assert(instruction != NULL);
 
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("%s %s ", instruction, monga_ast_builtin_typedesc_llvm(builtin_typedesc));
-            monga_ast_expression_value_reference_llvm(exp1);
+            monga_ast_expression_reference_llvm(exp1);
             printf(", ");
-            monga_ast_expression_value_reference_llvm(exp2);
+            monga_ast_expression_reference_llvm(exp2);
             printf("\n");
 
             break;
@@ -591,45 +613,45 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             struct monga_ast_expression_t* false_exp = ast->u.conditional_exp.false_exp;
             size_t true_label, true_end_label, false_label, false_end_label, eval_label;
 
-            true_label = monga_ast_new_label_llvm(ctx);
-            true_end_label = monga_ast_new_label_llvm(ctx);
-            false_label = monga_ast_new_label_llvm(ctx);
-            false_end_label = monga_ast_new_label_llvm(ctx);
-            eval_label = monga_ast_new_label_llvm(ctx);
+            true_label = monga_ast_llvm_label_new(ctx);
+            true_end_label = monga_ast_llvm_label_new(ctx);
+            false_label = monga_ast_llvm_label_new(ctx);
+            false_end_label = monga_ast_llvm_label_new(ctx);
+            eval_label = monga_ast_llvm_label_new(ctx);
 
             monga_ast_condition_llvm(cond, ctx, true_label, false_label);
 
             /* true: */
-            monga_ast_label_tag_llvm(true_label);
+            monga_ast_llvm_label_definition(true_label);
             monga_ast_expression_llvm(true_exp, ctx);
             monga_ast_unconditional_jump_llvm(true_end_label);
 
             /* true_end: */
-            monga_ast_label_tag_llvm(true_end_label);
+            monga_ast_llvm_label_definition(true_end_label);
             monga_ast_unconditional_jump_llvm(eval_label);
 
             /* false: */
-            monga_ast_label_tag_llvm(false_label);
+            monga_ast_llvm_label_definition(false_label);
             monga_ast_expression_llvm(false_exp, ctx);
             monga_ast_unconditional_jump_llvm(false_end_label);
 
             /* false_end: */
-            monga_ast_label_tag_llvm(false_end_label);
+            monga_ast_llvm_label_definition(false_end_label);
             monga_ast_unconditional_jump_llvm(eval_label);
 
             /* eval: */
-            monga_ast_label_tag_llvm(eval_label);
-            ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+            monga_ast_llvm_label_definition(eval_label);
+            ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
             printf("phi ");
             monga_ast_typedesc_reference_llvm(true_exp->typedesc);
             printf(" [ ");
-            monga_ast_expression_value_reference_llvm(true_exp);
+            monga_ast_expression_reference_llvm(true_exp);
             printf(", ");
-            monga_ast_label_reference_llvm(true_end_label);
+            monga_ast_llvm_label_reference(true_end_label);
             printf(" ], [ ");
-            monga_ast_expression_value_reference_llvm(false_exp);
+            monga_ast_expression_reference_llvm(false_exp);
             printf(", ");
-            monga_ast_label_reference_llvm(false_end_label);
+            monga_ast_llvm_label_reference(false_end_label);
             printf(" ]\n");
 
             break;
@@ -658,7 +680,7 @@ void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, struct monga_as
             builtin_instruction_getter instruction_getter;
             const char* cmp, *op;
 
-            instruction_getter = cond_binop_instruction_getters[ast->tag];
+            instruction_getter = monga_ast_condition_binop_instruction_getter(ast);
             monga_assert(instruction_getter != NULL);
 
             exp1 = ast->u.exp_binop_cond.exp1;
@@ -677,38 +699,38 @@ void monga_ast_condition_llvm(struct monga_ast_condition_t* ast, struct monga_as
             monga_ast_expression_llvm(exp1, ctx);
             monga_ast_expression_llvm(exp2, ctx);
 
-            result = monga_ast_new_temporary_llvm(ctx);
+            result = monga_ast_llvm_variable_new_assign(ctx);
             printf("%s %s ", cmp, op);
             monga_ast_typedesc_reference_llvm(typedesc);
             printf(" ");
-            monga_ast_expression_value_reference_llvm(exp1);
+            monga_ast_expression_reference_llvm(exp1);
             printf(", ");
-            monga_ast_expression_value_reference_llvm(exp2);
+            monga_ast_expression_reference_llvm(exp2);
             printf("\n");
 
             printf("\tbr i1 ");
-            monga_ast_temporary_reference_llvm(result);
+            monga_ast_llvm_variable_reference(result);
             printf(", label ");
-            monga_ast_label_reference_llvm(true_label);
+            monga_ast_llvm_label_reference(true_label);
             printf(", label ");
-            monga_ast_label_reference_llvm(false_label);
+            monga_ast_llvm_label_reference(false_label);
             printf("\n");
 
             break;
         }
         case MONGA_AST_CONDITION_AND:
         {
-            size_t mid_label = monga_ast_new_label_llvm(ctx);
+            size_t mid_label = monga_ast_llvm_label_new(ctx);
             monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, ctx, mid_label, false_label);
-            monga_ast_label_tag_llvm(mid_label);
+            monga_ast_llvm_label_definition(mid_label);
             monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, ctx, true_label, false_label);
             break;
         }
         case MONGA_AST_CONDITION_OR:
         {
-            size_t mid_label = monga_ast_new_label_llvm(ctx);
+            size_t mid_label = monga_ast_llvm_label_new(ctx);
             monga_ast_condition_llvm(ast->u.cond_binop_cond.cond1, ctx, true_label, mid_label);
-            monga_ast_label_tag_llvm(mid_label);
+            monga_ast_llvm_label_definition(mid_label);
             monga_ast_condition_llvm(ast->u.cond_binop_cond.cond2, ctx, true_label, false_label);
             break;
         }
@@ -733,7 +755,7 @@ void monga_ast_call_llvm(struct monga_ast_call_t* ast, struct monga_ast_llvm_con
         monga_ast_expression_llvm(ast->expressions->first, ctx);
 
     if (def_function->type.id != NULL)
-        ast->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
+        ast->llvm_var_id = monga_ast_llvm_variable_new_assign(ctx);
     else
         printf("\t");
     
@@ -742,8 +764,13 @@ void monga_ast_call_llvm(struct monga_ast_call_t* ast, struct monga_ast_llvm_con
     printf(" @%s(", def_function->id);
     
     if (ast->expressions != NULL) {
-        monga_ast_typedesc_reference_list_llvm(ast->expressions->first,
-            expression_typedesc_getter, expression_next_getter, NULL, expression_visit_after, NULL);
+        struct monga_ast_node_iter_t iter = {
+            .get_node_typedesc = expression_typedesc_getter,
+            .get_next_node = expression_next_getter,
+            .visit_after = expression_visit_after,
+        };
+
+        monga_ast_typedesc_reference_iter_llvm(ast->expressions->first, &iter);
     }
     
     printf(")\n");
@@ -751,50 +778,12 @@ void monga_ast_call_llvm(struct monga_ast_call_t* ast, struct monga_ast_llvm_con
 
 /* Static function definitions */
 
-void monga_ast_def_variable_store_llvm(struct monga_ast_def_variable_t* def_variable, size_t value_id)
-{
-    struct monga_ast_typedesc_t* typedesc;
-
-    monga_assert(def_variable->type.tag == MONGA_AST_REFERENCE_TYPE);
-    typedesc = def_variable->type.u.def_type->typedesc;
-
-    printf("\tstore ");
-    monga_ast_typedesc_reference_llvm(typedesc);
-    printf(" ");
-    monga_ast_temporary_reference_llvm(value_id);
-    printf(", ");
-    monga_ast_typedesc_reference_llvm(typedesc);
-    printf("* ");
-    monga_ast_def_variable_reference_llvm(def_variable);
-    printf("\n");
-}
-
-void monga_ast_def_variable_list_allocation_llvm(struct monga_ast_def_variable_list_t* def_variable_list, struct monga_ast_llvm_context_t* ctx)
-{
-    struct monga_ast_def_variable_t* def_variable;
-
-    for (def_variable = def_variable_list->first;
-        def_variable != NULL;
-        def_variable = def_variable->next) {
-        
-        struct monga_ast_typedesc_t* typedesc;
-
-        monga_assert(def_variable->type.tag == MONGA_AST_REFERENCE_TYPE);
-        typedesc = def_variable->type.u.def_type->typedesc;
-
-        def_variable->llvm_var_id = monga_ast_new_temporary_llvm(ctx);
-        printf("alloca ");
-        monga_ast_typedesc_reference_llvm(typedesc);
-        printf("\n");
-    }
-}
-
 void monga_ast_def_variable_reference_llvm(struct monga_ast_def_variable_t* def_variable)
 {
     if (def_variable->is_global) {
         printf("@%s", def_variable->id);
     } else {
-        printf("%%t%zu", def_variable->llvm_var_id);
+        monga_ast_llvm_variable_reference(def_variable->llvm_var_id);
     }
 }
 
@@ -834,21 +823,21 @@ void def_variable_visit_after(void* def_variable, void* arg)
     monga_ast_def_variable_reference_llvm(def_variable_);
 }
 
-void monga_ast_typedesc_reference_list_llvm(void* node, typedesc_getter get_node_typedesc, next_getter get_next_node, visiter visit_before, visiter visit_after, void* visit_arg)
+void monga_ast_typedesc_reference_iter_llvm(void* node, struct monga_ast_node_iter_t* iter)
 {
     struct monga_ast_typedesc_t* typedesc;
     while (node != NULL) {
-        typedesc = get_node_typedesc(node);
+        typedesc = iter->get_node_typedesc(node);
         
-        if (visit_before != NULL)
-            visit_before(node, visit_arg);
+        if (iter->visit_before != NULL)
+            iter->visit_before(node, iter->visit_arg);
         
         monga_ast_typedesc_reference_llvm(typedesc);
 
-        if (visit_after != NULL)
-            visit_after(node, visit_arg);
+        if (iter->visit_after != NULL)
+            iter->visit_after(node, iter->visit_arg);
         
-        node = get_next_node(node);
+        node = iter->get_next_node(node);
         if (node != NULL)
             printf(", ");
     }
@@ -869,7 +858,7 @@ void monga_ast_typedesc_reference_llvm(struct monga_ast_typedesc_t* ast)
         printf("*");
         break;
     case MONGA_AST_TYPEDESC_RECORD:
-        monga_ast_struct_reference_llvm(ast->u.record_typedesc.llvm_struct_id);
+        monga_ast_llvm_struct_reference(ast->u.record_typedesc.llvm_struct_id);
         printf("*");
         break;
     default:
@@ -898,38 +887,9 @@ int monga_ast_get_field_index(struct monga_ast_field_list_t* field_list, struct 
     return index;
 }
 
-void monga_ast_expression_value_reference_llvm(struct monga_ast_expression_t* expression)
+void monga_ast_expression_reference_llvm(struct monga_ast_expression_t* expression)
 {
-    monga_ast_temporary_reference_llvm(expression->llvm_var_id);
-}
-
-size_t monga_ast_new_temporary_llvm(struct monga_ast_llvm_context_t* ctx)
-{
-    size_t var_count = ctx->variable_count;
-    printf("\t");
-    monga_ast_temporary_reference_llvm(var_count);
-    printf(" = ");
-    ctx->variable_count += 1;
-    return var_count;
-}
-
-void monga_ast_temporary_reference_llvm(size_t var_id)
-{
-    printf("%%t%zu", var_id);
-}
-
-size_t monga_ast_new_struct_llvm(struct monga_ast_llvm_context_t* ctx)
-{
-    size_t struct_count = ctx->struct_count;
-    monga_ast_struct_reference_llvm(struct_count);
-    printf(" = type ");
-    ctx->struct_count += 1;
-    return struct_count;
-}
-
-void monga_ast_struct_reference_llvm(size_t struct_id)
-{
-    printf("%%S%zu", struct_id);
+    monga_ast_llvm_variable_reference(expression->llvm_var_id);
 }
 
 void monga_ast_variable_reference_llvm(struct monga_ast_variable_t* variable)
@@ -938,17 +898,16 @@ void monga_ast_variable_reference_llvm(struct monga_ast_variable_t* variable)
     case MONGA_AST_VARIABLE_ID:
     {
         struct monga_ast_reference_t* id_var = &variable->u.id_var;
-        monga_assert(id_var->tag == MONGA_AST_REFERENCE_VARIABLE);
 
-        /* variable id can be local or global */
+        monga_assert(id_var->tag == MONGA_AST_REFERENCE_VARIABLE);
         monga_ast_def_variable_reference_llvm(id_var->u.def_variable);
         break;
     }
     case MONGA_AST_VARIABLE_ARRAY:
-        monga_ast_temporary_reference_llvm(variable->llvm_var_id);
+        monga_ast_llvm_variable_reference(variable->llvm_var_id);
         break;
     case MONGA_AST_VARIABLE_RECORD:
-        monga_ast_temporary_reference_llvm(variable->llvm_var_id);
+        monga_ast_llvm_variable_reference(variable->llvm_var_id);
         break;
     default:
         monga_unreachable();
@@ -971,31 +930,102 @@ void expression_visit_after(void* expression, void* monga_unused(arg))
 {
     struct monga_ast_expression_t* expression_ = (struct monga_ast_expression_t*) expression;
     printf(" ");
-    monga_ast_expression_value_reference_llvm(expression_);
+    monga_ast_expression_reference_llvm(expression_);
     if (expression_->next != NULL)
         printf(", ");
 }
 
-void monga_ast_label_tag_llvm(size_t label_id)
-{
-    printf("l%zu:\n", label_id);
-}
-
-void monga_ast_label_reference_llvm(size_t label_id)
-{
-    printf("%%l%zu", label_id);
-}
-
-size_t monga_ast_new_label_llvm(struct monga_ast_llvm_context_t* ctx)
-{
-    size_t label_id = ctx->label_count;
-    ctx->label_count += 1;
-    return label_id;
-}
-
-void monga_ast_unconditional_jump_llvm(size_t label_id)
+void monga_ast_unconditional_jump_llvm(size_t llvm_label_id)
 {
     printf("\tbr label ");
-    monga_ast_label_reference_llvm(label_id);
+    monga_ast_llvm_label_reference(llvm_label_id);
     printf("\n");
+}
+
+void monga_ast_llvm_struct_reference(size_t llvm_struct_id)
+{
+    printf("%%s%zu", llvm_struct_id);
+}
+
+size_t monga_ast_llvm_struct_new(struct monga_ast_llvm_context_t* ctx)
+{
+    return ctx->struct_count++;
+}
+
+size_t monga_ast_llvm_struct_new_define(struct monga_ast_llvm_context_t* ctx)
+{
+    size_t llvm_struct_id = monga_ast_llvm_struct_new(ctx);
+    monga_ast_llvm_struct_reference(llvm_struct_id);
+    printf(" = type ");
+    return llvm_struct_id;
+}
+
+void monga_ast_llvm_variable_reference(size_t llvm_var_id)
+{
+    printf("%%t%zu", llvm_var_id);
+}
+
+size_t monga_ast_llvm_variable_new(struct monga_ast_llvm_context_t* ctx)
+{
+    return ctx->variable_count++;
+}
+
+size_t monga_ast_llvm_variable_new_assign(struct monga_ast_llvm_context_t* ctx)
+{
+    size_t llvm_var_id = monga_ast_llvm_variable_new(ctx);
+    printf("\t");
+    monga_ast_llvm_variable_reference(llvm_var_id);
+    printf(" = ");
+    return llvm_var_id;
+}
+
+void monga_ast_llvm_label_reference(size_t llvm_label_id)
+{
+    printf("%%l%zu", llvm_label_id);
+}
+
+void monga_ast_llvm_label_definition(size_t llvm_label_id)
+{
+    printf("l%zu:\n", llvm_label_id);
+}
+
+size_t monga_ast_llvm_label_new(struct monga_ast_llvm_context_t* ctx)
+{
+    return ctx->label_count++;
+}
+
+builtin_instruction_getter monga_ast_expression_binop_instruction_getter(struct monga_ast_expression_t* ast)
+{
+    switch (ast->tag) {
+    case MONGA_AST_EXPRESSION_ADDITION:
+        return monga_ast_builtin_llvm_add_instruction;
+    case MONGA_AST_EXPRESSION_SUBTRACTION:
+        return monga_ast_builtin_llvm_sub_instruction;
+    case MONGA_AST_EXPRESSION_MULTIPLICATION:
+        return monga_ast_builtin_llvm_mul_instruction;
+    case MONGA_AST_EXPRESSION_DIVISION:
+        return monga_ast_builtin_llvm_div_instruction;
+    default:
+        return NULL;
+    }
+}
+
+builtin_instruction_getter monga_ast_condition_binop_instruction_getter(struct monga_ast_condition_t* ast)
+{
+    switch (ast->tag) {
+    case MONGA_AST_CONDITION_EQ:
+        return monga_ast_builtin_llvm_eq_instruction;
+    case MONGA_AST_CONDITION_NE:
+        return monga_ast_builtin_llvm_ne_instruction;
+    case MONGA_AST_CONDITION_GT:
+        return monga_ast_builtin_llvm_gt_instruction;
+    case MONGA_AST_CONDITION_LT:
+        return monga_ast_builtin_llvm_lt_instruction;
+    case MONGA_AST_CONDITION_GE:
+        return monga_ast_builtin_llvm_ge_instruction;
+    case MONGA_AST_CONDITION_LE:
+        return monga_ast_builtin_llvm_le_instruction;
+    default:
+        return NULL;
+    }
 }
