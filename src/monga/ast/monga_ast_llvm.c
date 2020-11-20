@@ -169,8 +169,10 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
 {
     switch (ast->tag) {
         case MONGA_AST_STATEMENT_IF:
+            /* TODO -- generate code for condition, jumps and labels */
             break;
         case MONGA_AST_STATEMENT_WHILE:
+            /* TODO -- generate code for condition, jumps and labels */
             break;
         case MONGA_AST_STATEMENT_ASSIGN:
         {
@@ -213,6 +215,7 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, size_t* var_cou
             monga_ast_call_llvm(ast->u.call_stmt.call, var_count_ptr);
             break;
         case MONGA_AST_STATEMENT_PRINT:
+            /* TODO -- create calls to a printing function */
             break;
         case MONGA_AST_STATEMENT_BLOCK:
             monga_ast_block_llvm(ast->u.block_stmt.block, var_count_ptr, def_function);
@@ -429,6 +432,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             break;
         }
         case MONGA_AST_EXPRESSION_NEW:
+            /* TODO -- call memory allocation function */
             break;
         case MONGA_AST_EXPRESSION_NEGATIVE:
         {
@@ -498,6 +502,7 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, size_t* var_c
             break;
         }
         case MONGA_AST_EXPRESSION_CONDITIONAL:
+            /* TODO -- generate code for condition, jumps and labels */
             break;
         default:
             monga_unreachable();
@@ -536,8 +541,6 @@ void monga_ast_call_llvm(struct monga_ast_call_t* ast, size_t* var_count_ptr)
     
     printf(")\n");
 }
-
-// void monga_ast_reference_llvm(struct monga_ast_reference_t* ast) {}
 
 /* Static function definitions */
 

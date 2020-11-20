@@ -65,10 +65,251 @@ Function definitions follow this basic pattern:
 
 ```llvm
 define <return-type> @<function-name> ([<type> %<reg>]) {
+    [%<stack-reg> = alloca <type>]
+    [store <type> %<param-reg>, <type>* %<stack-reg>]
+    {block}
     ret <return-type> <value>
 }
 ```
 
-Where `return-type` is the type descriptor of the function return type. If the function does not return a value, it is `void`, and the return statement is `ret void`.
+First the parameters must be allocated to the stack using `alloca`. Then, the values must be stored in these locations using `store`. Having loaded the parameters to the stack, begins the block code.
 
-And `[<type> %<reg>]` denotes a list of `,`-separated parameter descriptions. `type` is the parameter type descriptor and `reg` is the register label.
+In the end, is returned a default value, `undef`, which is reached only if there is return statement at the end of the function block.
+
+## `block`
+
+The block is layed out as such:
+
+```llvm
+[%<stack-reg> = alloca <type>]
+[{statement}]
+```
+
+In the beginning are allocated to the stack all the variable definitions. Then, all the statements follow.
+
+## `statement`
+
+The code generated for a statement greatly differs by kind.
+
+### `if_stmt`
+
+*To be done.*
+
+### `while_stmt`
+
+*To be done.*
+
+### `assign_stmt`
+
+The assignament statement involves an expresion and a variable and consists of storing the value evaluated in the location pointed by the variable address in memory. The code for this is layed out as such:
+
+```llvm
+{variable}
+{expression}
+store <type> %<exp-reg>, <type>* %<var-reg>
+```
+
+Note that the expression and the variable must have the same type. This is particularly true for the Monga semantics. Assigning, say, a float value to an integer variable will throw a type error.
+
+### `return_stmt`
+
+Since functions may not return a value, there are two natures of return statements. Both mean to exit the function, but may return a value as well, depending on the function type.
+
+That is, if the function returns a value, the return statement follows this pattern...
+
+```llvm
+{expression}
+ret <type> %<exp-reg>
+```
+
+...and if does not return a value, the return statement is always...
+
+```llvm
+ret void
+```
+
+### `call_stmt`
+
+The code for the call statement is the same as the one for the call itself.
+
+```
+{call}
+```
+
+### `print_stmt`
+
+*To be done.*
+
+### `block_stmt`
+
+The code for the block is simply:
+
+```llvm
+{block}
+```
+
+## `variable`
+
+There are many types of variables, but all of them have one thing in common: they are always pointers to some location in memory. In code, they all have an unique id which points to a LLVM temporary variable.
+
+### `id_var`
+
+When a variable is referenced by its name, it is bound to a variable definition. Since every declaration precedes a definition, the code for the variable definition has already been generated.
+
+In this matter, it is important to note that there are two possible scopes for variable definitions: outside (global) or inside (local) function blocks.
+
+For global variables, the code that references it is simply its name.
+
+```llvm
+@<name>
+```
+
+For local variables, the code that references it is the variable id.
+
+```llvm
+%t<id>
+```
+
+### `array_var`
+
+An array is composed of two expressions: the array expression and the index expression. The array expression should have array type and the index expression should have integer type.
+
+First we need to convert the index value from 32-bit integer to 64-bit integer with the instruction `sext`.
+
+Then, we need to calculate the pointer to the element that dists by the value evaluated by the index expression multiplied by the element size. This calculation is made by the instruction `getelementptr`.
+
+```llvm
+{array-expression}
+{index-expression}
+%t<new-id-1> = sext i32 %t<index-exp-reg> to i64
+%t<new-id-2> = getelementptr %<array-exp-type>, %<array-exp-type>* %<array-exp-reg>, i64 %t<new-id-1>
+```
+
+The pointer that points to the desired element is `%t<new-id-2>`.
+
+### `record_var`
+
+A record variable envolves a record expression and a field reference. The record expression should have record type and the field reference must point to a field contained in that record type.
+
+In order to identify the field in the record, tha `getelementptr` instruction needs its index in the order that they are declared (the first field is indexed by zero).
+
+This instruction requires that first is passed the index of the variable as if the pointer to the record was in fact an array of records. We then pass `i32 0` in order to always point to the first record.
+
+```llvm
+{expression}
+%t<new-id> = getelementptr %<exp-type>, %<exp-type>* $<exp-reg>, i32 0, i32 <field-idx>
+```
+
+## `expression`
+
+There are plenty of types of expression. All of them have one thing in common: they can always be evaluated to a value which has a type. In code, they are attached to a unique id which points to a temporary variable.
+
+### `integer_exp`
+
+Since you can't simply assign literals to temporary variables, this is achieved by a simple hack: add the literal with zero.
+
+```llvm
+%t<new-id> = add i32 <literal>, 0
+```
+
+### `float_exp`
+
+Similar to the integer expression, floating point literals can't be assigned to temporary variables directly. But there are extra precautions for representing floating point numbers in LLVM. If the real value cannot be precisely represented in the format, the compiler will throw an error.
+
+Since the floating point type is always internally stored as an `float`, there are no casting problems. But values such as infinity and NAN will throw errors as they aren't contained in the LLVM grammar.
+
+```llvm
+%t<new-id> = fadd float <literal>, 0.0
+```
+
+### `var_exp`
+
+Since every variable has an address, the value stored there can be obtained by the instruction `load`. By definition, both have the same type.
+
+```llvm
+{variable}
+%t<new-id> = load %<var-type>, %<var-type>* %<var-reg>
+```
+
+### `call_exp`
+
+As previously discussed in the "Binding" section, call expressions must involve functions which return a value. In this case, the code for the call will generate a temporary variable, which is merely copied to the expression.
+
+```llvm
+{call}
+```
+
+### `cast_exp`
+
+Cast expressions involve different instructions for diferent type conversions. They involve an expression being cast and a type to which the expression will be cast. It is assured that this cast can occurr, for the program has already passed the binding phase.
+
+If the expression type is the same as the cast type, no code is generated. The value is stored in the expression temporary variable.
+
+If not, then the conversion has the following pattern:
+
+```llvm
+%t<new-id> = <cvt-instruction> <exp-type> %<exp-reg> to <cast-type>
+```
+
+The instruction for each pair of types is show in the table below.
+
+| from | to | instruction |
+| :- | :- | :- |
+| `int` | `float` | `sitofp` |
+| `float` | `int` | `fptosi` |
+
+### `new_exp`
+
+*To be done.*
+
+### `negative_exp`
+
+This instruction is equivalent to `<zero-literal> - <expression>`. The zero literal part varies depending on the expression type. The possible values are laid on the table below.
+
+| type | zero literal |
+| :- | :- |
+| `int` | `0` |
+| `float` | `0.0` |
+
+### `binop_exp`
+
+The binary operations all fall in the same category of expressions because they involve two expressions being manipulated by an arithmetic operator. Even the negative expression falls back to a subtraction with zero.
+
+The general layout of the code generated follows. Note that both expressions must have the same type, which is ensured in the binding phase.
+
+```llvm
+{expression1}
+{expression2}
+%t<new-id> = <instruction> %<type> %<exp1-reg> %<exp2-reg>
+```
+
+These are the corresponding instructions for each operation and type.
+
+| operation | `i32` | `float` |
+| :- | :- | :- |
+| + | `add nsw` | `fadd` |
+| - | `sub nsw` | `fsub` |
+| * | `mul nsw` | `fmul` |
+| / | `sdiv` | `fdiv` |
+
+### `conditional_exp`
+
+*To be done.*
+
+## `call`
+
+Just like for the return statement, the code to be generated for call depends on the type of function involved. If and only if the function return a value, then there will be an assignment to a temporary value.
+
+If the function returns a value, then the code looks like the following.
+
+```llvm
+[{expression}]
+%t<new-id> = call <ret-type> @<fname>([<exp-type> <exp-reg>])
+```
+
+If not, then the code looks like the following. In this case, the call node does not point to any temporary variable. This can be checked only by checking whether the function returns or not.
+
+```llvm
+[{expression}]
+call void @<fname>([<exp-type> <exp-reg>])
+```
