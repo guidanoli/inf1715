@@ -493,7 +493,6 @@ void monga_ast_variable_llvm(struct monga_ast_variable_t* ast, struct monga_ast_
 
 void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_ast_llvm_context_t* ctx)
 {
-    /* TODO -- set llvm_var_id in every expression */
     switch (ast->tag) {
         case MONGA_AST_EXPRESSION_INTEGER:
         {
