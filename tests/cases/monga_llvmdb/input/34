@@ -1,0 +1,7 @@
+type x = [int];
+type y = { a : int; };
+
+function print_int(a : int) { @a; }
+function print_float(a : float) { @a; }
+function print_array(a : x) { @a; }
+function print_record(a : y) { @a; }

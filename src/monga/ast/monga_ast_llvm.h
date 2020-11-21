@@ -3,13 +3,26 @@
 
 #include "monga_ast.h"
 
+enum monga_ast_llvm_func_t {
+    MONGA_AST_LLVM_FUNC_MALLOC = 1 << 0,
+    MONGA_AST_LLVM_FUNC_PRINTF = 1 << 1,
+    MONGA_AST_LLVM_FUNC_CNT, /* pseudo value */
+};
+
+enum monga_ast_llvm_printf_fmt_t {
+    MONGA_AST_LLVM_PRINTF_FMT_INT = 1 << 0,
+    MONGA_AST_LLVM_PRINTF_FMT_FLOAT = 1 << 1,
+    MONGA_AST_LLVM_PRINTF_FMT_PTR = 1 << 2,
+    MONGA_AST_LLVM_PRINTF_FMT_CNT, /* pseudo value */
+};
+
 struct monga_ast_llvm_context_t {
     struct monga_ast_def_function_t* def_function; /* nullable */
     size_t struct_count;
     size_t tempvar_count;
     size_t label_count;
-    bool referenced_malloc;
-    bool referenced_printf;
+    char referenced_funcs; /* enum monga_ast_llvm_func_t */
+    char referenced_printf_fmts; /* enum monga_ast_llvm_printf_fmt_t */
 };
 
 void monga_ast_program_llvm(struct monga_ast_program_t* ast);

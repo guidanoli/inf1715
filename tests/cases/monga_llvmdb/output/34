@@ -1,0 +1,37 @@
+%s0 = type { i32 }
+define void @print_int(i32 %t0) {
+	%t1 = alloca i32
+	store i32 %t0, i32* %t1
+	%t2 = load i32, i32* %t1
+	%t3 = getelementptr inbounds [4 x i8], [4 x i8]* @.fmt.int, i64 0, i64 0
+	call i32 (i8*, ...) @printf(i8* %t3, i32 %t2)
+	ret void
+}
+define void @print_float(float %t0) {
+	%t1 = alloca float
+	store float %t0, float* %t1
+	%t2 = load float, float* %t1
+	%t3 = getelementptr inbounds [4 x i8], [4 x i8]* @.fmt.float, i64 0, i64 0
+	call i32 (i8*, ...) @printf(i8* %t3, float %t2)
+	ret void
+}
+define void @print_array(i32* %t0) {
+	%t1 = alloca i32*
+	store i32* %t0, i32** %t1
+	%t2 = load i32*, i32** %t1
+	%t3 = getelementptr inbounds [4 x i8], [4 x i8]* @.fmt.ptr, i64 0, i64 0
+	call i32 (i8*, ...) @printf(i8* %t3, i32* %t2)
+	ret void
+}
+define void @print_record(%s0* %t0) {
+	%t1 = alloca %s0*
+	store %s0* %t0, %s0** %t1
+	%t2 = load %s0*, %s0** %t1
+	%t3 = getelementptr inbounds [4 x i8], [4 x i8]* @.fmt.ptr, i64 0, i64 0
+	call i32 (i8*, ...) @printf(i8* %t3, %s0* %t2)
+	ret void
+}
+declare i32 @printf(i8*, ...)
+@.fmt.int = constant [4 x i8] c"%d\0A\00"
+@.fmt.float = constant [4 x i8] c"%f\0A\00"
+@.fmt.ptr = constant [4 x i8] c"%p\0A\00"

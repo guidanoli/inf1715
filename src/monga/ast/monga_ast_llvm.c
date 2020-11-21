@@ -3,6 +3,7 @@
 #include "monga_ast_typedesc.h"
 
 #include <stdio.h>
+#include <string.h>
 
 /* Type definitions */
 
@@ -46,6 +47,13 @@ static void monga_ast_unconditional_jump_llvm(size_t llvm_label_id);
 static builtin_instruction_getter monga_ast_expression_binop_instruction_getter(struct monga_ast_expression_t* ast);
 static builtin_instruction_getter monga_ast_condition_binop_instruction_getter(struct monga_ast_condition_t* ast);
 
+static enum monga_ast_llvm_printf_fmt_t monga_ast_typedesc_printf_fmt(struct monga_ast_typedesc_t* typedesc);
+static const char* monga_ast_printf_fmt_constant_string(enum monga_ast_llvm_printf_fmt_t fmt);
+static const char* monga_ast_printf_fmt_constant_name(enum monga_ast_llvm_printf_fmt_t fmt);
+static size_t monga_ast_printf_fmt_size(enum monga_ast_llvm_printf_fmt_t fmt);
+
+static const char* monga_ast_func_declaration(enum monga_ast_llvm_func_t func);
+
 /* Callbacks */
 
 static struct monga_ast_typedesc_t* field_typedesc_getter(void* field);
@@ -63,23 +71,40 @@ static void expression_visit_after(void* expression, void* arg);
 
 void monga_ast_program_llvm(struct monga_ast_program_t* ast)
 {
-    struct monga_ast_llvm_context_t ctx = {
-        .def_function = NULL,
-        .struct_count = 0,
-        .tempvar_count = 0,
-        .label_count = 0,
-        .referenced_malloc = false,
-        .referenced_printf = false,
-    };
+    struct monga_ast_llvm_context_t ctx;
+    memset(&ctx, 0, sizeof(ctx));
 
     if (ast->definitions != NULL)
         monga_ast_definition_llvm(ast->definitions->first, &ctx);
+
+    /* Function declaration */
+    {
+        char flag = 1;
+        while (flag < MONGA_AST_LLVM_FUNC_CNT) {
+            if (ctx.referenced_funcs & flag) {
+                const char* func_decl = monga_ast_func_declaration(flag);
+                monga_assert(func_decl != NULL);
+                printf("declare %s\n", func_decl);
+            }
+            flag <<= 1;
+        }
+    }
     
-    if (ctx.referenced_malloc)
-        printf("declare i8* @malloc(i64)\n");
-    
-    if (ctx.referenced_printf)
-        printf("declare i32 @printf(i8*, ...)\n");
+    /* Print format declaration */
+    {
+        char flag = 1;
+        while (flag < MONGA_AST_LLVM_PRINTF_FMT_CNT) {
+            if (ctx.referenced_printf_fmts & flag) {
+                const char* fmt_str = monga_ast_printf_fmt_constant_string(flag);
+                const char* fmt_name = monga_ast_printf_fmt_constant_name(flag);
+                size_t fmt_size = monga_ast_printf_fmt_size(flag);
+                monga_assert(fmt_str != NULL);
+                monga_assert(fmt_name != NULL);
+                printf("@%s = constant [%zu x i8] c\"%s\"\n", fmt_name, fmt_size, fmt_str);
+            }
+            flag <<= 1;
+        }
+    }
 }
 
 void monga_ast_definition_llvm(struct monga_ast_definition_t* ast, struct monga_ast_llvm_context_t* ctx)
@@ -331,8 +356,37 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             monga_ast_call_llvm(ast->u.call_stmt.call, ctx);
             break;
         case MONGA_AST_STATEMENT_PRINT:
-            /* TODO -- create calls to a printing function */
+        {
+            struct monga_ast_expression_t* exp = ast->u.print_stmt.exp;
+            struct monga_ast_typedesc_t* typedesc = exp->typedesc;
+            enum monga_ast_llvm_printf_fmt_t fmt;
+            const char* str_name;
+            size_t str_size;
+            size_t str_id;
+
+            monga_ast_expression_llvm(exp, ctx);
+
+            fmt = monga_ast_typedesc_printf_fmt(typedesc);
+            str_name = monga_ast_printf_fmt_constant_name(fmt);
+            str_size = monga_ast_printf_fmt_size(fmt);
+
+            str_id = monga_ast_tempvar_new_assign_llvm(ctx);
+            printf("getelementptr inbounds [%zu x i8], [%zu x i8]* @%s, i64 0, i64 0\n",
+                str_size, str_size, str_name);
+
+            printf("\tcall i32 (i8*, ...) @printf(i8* ");
+            monga_ast_tempvar_reference_llvm(str_id);
+            printf(", ");
+            monga_ast_typedesc_reference_llvm(typedesc);
+            printf(" ");
+            monga_ast_expression_reference_llvm(exp);
+            printf(")\n");
+
+            ctx->referenced_funcs |= MONGA_AST_LLVM_FUNC_PRINTF;
+            ctx->referenced_printf_fmts |= fmt;
+
             break;
+        }
         case MONGA_AST_STATEMENT_BLOCK:
             monga_ast_block_llvm(ast->u.block_stmt.block, ctx);
             break;
@@ -587,14 +641,14 @@ void monga_ast_expression_llvm(struct monga_ast_expression_t* ast, struct monga_
             printf(")\n");
             
             /* signal reference to malloc */
-            ctx->referenced_malloc = true;
+            ctx->referenced_funcs |= MONGA_AST_LLVM_FUNC_MALLOC;
 
             ast->tempvar_id = monga_ast_tempvar_new_assign_llvm(ctx);
             printf("bitcast i8* ");
             monga_ast_tempvar_reference_llvm(ptr_var_id);
             printf(" to ");
-            monga_ast_typedesc_subtype_reference_llvm(typedesc);
-            printf("*\n");
+            monga_ast_typedesc_reference_llvm(typedesc);
+            printf("\n");
 
             break;
         }
@@ -1087,6 +1141,84 @@ builtin_instruction_getter monga_ast_condition_binop_instruction_getter(struct m
     case MONGA_AST_CONDITION_LE:
         return monga_ast_builtin_llvm_le_instruction;
     default:
+        return NULL;
+    }
+}
+
+enum monga_ast_llvm_printf_fmt_t monga_ast_typedesc_printf_fmt(struct monga_ast_typedesc_t* typedesc)
+{
+    typedesc = monga_ast_typedesc_resolve_id(typedesc);
+
+    switch (typedesc->tag) {
+    case MONGA_AST_TYPEDESC_BUILTIN:
+    {
+        switch (typedesc->u.builtin_typedesc) {
+        case MONGA_AST_TYPEDESC_BUILTIN_INT:
+            return MONGA_AST_LLVM_PRINTF_FMT_INT;
+        case MONGA_AST_TYPEDESC_BUILTIN_FLOAT:
+            return MONGA_AST_LLVM_PRINTF_FMT_FLOAT;
+        default:
+            monga_unreachable();
+        }
+        break;
+    }
+    case MONGA_AST_TYPEDESC_ID:
+        monga_unreachable(); /* monga_ast_typedesc_resolve_id guarantees it */
+        break;
+    case MONGA_AST_TYPEDESC_ARRAY:
+    case MONGA_AST_TYPEDESC_RECORD:
+        return MONGA_AST_LLVM_PRINTF_FMT_PTR;
+    default:
+        monga_unreachable();
+    }
+
+    return 0;
+}
+
+const char* monga_ast_printf_fmt_constant_name(enum monga_ast_llvm_printf_fmt_t fmt)
+{
+    switch (fmt) {
+    case MONGA_AST_LLVM_PRINTF_FMT_INT:
+        return ".fmt.int";
+    case MONGA_AST_LLVM_PRINTF_FMT_FLOAT:
+        return ".fmt.float";
+    case MONGA_AST_LLVM_PRINTF_FMT_PTR:
+        return ".fmt.ptr";
+    default:
+        monga_unreachable();
+        return NULL;
+    }
+}
+
+const char* monga_ast_printf_fmt_constant_string(enum monga_ast_llvm_printf_fmt_t fmt)
+{
+    switch (fmt) {
+    case MONGA_AST_LLVM_PRINTF_FMT_INT:
+        return "%d\\0A\\00";
+    case MONGA_AST_LLVM_PRINTF_FMT_FLOAT:
+        return "%f\\0A\\00";
+    case MONGA_AST_LLVM_PRINTF_FMT_PTR:
+        return "%p\\0A\\00";
+    default:
+        monga_unreachable();
+        return NULL;
+    }
+}
+
+size_t monga_ast_printf_fmt_size(enum monga_ast_llvm_printf_fmt_t monga_unused(fmt))
+{
+    return 4;
+}
+
+const char* monga_ast_func_declaration(enum monga_ast_llvm_func_t func)
+{
+    switch (func) {
+    case MONGA_AST_LLVM_FUNC_MALLOC:
+        return "i8* @malloc(i64)";
+    case MONGA_AST_LLVM_FUNC_PRINTF:
+        return "i32 @printf(i8*, ...)";
+    default:
+        monga_unreachable();
         return NULL;
     }
 }
