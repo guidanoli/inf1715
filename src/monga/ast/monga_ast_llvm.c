@@ -198,9 +198,6 @@ void monga_ast_def_function_llvm(struct monga_ast_def_function_t* ast, struct mo
         }
     }
 
-    if (ast->type.id != NULL)
-        monga_assert(ast->type.tag == MONGA_AST_REFERENCE_TYPE);
-        
     monga_ast_block_llvm(ast->block, ctx);
 
     printf("\tret ");
@@ -273,17 +270,13 @@ void monga_ast_statement_llvm(struct monga_ast_statement_t* ast, struct monga_as
             /* then: */
             monga_ast_label_definition_llvm(then_label);
             monga_ast_block_llvm(then_block, ctx);
-            printf("\tbr label ");
-            monga_ast_label_reference_llvm(endif_label);
-            printf("\n");
+            monga_ast_unconditional_jump_llvm(endif_label);
             
             /* else: */
             if (else_block != NULL) {
                 monga_ast_label_definition_llvm(else_label);
                 monga_ast_block_llvm(else_block, ctx);
-                printf("\tbr label ");
-                monga_ast_label_reference_llvm(endif_label);
-                printf("\n");
+                monga_ast_unconditional_jump_llvm(endif_label);
             }
 
             /* endif: */
