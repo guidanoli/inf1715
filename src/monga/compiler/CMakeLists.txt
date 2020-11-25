@@ -1,0 +1,2 @@
+add_executable(monga_compiler monga_compiler.c)
+target_link_libraries(monga_compiler monga_y)

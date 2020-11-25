@@ -45,6 +45,8 @@ target_link_libraries(monga_y monga_l monga_ast)
 
 include(AddTester) # add_tester
 
+add_subdirectory(compiler)
+
 add_subdirectory(ldb)
 add_subdirectory(ydb)
 add_subdirectory(llvmdb)
