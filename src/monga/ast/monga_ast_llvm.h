@@ -1,6 +1,8 @@
 #ifndef MONGA_AST_LLVM_H
 #define MONGA_AST_LLVM_H
 
+#include <stdio.h>
+
 #include "monga_ast.h"
 
 enum monga_ast_llvm_func_t {
@@ -17,6 +19,7 @@ enum monga_ast_llvm_printf_fmt_t {
 };
 
 struct monga_ast_llvm_context_t {
+    FILE* output_file;
     struct monga_ast_def_function_t* def_function; /* nullable */
     size_t struct_count;
     size_t tempvar_count;
@@ -25,7 +28,7 @@ struct monga_ast_llvm_context_t {
     char referenced_printf_fmts; /* enum monga_ast_llvm_printf_fmt_t */
 };
 
-void monga_ast_program_llvm(struct monga_ast_program_t* ast);
+void monga_ast_program_llvm(struct monga_ast_program_t* ast, FILE* fp);
 void monga_ast_definition_llvm(struct monga_ast_definition_t* ast, struct monga_ast_llvm_context_t* ctx);
 void monga_ast_def_variable_llvm(struct monga_ast_def_variable_t* ast, struct monga_ast_llvm_context_t* ctx);
 void monga_ast_def_type_llvm(struct monga_ast_def_type_t* ast, struct monga_ast_llvm_context_t* ctx);
