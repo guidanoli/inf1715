@@ -51,6 +51,17 @@ ctest
 Some features are customizable, such as the text editor used for editing and comparing.
 For that, you can tinkle the `tests/config.lua` Lua script.
 
+### Compiling and running Monga code
+
+Assuming you have configured and compiled the source code in the `build` directory, simply run:
+
+```
+build/src/monga/llvmdb/monga_llvmdb < script.mon > script.ll
+llc script.ll
+gcc -no-pie script.s
+./a.out
+```
+
 ## External links (*in Portuguese*)
 
 * [INF1715 home page](http://www.inf.puc-rio.br/~roberto/comp/)
