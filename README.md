@@ -64,5 +64,6 @@ gcc -no-pie script.s
 
 ## External links (*in Portuguese*)
 
+* [Presentation](Slides.pdf)
 * [INF1715 home page](http://www.inf.puc-rio.br/~roberto/comp/)
 * [About the language](http://www.inf.puc-rio.br/~roberto/comp/lang.html)
